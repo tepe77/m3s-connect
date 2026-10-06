@@ -75,9 +75,6 @@ export default function ForumCategoryPage({ params }: ForumCategoryPageProps) {
       if (activeTab === "top") {
         return b.likesCount + b.repliesCount * 2 - (a.likesCount + a.repliesCount * 2);
       }
-      if (activeTab === "new") {
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      }
       return new Date(b.lastActivityAt).getTime() - new Date(a.lastActivityAt).getTime();
     });
 
@@ -186,17 +183,6 @@ export default function ForumCategoryPage({ params }: ForumCategoryPageProps) {
                   }`}
                 >
                   Populer (Top)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab("new")}
-                  className={`px-3.5 py-1.5 text-xs font-bold rounded-full transition-colors ${
-                    activeTab === "new"
-                      ? "bg-[#0D9488] text-white shadow-2xs"
-                      : "text-[#475569] hover:bg-slate-100"
-                  }`}
-                >
-                  Baru (New)
                 </button>
               </div>
 

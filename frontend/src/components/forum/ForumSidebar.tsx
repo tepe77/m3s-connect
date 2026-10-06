@@ -101,27 +101,6 @@ export function ForumSidebar({
               <span>Populer (Top)</span>
             </div>
           </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              if (onSelectCategory) onSelectCategory(null);
-              if (onSelectTag) onSelectTag(null);
-              if (onSelectTab) onSelectTab("new");
-            }}
-            className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-colors ${
-              currentTab === "new" && !selectedCategorySlug && !selectedTag
-                ? "bg-emerald-50 text-[#0D9488]"
-                : "text-[#475569] hover:bg-slate-50 hover:text-[#0F172A]"
-            }`}
-          >
-            <div className="flex items-center gap-2.5">
-              <svg className="w-4 h-4 text-blue-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-              </svg>
-              <span>Topik Baru (New)</span>
-            </div>
-          </button>
         </nav>
       </div>
 
