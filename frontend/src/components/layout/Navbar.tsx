@@ -114,10 +114,10 @@ export function Navbar() {
               </button>
             </form>
 
-            {/* Masuk Button */}
+            {/* Masuk Button (Rounded Pill matching Daftar) */}
             <Link
               href="/login"
-              className="px-4 py-2 text-xs font-semibold text-[#0F172A] hover:text-[#0D9488] border border-[#D1D5DB] hover:border-[#0D9488] rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0D9488]"
+              className="px-5 py-2 text-xs font-semibold text-[#0F172A] hover:text-[#0D9488] border border-[#CBD5E1] hover:border-[#0D9488] rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0D9488]"
             >
               Masuk
             </Link>
