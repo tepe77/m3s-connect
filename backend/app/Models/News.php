@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class News extends Model
@@ -21,6 +22,8 @@ class News extends Model
         'excerpt',
         'content',
         'cover_image',
+        'content_images',
+        'tags',
         'status',
         'published_at',
     ];
@@ -30,6 +33,8 @@ class News extends Model
         return [
             'published_at' => 'datetime',
             'status' => NewsStatus::class,
+            'tags' => 'array',
+            'content_images' => 'array',
         ];
     }
 
@@ -41,5 +46,10 @@ class News extends Model
     public function author(): BelongsTo
     {
         return $this->belongsTo(User::class, 'author_id');
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(NewsComment::class, 'news_id')->where('is_approved', true);
     }
 }

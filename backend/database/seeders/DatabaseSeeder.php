@@ -213,22 +213,89 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // 6. News Categories & News
-        $newsCat = NewsCategory::firstOrCreate(
-            ['slug' => 'kabar-alumni'],
-            ['name' => 'Kabar Alumni', 'description' => 'Informasi resmi seputar perkembangan komunitas dan alumni.']
+        // 6. News Categories (with Subcategories), News, and Comments
+        $catKegiatan = NewsCategory::firstOrCreate(
+            ['slug' => 'kegiatan-alumni'],
+            ['name' => 'Kegiatan Alumni', 'description' => 'Agenda temu kangen, reuni akbar, dan silaturahmi alumni.']
+        );
+
+        $subCatReuni = NewsCategory::firstOrCreate(
+            ['slug' => 'reuni-silaturahmi'],
+            [
+                'parent_id' => $catKegiatan->id,
+                'name' => 'Reuni & Silaturahmi',
+                'description' => 'Liputan kegiatan reuni akbar dan kumpul angkatan.'
+            ]
+        );
+
+        $catBeasiswa = NewsCategory::firstOrCreate(
+            ['slug' => 'beasiswa-pendidikan'],
+            ['name' => 'Beasiswa & Pendidikan', 'description' => 'Bantuan studi, donasi pendidikan, dan beasiswa.']
+        );
+
+        $subCatStudi = NewsCategory::firstOrCreate(
+            ['slug' => 'bantuan-studi-sarjana'],
+            [
+                'parent_id' => $catBeasiswa->id,
+                'name' => 'Bantuan Studi Sarjana',
+                'description' => 'Program dukungan biaya kuliah bagi alumni berprestasi.'
+            ]
+        );
+
+        $news1 = News::firstOrCreate(
+            ['slug' => 'reuni-akbar-alumni-man-3-sleman-2025'],
+            [
+                'category_id' => $subCatReuni->id,
+                'author_id' => $admin->id,
+                'title' => 'Reuni Akbar Alumni MAN 3 Sleman 2025 Berlangsung Meriah',
+                'excerpt' => 'Ribuan alumni dari berbagai angkatan hadir dalam acara Reuni Akbar yang digelar di halaman MAN 3 Sleman, mempererat silaturahmi dan merajut kolaborasi masa depan.',
+                'content' => 'Suasana penuh kehangatan dan rasa haru mewarnai halaman kampus MAN 3 Sleman pada hari Minggu, 12 Mei 2025. Lebih dari 1.500 alumni dari angkatan 1990 hingga lulusan terbaru 2024 berkumpul kembali dalam gelaran akbar Reuni Akbar Alumni MAN 3 Sleman bertajuk Satu Alumni, Seribu Cerita, Satu Tujuan.',
+                'cover_image' => '/images/news-reuni.jpg',
+                'content_images' => [
+                    ['url' => '/images/news-reuni.jpg', 'caption' => 'Suasana pembukaan Reuni Akbar di lapangan utama', 'alt' => 'Reuni Akbar'],
+                    ['url' => '/images/doc-baksos.jpg', 'caption' => 'Penyerahan cenderamata bakti sosial kepada madrasah', 'alt' => 'Bakti Sosial']
+                ],
+                'tags' => ['ReuniAkbar2025', 'AlumniMayoga', 'MAN3Sleman', 'SilaturahmiAlumni'],
+                'status' => NewsStatus::PUBLISHED,
+                'published_at' => now()->subDays(10),
+            ]
+        );
+
+        \App\Models\NewsComment::firstOrCreate(
+            ['news_id' => $news1->id, 'author_email' => 'budi.santoso@alumni.m3s.id'],
+            [
+                'user_id' => $alumni1->id,
+                'author_name' => 'Budi Santoso',
+                'content' => 'Alhamdulillah acara berjalan dengan sangat lancar dan penuh kenangan. Senang sekali bisa bertemu kembali dengan bapak ibu guru serta rekan seangkatan.',
+                'is_approved' => true,
+            ]
+        );
+
+        \App\Models\NewsComment::firstOrCreate(
+            ['news_id' => $news1->id, 'author_email' => 'siti.rahmawati@alumni.m3s.id'],
+            [
+                'user_id' => $alumni2->id,
+                'author_name' => 'Siti Rahmawati',
+                'content' => 'Terima kasih panitia atas kerja kerasnya! Ditunggu agenda workshop karir berikutnya.',
+                'is_approved' => true,
+            ]
         );
 
         News::firstOrCreate(
-            ['slug' => 'peluncuran-perdana-portal-digital-m3s-connect'],
+            ['slug' => 'program-beasiswa-untuk-alumni-berprestasi'],
             [
-                'category_id' => $newsCat->id,
-                'author_id' => $admin->id,
-                'title' => 'Peluncuran Perdana Portal Digital M3S Connect',
-                'excerpt' => 'Platform resmi komunikasi dan kolaborasi alumni MAN 3 Sleman resmi diluncurkan untuk mempererat silaturahmi.',
-                'content' => 'Alhamdulillah, platform M3S Connect telah resmi aktif. Platform ini dibangun sebagai wadah terpadu untuk saling terhubung, berbagi informasi peluang kerja, serta mengarsipkan rekam jejak perjalanan para alumni.',
+                'category_id' => $subCatStudi->id,
+                'author_id' => $moderator->id,
+                'title' => 'Program Beasiswa untuk Alumni Berprestasi',
+                'excerpt' => 'Ikatan Alumni MAN 3 Sleman resmi meluncurkan program beasiswa jenjang pendidikan tinggi bagi alumni dan siswa berprestasi yang membutuhkan dukungan operasional studi.',
+                'content' => 'Sebagai wujud kepedulian antargenerasi, Ikatan Alumni MAN 3 Sleman membuka pendaftaran Beasiswa Alumni Berprestasi tahun akademik berjalan.',
+                'cover_image' => '/images/news-beasiswa.jpg',
+                'content_images' => [
+                    ['url' => '/images/news-beasiswa.jpg', 'caption' => 'Penyerahan beasiswa sarjana', 'alt' => 'Beasiswa'],
+                ],
+                'tags' => ['BeasiswaAlumni', 'PrestasiMayoga', 'MayogaPeduli'],
                 'status' => NewsStatus::PUBLISHED,
-                'published_at' => now(),
+                'published_at' => now()->subDays(14),
             ]
         );
 

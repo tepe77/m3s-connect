@@ -14,6 +14,15 @@ const bottomNavItems = [
     ),
   },
   {
+    label: "Berita",
+    href: "/news",
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+      </svg>
+    ),
+  },
+  {
     label: "Forum",
     href: "/forum",
     icon: (
@@ -32,16 +41,7 @@ const bottomNavItems = [
     ),
   },
   {
-    label: "Kegiatan",
-    href: "/events",
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-      </svg>
-    ),
-  },
-  {
-    label: "Profil",
+    label: "Akun",
     href: "/login",
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -56,26 +56,30 @@ export function MobileNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-[#FFFFFF]/95 backdrop-blur-md border-t border-[#E2E8F0] shadow-md pb-[env(safe-area-inset-bottom)]"
+      className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-white/95 backdrop-blur-md border-t border-[#E5E7EB] shadow-md pb-[env(safe-area-inset-bottom)]"
       aria-label="Navigasi Bawah Ponsel"
     >
       <div className="flex h-16 items-center justify-around">
         {bottomNavItems.map((item) => {
-          const isActive = pathname === item.href;
+          const isActive =
+            item.href === "/"
+              ? pathname === "/"
+              : pathname.startsWith(item.href);
+
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center justify-center min-w-[56px] min-h-[48px] px-2 py-1 text-xs font-medium rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2BA8A2] ${
+              className={`flex flex-col items-center justify-center min-w-[56px] min-h-[48px] px-2 py-1 text-xs font-medium rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0D9488] ${
                 isActive
-                  ? "text-[#2BA8A2] font-semibold"
+                  ? "text-[#0D9488] font-bold"
                   : "text-[#64748B] hover:text-[#0F172A]"
               }`}
             >
-              <div className={isActive ? "text-[#2BA8A2]" : "text-[#64748B]"}>
+              <div className={isActive ? "text-[#0D9488]" : "text-[#64748B]"}>
                 {item.icon}
               </div>
-              <span className="mt-1 leading-none">{item.label}</span>
+              <span className="mt-1 leading-none text-[11px]">{item.label}</span>
             </Link>
           );
         })}
