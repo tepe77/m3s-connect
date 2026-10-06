@@ -5,6 +5,7 @@ export interface ForumCategoryData {
   description: string;
   color: string;
   icon: string;
+  image: string;
   sortOrder: number;
   topicCount: number;
   postCount: number;
@@ -70,6 +71,7 @@ export const FORUM_CATEGORIES: ForumCategoryData[] = [
     description: "Ruang silaturahmi santai, kabar antar angkatan, dan obrolan bebas warga Mayoga.",
     color: "#0D9488",
     icon: "chat",
+    image: "/images/hero-man3-sleman.jpg",
     sortOrder: 1,
     topicCount: 42,
     postCount: 284,
@@ -81,6 +83,7 @@ export const FORUM_CATEGORIES: ForumCategoryData[] = [
     description: "Lowongan kerja, info magang, review CV, dan peluang kolaborasi profesional alumni.",
     color: "#2563EB",
     icon: "briefcase",
+    image: "/images/news-internasional.jpg",
     sortOrder: 2,
     topicCount: 38,
     postCount: 196,
@@ -92,6 +95,7 @@ export const FORUM_CATEGORIES: ForumCategoryData[] = [
     description: "Agenda temu kangen akbar, bakti sosial ramadan, silaturahmi angkatan, dan kepanitiaan.",
     color: "#D97706",
     icon: "calendar",
+    image: "/images/news-reuni.jpg",
     sortOrder: 3,
     topicCount: 26,
     postCount: 215,
@@ -103,6 +107,7 @@ export const FORUM_CATEGORIES: ForumCategoryData[] = [
     description: "Informasi beasiswa S1/S2/S3 dalam dan luar negeri, tips seleksi, dan bimbingan studi.",
     color: "#7C3AED",
     icon: "academic",
+    image: "/images/news-beasiswa.jpg",
     sortOrder: 4,
     topicCount: 31,
     postCount: 172,
@@ -114,6 +119,7 @@ export const FORUM_CATEGORIES: ForumCategoryData[] = [
     description: "Etalase usaha alumni, kemitraan rantai pasok, dan sharing strategi wirausaha.",
     color: "#059669",
     icon: "store",
+    image: "/images/news-peluncuran.jpg",
     sortOrder: 5,
     topicCount: 20,
     postCount: 98,
@@ -125,6 +131,7 @@ export const FORUM_CATEGORIES: ForumCategoryData[] = [
     description: "Diskusi rekayasa perangkat lunak, AI, cloud computing, dan inisiatif digital madrasah.",
     color: "#DC2626",
     icon: "chip",
+    image: "/images/doc-wisuda.jpg",
     sortOrder: 6,
     topicCount: 17,
     postCount: 89,

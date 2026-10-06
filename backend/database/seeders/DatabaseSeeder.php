@@ -162,6 +162,7 @@ class DatabaseSeeder extends Seeder
                 'name' => 'Diskusi Umum',
                 'description' => 'Ruang santai bertukar kabar, kenangan masa sekolah, dan obrolan bebas antar alumni.',
                 'icon' => 'chat-bubble-left-right',
+                'image' => '/images/hero-man3-sleman.jpg',
                 'sort_order' => 1,
                 'is_active' => true,
             ]
@@ -173,6 +174,7 @@ class DatabaseSeeder extends Seeder
                 'name' => 'Karir & Profesi',
                 'description' => 'Informasi lowongan pekerjaan, magang, bimbingan karir, dan networking profesional.',
                 'icon' => 'briefcase',
+                'image' => '/images/news-internasional.jpg',
                 'sort_order' => 2,
                 'is_active' => true,
             ]
@@ -184,6 +186,7 @@ class DatabaseSeeder extends Seeder
                 'name' => 'Kegiatan & Reuni',
                 'description' => 'Agenda temu kangen, bakti sosial, dan kepanitiaan alumni.',
                 'icon' => 'calendar',
+                'image' => '/images/news-reuni.jpg',
                 'sort_order' => 3,
                 'is_active' => true,
             ]

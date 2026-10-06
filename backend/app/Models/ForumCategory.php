@@ -16,6 +16,7 @@ class ForumCategory extends Model
         'slug',
         'description',
         'icon',
+        'image',
         'sort_order',
         'is_active',
     ];

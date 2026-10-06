@@ -33,6 +33,11 @@ class ForumCategoryResource extends Resource
                     ->columnSpanFull(),
                 Forms\Components\TextInput::make('icon')
                     ->maxLength(255),
+                Forms\Components\FileUpload::make('image')
+                    ->label('Gambar Sampul Kategori')
+                    ->image()
+                    ->directory('forum-categories')
+                    ->columnSpanFull(),
                 Forms\Components\TextInput::make('sort_order')
                     ->required()
                     ->numeric()
@@ -46,8 +51,9 @@ class ForumCategoryResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id')
-                    ->label('ID'),
+                Tables\Columns\ImageColumn::make('image')
+                    ->label('Sampul')
+                    ->circular(),
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('slug')

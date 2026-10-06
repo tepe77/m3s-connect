@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useState } from "react";
 import { ForumAuthor } from "@/data/forumData";
+import { RichContentRenderer } from "./RichContentRenderer";
 
 interface PostItemProps {
   id: string;
@@ -127,9 +128,9 @@ export function PostItem({
         </div>
       )}
 
-      {/* 3. Post Body */}
-      <div className="prose prose-sm max-w-none text-[#334155] leading-relaxed space-y-3 whitespace-pre-line text-xs sm:text-sm">
-        {body}
+      {/* 3. Post Body (Rich Content with Photo, Video, Link, and Formatting support) */}
+      <div className="py-1">
+        <RichContentRenderer content={body} />
       </div>
 
       {/* 4. Interaction Bar (Discourse Like, Reply, Share) */}

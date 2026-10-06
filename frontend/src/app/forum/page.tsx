@@ -23,7 +23,10 @@ function ForumContent() {
   const [selectedCategorySlug, setSelectedCategorySlug] = useState<string | null>(initialCategory);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState<number>(1);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+  const pageSize = 6;
 
   const loadData = () => {
     const loaded = getStoredTopics();
@@ -42,6 +45,11 @@ function ForumContent() {
       setActiveTab("latest");
     }
   }, [initialCategory]);
+
+  // Reset to page 1 whenever filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, selectedCategorySlug, selectedTag, searchQuery]);
 
   // Filtering & Sorting
   const filteredTopics = topics
@@ -81,6 +89,11 @@ function ForumContent() {
       // Default: Latest activity
       return new Date(b.lastActivityAt).getTime() - new Date(a.lastActivityAt).getTime();
     });
+
+  const totalPages = Math.max(1, Math.ceil(filteredTopics.length / pageSize));
+  const paginatedTopics = filteredTopics.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const startItemIndex = (currentPage - 1) * pageSize + 1;
+  const endItemIndex = Math.min(currentPage * pageSize, filteredTopics.length);
 
   const selectedCategoryObj = FORUM_CATEGORIES.find((c) => c.slug === selectedCategorySlug);
 
@@ -342,7 +355,7 @@ function ForumContent() {
                   </div>
                 ) : (
                   <div>
-                    {filteredTopics.map((topic) => (
+                    {paginatedTopics.map((topic) => (
                       <TopicListRow
                         key={topic.id}
                         topic={topic}
@@ -356,6 +369,54 @@ function ForumContent() {
                         }}
                       />
                     ))}
+
+                    {/* Pagination Bar */}
+                    <div className="px-5 py-4 bg-slate-50/70 border-t border-[#E2E8F0] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs text-[#64748B]">
+                      <div>
+                        Menampilkan <span className="font-semibold text-[#0F172A]">{startItemIndex}</span> -{" "}
+                        <span className="font-semibold text-[#0F172A]">{endItemIndex}</span> dari{" "}
+                        <span className="font-semibold text-[#0F172A]">{filteredTopics.length}</span> topik
+                      </div>
+
+                      {totalPages > 1 && (
+                        <div className="flex items-center gap-1.5 self-center sm:self-auto">
+                          <button
+                            type="button"
+                            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                            disabled={currentPage === 1}
+                            className="px-3 py-1.5 rounded-lg border border-[#CBD5E1] bg-white font-medium text-[#0F172A] hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                            aria-label="Halaman Sebelumnya"
+                          >
+                            &larr; Prev
+                          </button>
+
+                          {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((pageNum) => (
+                            <button
+                              key={pageNum}
+                              type="button"
+                              onClick={() => setCurrentPage(pageNum)}
+                              className={`min-w-[32px] h-8 px-2 rounded-lg text-xs font-bold transition-colors ${
+                                currentPage === pageNum
+                                  ? "bg-[#0D9488] text-white shadow-2xs"
+                                  : "bg-white border border-[#CBD5E1] text-[#0F172A] hover:bg-slate-100"
+                              }`}
+                            >
+                              {pageNum}
+                            </button>
+                          ))}
+
+                          <button
+                            type="button"
+                            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                            disabled={currentPage === totalPages}
+                            className="px-3 py-1.5 rounded-lg border border-[#CBD5E1] bg-white font-medium text-[#0F172A] hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                            aria-label="Halaman Berikutnya"
+                          >
+                            Next &rarr;
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
