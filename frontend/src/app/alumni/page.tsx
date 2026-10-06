@@ -125,10 +125,10 @@ export default function AlumniDirectoryPage() {
             Menampilkan <span className="text-[#0D9488] font-bold">{filteredAlumni.length}</span> Profil Alumni Terverifikasi
           </p>
           <Link
-            href="/profile"
+            href="/alumni/login"
             className="text-xs font-bold text-[#0D9488] hover:underline flex items-center gap-1"
           >
-            <span>Perbarui Profil Saya</span>
+            <span>Masuk ke Portal Alumni</span>
             <span>&rarr;</span>
           </Link>
         </div>
@@ -155,8 +155,8 @@ export default function AlumniDirectoryPage() {
               >
                 {/* 1. Header Card: Avatar & Badges */}
                 <div className="flex items-start gap-4">
-                  <div className="relative shrink-0">
-                    <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow-xs bg-slate-100">
+                  <Link href={`/alumni/${alumni.id}`} className="relative shrink-0 group">
+                    <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow-xs bg-slate-100 group-hover:ring-2 group-hover:ring-[#0D9488] transition-all">
                       <Image
                         src={alumni.avatar}
                         alt={alumni.name}
@@ -174,12 +174,14 @@ export default function AlumniDirectoryPage() {
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
                     </span>
-                  </div>
+                  </Link>
 
                   <div className="min-w-0 flex-1 space-y-1">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <h2 className="text-base font-bold text-[#0F172A] leading-snug">
-                        {alumni.name}
+                      <h2 className="text-base font-bold text-[#0F172A] leading-snug hover:text-[#0D9488] transition-colors">
+                        <Link href={`/alumni/${alumni.id}`}>
+                          {alumni.name}
+                        </Link>
                       </h2>
                     </div>
 
@@ -295,10 +297,10 @@ export default function AlumniDirectoryPage() {
                   </div>
 
                   <Link
-                    href={`/profile`}
-                    className="inline-flex items-center px-3 py-1.5 text-xs font-bold text-[#0D9488] bg-emerald-50 hover:bg-[#0D9488] hover:text-white rounded-lg transition-colors border border-emerald-200"
+                    href={`/alumni/${alumni.id}`}
+                    className="inline-flex items-center px-4 py-1.5 text-xs font-bold text-[#0D9488] bg-emerald-50 hover:bg-[#0D9488] hover:text-white rounded-full transition-colors border border-emerald-200 shadow-xs"
                   >
-                    Profil
+                    Lihat Profil
                   </Link>
                 </div>
               </div>

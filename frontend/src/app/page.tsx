@@ -382,7 +382,7 @@ export default function HomePage() {
 
                 <div className="w-full pt-4">
                   <Link
-                    href="/alumni"
+                    href="/alumni/alumni-1"
                     className="block w-full py-1.5 text-center text-xs font-semibold text-[#0D9488] border border-[#0D9488] hover:bg-[#0D9488] hover:text-white rounded-lg transition-colors"
                   >
                     Lihat Profil
@@ -422,7 +422,7 @@ export default function HomePage() {
 
                 <div className="w-full pt-4">
                   <Link
-                    href="/alumni"
+                    href="/alumni/alumni-2"
                     className="block w-full py-1.5 text-center text-xs font-semibold text-[#0D9488] border border-[#0D9488] hover:bg-[#0D9488] hover:text-white rounded-lg transition-colors"
                   >
                     Lihat Profil
@@ -462,7 +462,7 @@ export default function HomePage() {
 
                 <div className="w-full pt-4">
                   <Link
-                    href="/alumni"
+                    href="/alumni/alumni-3"
                     className="block w-full py-1.5 text-center text-xs font-semibold text-[#0D9488] border border-[#0D9488] hover:bg-[#0D9488] hover:text-white rounded-lg transition-colors"
                   >
                     Lihat Profil
