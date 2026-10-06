@@ -1,0 +1,185 @@
+"use client";
+
+import { Container } from "@/components/ui/Container";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+
+interface UserData {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  status: string;
+}
+
+export default function MemberDashboardPage() {
+  const router = useRouter();
+  const [user, setUser] = useState<UserData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("m3s_user");
+    if (!storedUser) {
+      router.push("/login");
+      return;
+    }
+
+    try {
+      setUser(JSON.parse(storedUser));
+    } catch {
+      router.push("/login");
+    } finally {
+      setLoading(false);
+    }
+  }, [router]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("m3s_token");
+    localStorage.removeItem("m3s_user");
+    router.push("/login");
+  };
+
+  if (loading) {
+    return (
+      <div className="py-20 text-center">
+        <Container size="wide">
+          <p className="text-sm text-[#64748B]">Memuat dashboard anggota...</p>
+        </Container>
+      </div>
+    );
+  }
+
+  return (
+    <div className="py-8 md:py-12">
+      <Container size="wide">
+        {/* Header Greeting */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-6 border-b border-[#E2E8F0]">
+          <div>
+            <span className="text-xs font-bold uppercase tracking-wider text-[#2BA8A2]">
+              Ruang Anggota Komunitas
+            </span>
+            <h1 className="text-2xl sm:text-3xl font-bold text-[#0F172A]">
+              Selamat datang kembali, {user?.name}!
+            </h1>
+            <p className="text-sm text-[#64748B] mt-1">
+              Peran: <span className="capitalize font-semibold text-[#0F172A]">{user?.role}</span> • Status: <span className="capitalize text-[#2BA8A2] font-semibold">{user?.status}</span>
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {user?.role === "admin" && (
+              <a
+                href="http://localhost:8000/admin"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center justify-center min-h-[44px] px-4 py-2 text-xs font-semibold text-white bg-[#0F172A] hover:bg-[#1E293B] rounded-md transition-colors"
+              >
+                Buka Panel Filament Admin ↗
+              </a>
+            )}
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="inline-flex items-center justify-center min-h-[44px] px-4 py-2 text-xs font-semibold text-[#EF4444] border border-[#EF4444]/30 hover:bg-[#EF4444]/10 rounded-md transition-colors"
+            >
+              Keluar Akun
+            </button>
+          </div>
+        </div>
+
+        {/* Dashboard Sections Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Main Column */}
+          <div className="md:col-span-2 space-y-8">
+            {/* Profile Completion Card */}
+            <div className="bg-white p-6 rounded-lg border border-[#E2E8F0] space-y-3">
+              <div className="flex items-center justify-between">
+                <h2 className="text-base font-bold text-[#0F172A]">Kelengkapan Profil Alumni</h2>
+                <span className="text-xs font-bold text-[#2BA8A2]">85% Lengkap</span>
+              </div>
+              <div className="w-full bg-[#E2E8F0] h-2 rounded-full overflow-hidden">
+                <div className="bg-[#2BA8A2] h-full w-[85%] rounded-full" />
+              </div>
+              <p className="text-xs text-[#64748B]">
+                Tambahkan riwayat pengalaman kerja dan akun sosial media agar teman seangkatan mudah menghubungi Anda.
+              </p>
+            </div>
+
+            {/* Latest Discussions */}
+            <div className="bg-white p-6 rounded-lg border border-[#E2E8F0] space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-base font-bold text-[#0F172A]">Diskusi Forum Terbaru</h2>
+                <Link href="/forum" className="text-xs font-semibold text-[#2BA8A2] hover:underline">
+                  Semua Topik
+                </Link>
+              </div>
+              <div className="divide-y divide-[#E2E8F0]">
+                <div className="py-3 first:pt-0 last:pb-0">
+                  <span className="text-xs text-[#2BA8A2] font-semibold">Kegiatan & Reuni</span>
+                  <h3 className="text-sm font-semibold text-[#0F172A] hover:text-[#2BA8A2]">
+                    <Link href="/forum">Rencana Reuni Akbar Lintas Angkatan MAN 3 Sleman 2026</Link>
+                  </h3>
+                  <p className="text-xs text-[#64748B]">12 balasan • Terakhir aktif 1 jam lalu</p>
+                </div>
+                <div className="py-3 first:pt-0 last:pb-0">
+                  <span className="text-xs text-[#2BA8A2] font-semibold">Karir & Profesi</span>
+                  <h3 className="text-sm font-semibold text-[#0F172A] hover:text-[#2BA8A2]">
+                    <Link href="/forum">Lowongan Magang Software Engineer dan Product Specialist</Link>
+                  </h3>
+                  <p className="text-xs text-[#64748B]">8 balasan • Terakhir aktif 3 jam lalu</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Sidebar Column */}
+          <div className="space-y-6">
+            {/* Upcoming Events */}
+            <div className="bg-white p-6 rounded-lg border border-[#E2E8F0] space-y-4">
+              <h2 className="text-base font-bold text-[#0F172A]">Kegiatan Mendatang</h2>
+              <div className="p-3.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-md space-y-2">
+                <span className="text-xs font-bold text-[#2BA8A2]">Webinar Karir Alumni</span>
+                <p className="text-xs font-medium text-[#0F172A]">
+                  Membangun Portofolio Global di Era Digital
+                </p>
+                <p className="text-xs text-[#64748B]">Minggu, 20 Oktober 2026 (19.00 WIB)</p>
+                <Link
+                  href="/events"
+                  className="inline-block text-xs font-semibold text-[#2BA8A2] hover:underline pt-1"
+                >
+                  Detail & Konfirmasi RSVP
+                </Link>
+              </div>
+            </div>
+
+            {/* Rekomendasi Alumni */}
+            <div className="bg-white p-6 rounded-lg border border-[#E2E8F0] space-y-4">
+              <h2 className="text-base font-bold text-[#0F172A]">Rekomendasi Alumni Terhubung</h2>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between text-xs">
+                  <div>
+                    <p className="font-bold text-[#0F172A]">Siti Rahmawati</p>
+                    <p className="text-[#64748B]">Angkatan 2019 • Brand Strategist</p>
+                  </div>
+                  <Link href="/alumni" className="text-[#2BA8A2] font-semibold hover:underline">
+                    Lihat
+                  </Link>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <div>
+                    <p className="font-bold text-[#0F172A]">Budi Santoso</p>
+                    <p className="text-[#64748B]">Angkatan 2018 • Senior Engineer</p>
+                  </div>
+                  <Link href="/alumni" className="text-[#2BA8A2] font-semibold hover:underline">
+                    Lihat
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Container>
+    </div>
+  );
+}
