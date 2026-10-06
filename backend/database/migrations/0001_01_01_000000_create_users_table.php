@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->string('role')->default('alumni')->index(); // guest, alumni, moderator, admin
             $table->string('status')->default('active')->index();
             $table->string('avatar')->nullable();
             $table->timestamp('last_login_at')->nullable()->index();
