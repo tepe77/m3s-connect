@@ -188,10 +188,10 @@ export default function ProfileUpdatePage() {
 
             <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link
-                href="/alumni/login"
+                href="/login"
                 className="w-full sm:w-auto min-h-[44px] px-6 py-2.5 text-xs font-bold text-white bg-[#0D9488] hover:bg-[#0f766e] rounded-full shadow-xs transition-colors flex items-center justify-center gap-1.5"
               >
-                <span>Masuk ke Akun Alumni</span>
+                <span>Masuk ke Akun</span>
                 <span>&rarr;</span>
               </Link>
               <Link

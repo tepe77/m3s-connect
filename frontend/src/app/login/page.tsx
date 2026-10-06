@@ -70,55 +70,43 @@ export default function LoginPage() {
   return (
     <div className="py-10 md:py-16 bg-[#F8FAFC]">
       <Container size="narrow">
-        {/* Banner Khusus Login Alumni */}
-        <div className="mb-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 shadow-xs flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-emerald-100 text-[#0D9488] flex items-center justify-center font-bold text-sm shrink-0">
-              🎓
+        <div className="bg-white p-8 md:p-10 rounded-3xl border border-[#E5E7EB] shadow-xs space-y-6">
+          <div className="text-center space-y-2">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-[#0D9488] text-xs font-semibold border border-emerald-200">
+              <span>Portal Komunitas Alumni</span>
             </div>
-            <div>
-              <p className="text-xs font-bold text-[#064E3B]">Apakah Anda Alumni MAN 3 Sleman?</p>
-              <p className="text-[11px] text-[#065F46]">Gunakan portal khusus alumni untuk pengalaman yang dipersonalisasi.</p>
-            </div>
-          </div>
-          <Link
-            href="/alumni/login"
-            className="px-4 py-1.5 text-xs font-bold text-white bg-[#0D9488] hover:bg-[#0f766e] rounded-full shrink-0 transition-colors"
-          >
-            Portal Alumni &rarr;
-          </Link>
-        </div>
-
-        <div className="bg-white p-8 md:p-10 rounded-2xl border border-[#E5E7EB] shadow-xs space-y-6">
-          <div className="text-center space-y-1.5">
-            <h1 className="text-2xl font-black text-[#0F172A] tracking-tight">Masuk ke M3S Connect</h1>
+            <h1 className="text-2xl sm:text-3xl font-black text-[#0F172A] tracking-tight">
+              Masuk ke M3S Connect
+            </h1>
             <p className="text-xs sm:text-sm text-[#64748B]">
-              Portal komunitas & administrasi MAN 3 Sleman
+              Masuk untuk mengakses direktori alumni, berdiskusi di forum, dan mengelola profil Anda.
             </p>
           </div>
 
           {/* Quick Fill Demo Seeders Buttons */}
-          <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
-            <p className="text-xs font-bold text-[#0F172A] uppercase tracking-wider">Pilih Akun Demo Seeders:</p>
+          <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2.5">
+            <p className="text-xs font-bold text-[#0F172A] uppercase tracking-wider">
+              Pilih Akun Demo Seeders:
+            </p>
             <div className="flex flex-wrap gap-2">
               <button
                 type="button"
                 onClick={() => fillCredentials("budi.santoso@alumni.m3s.id")}
-                className="px-3 py-1 text-xs font-medium rounded-full bg-white border border-slate-300 hover:border-[#0D9488] hover:text-[#0D9488] text-[#0F172A] transition-colors"
+                className="px-3.5 py-1.5 text-xs font-semibold rounded-full bg-white border border-slate-300 hover:border-[#0D9488] hover:text-[#0D9488] text-[#0F172A] transition-colors shadow-2xs"
               >
                 Alumni (Budi Santoso)
               </button>
               <button
                 type="button"
                 onClick={() => fillCredentials("admin@m3s-connect.id")}
-                className="px-3 py-1 text-xs font-medium rounded-full bg-white border border-slate-300 hover:border-[#0D9488] hover:text-[#0D9488] text-[#0F172A] transition-colors"
+                className="px-3.5 py-1.5 text-xs font-semibold rounded-full bg-white border border-slate-300 hover:border-[#0D9488] hover:text-[#0D9488] text-[#0F172A] transition-colors shadow-2xs"
               >
                 Admin (admin@m3s)
               </button>
               <button
                 type="button"
                 onClick={() => fillCredentials("moderator@m3s-connect.id")}
-                className="px-3 py-1 text-xs font-medium rounded-full bg-white border border-slate-300 hover:border-[#0D9488] hover:text-[#0D9488] text-[#0F172A] transition-colors"
+                className="px-3.5 py-1.5 text-xs font-semibold rounded-full bg-white border border-slate-300 hover:border-[#0D9488] hover:text-[#0D9488] text-[#0F172A] transition-colors shadow-2xs"
               >
                 Moderator
               </button>
@@ -128,16 +116,19 @@ export default function LoginPage() {
           {errorMessage && (
             <div
               role="alert"
-              className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-xs font-medium text-rose-700"
+              className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-xs font-medium text-rose-700 flex items-center gap-2"
             >
-              {errorMessage}
+              <svg className="w-4 h-4 text-rose-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>{errorMessage}</span>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-xs font-bold text-[#0F172A] uppercase tracking-wider mb-1.5">
-                Alamat Email
+                Alamat Email / Identitas
               </label>
               <input
                 id="email"
@@ -146,7 +137,7 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="nama@alumni.m3s.id"
                 required
-                className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-[#CBD5E1] bg-white focus:outline-none focus:ring-2 focus:ring-[#0D9488] text-[#0F172A]"
+                className="w-full px-4 py-2.5 text-sm rounded-xl border border-[#CBD5E1] bg-white focus:outline-none focus:ring-2 focus:ring-[#0D9488] text-[#0F172A] transition-all"
               />
             </div>
 
@@ -163,7 +154,7 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 required
-                className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-[#CBD5E1] bg-white focus:outline-none focus:ring-2 focus:ring-[#0D9488] text-[#0F172A]"
+                className="w-full px-4 py-2.5 text-sm rounded-xl border border-[#CBD5E1] bg-white focus:outline-none focus:ring-2 focus:ring-[#0D9488] text-[#0F172A] transition-all"
               />
             </div>
 
@@ -178,17 +169,17 @@ export default function LoginPage() {
             </div>
           </form>
 
-          {/* Admin Panel info note */}
-          <div className="pt-4 border-t border-[#E5E7EB] text-center text-xs text-[#64748B] space-y-1">
+          {/* Registration & Admin Panel note */}
+          <div className="pt-4 border-t border-[#E5E7EB] text-center text-xs text-[#64748B] space-y-1.5">
             <p>
-              Belum terdaftar sebagai alumni?{" "}
+              Belum terdaftar sebagai anggota alumni?{" "}
               <Link href="/register" className="font-bold text-[#0D9488] hover:underline">
-                Daftar akun baru
+                Daftar Akun Baru
               </Link>
             </p>
-            <p>
-              Admin & Moderator panel:{" "}
-              <a href="http://localhost:8000/admin" target="_blank" rel="noreferrer" className="text-[#0D9488] underline">
+            <p className="text-[11px] text-[#94A3B8]">
+              Dashboard Administrasi Filament:{" "}
+              <a href="http://localhost:8000/admin" target="_blank" rel="noreferrer" className="text-[#0D9488] hover:underline">
                 http://localhost:8000/admin
               </a>
             </p>

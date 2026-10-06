@@ -124,13 +124,6 @@ export default function AlumniDirectoryPage() {
           <p className="text-xs sm:text-sm font-semibold text-[#475569]">
             Menampilkan <span className="text-[#0D9488] font-bold">{filteredAlumni.length}</span> Profil Alumni Terverifikasi
           </p>
-          <Link
-            href="/alumni/login"
-            className="text-xs font-bold text-[#0D9488] hover:underline flex items-center gap-1"
-          >
-            <span>Masuk ke Portal Alumni</span>
-            <span>&rarr;</span>
-          </Link>
         </div>
 
         {/* Alumni List Grid (Complete Cards with Photos & Social Links) */}
