@@ -25,6 +25,7 @@ export interface AlumniExperience {
 export interface AlumniItem {
   id: string;
   name: string;
+  email?: string;
   avatar: string;
   graduationYear: number;
   graduationClass: string;
@@ -45,6 +46,7 @@ export const ALUMNI_ITEMS: AlumniItem[] = [
   {
     id: "alumni-1",
     name: "Siti Nurhaliza, S.T.",
+    email: "siti.nurhaliza@alumni.m3s.id",
     avatar: "/images/avatar-siti.jpg",
     graduationYear: 2012,
     graduationClass: "IPA 1",
@@ -104,6 +106,7 @@ export const ALUMNI_ITEMS: AlumniItem[] = [
   {
     id: "alumni-2",
     name: "Ahmad Fauzi, M.Pd.",
+    email: "ahmad.fauzi@alumni.m3s.id",
     avatar: "/images/avatar-ahmad.jpg",
     graduationYear: 2010,
     graduationClass: "IPA 2",
@@ -170,6 +173,7 @@ export const ALUMNI_ITEMS: AlumniItem[] = [
   {
     id: "alumni-3",
     name: "Rina Oktaviani, S.E.",
+    email: "rina.oktaviani@alumni.m3s.id",
     avatar: "/images/avatar-rina.jpg",
     graduationYear: 2015,
     graduationClass: "IPS 1",
@@ -219,6 +223,7 @@ export const ALUMNI_ITEMS: AlumniItem[] = [
   {
     id: "alumni-4",
     name: "Budi Santoso, S.Kom.",
+    email: "budi.santoso@alumni.m3s.id",
     avatar: "/images/avatar-ahmad.jpg",
     graduationYear: 2018,
     graduationClass: "IPA 2",

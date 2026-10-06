@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Container } from "../ui/Container";
 
 const navItems = [
@@ -18,6 +18,40 @@ export function Navbar() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentUser, setCurrentUser] = useState<{ name?: string; email?: string; role?: string } | null>(null);
+
+  useEffect(() => {
+    const syncUser = () => {
+      try {
+        const token = localStorage.getItem("m3s_token");
+        const userStr = localStorage.getItem("m3s_user");
+        if (token && userStr) {
+          setCurrentUser(JSON.parse(userStr));
+        } else {
+          setCurrentUser(null);
+        }
+      } catch {
+        setCurrentUser(null);
+      }
+    };
+
+    syncUser();
+    window.addEventListener("storage", syncUser);
+    return () => window.removeEventListener("storage", syncUser);
+  }, []);
+
+  const handleLogout = () => {
+    try {
+      localStorage.removeItem("m3s_token");
+      localStorage.removeItem("m3s_user");
+      localStorage.removeItem("m3s_user_profile");
+    } catch {
+      // Graceful fallback
+    }
+    setCurrentUser(null);
+    window.dispatchEvent(new Event("storage"));
+    window.location.href = "/login";
+  };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -114,21 +148,43 @@ export function Navbar() {
               </button>
             </form>
 
-            {/* Masuk Button (Rounded Pill matching Daftar) */}
-            <Link
-              href="/login"
-              className="px-5 py-2 text-xs font-semibold text-[#0F172A] hover:text-[#0D9488] border border-[#CBD5E1] hover:border-[#0D9488] rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0D9488]"
-            >
-              Masuk
-            </Link>
+            {currentUser ? (
+              <div className="flex items-center gap-2">
+                <Link
+                  href={currentUser.role === "alumni" ? "/profile" : "/dashboard"}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-[#0D9488] bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0D9488]"
+                  title="Lihat Profil Saya"
+                >
+                  <span className="w-2 h-2 rounded-full bg-[#0D9488]" />
+                  <span className="max-w-[130px] truncate">{currentUser.name || "Profil Saya"}</span>
+                </Link>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="px-3.5 py-2 text-xs font-semibold text-rose-600 hover:text-rose-700 bg-white hover:bg-rose-50 border border-rose-200 hover:border-rose-300 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
+                >
+                  Keluar
+                </button>
+              </div>
+            ) : (
+              <>
+                {/* Masuk Button (Rounded Pill matching Daftar) */}
+                <Link
+                  href="/login"
+                  className="px-5 py-2 text-xs font-semibold text-[#0F172A] hover:text-[#0D9488] border border-[#CBD5E1] hover:border-[#0D9488] rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0D9488]"
+                >
+                  Masuk
+                </Link>
 
-            {/* Daftar Button */}
-            <Link
-              href="/register"
-              className="inline-flex items-center justify-center min-h-[38px] px-5 py-2 text-xs font-bold text-white bg-[#0D9488] hover:bg-[#0f766e] rounded-full shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0D9488]"
-            >
-              Daftar
-            </Link>
+                {/* Daftar Button */}
+                <Link
+                  href="/register"
+                  className="inline-flex items-center justify-center min-h-[38px] px-5 py-2 text-xs font-bold text-white bg-[#0D9488] hover:bg-[#0f766e] rounded-full shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0D9488]"
+                >
+                  Daftar
+                </Link>
+              </>
+            )}
 
             {/* Mobile menu hamburger toggle */}
             <button
@@ -188,6 +244,45 @@ export function Navbar() {
                 </Link>
               ))}
             </nav>
+
+            {/* Mobile Auth Actions */}
+            <div className="pt-2 border-t border-[#E5E7EB] flex flex-col gap-2">
+              {currentUser ? (
+                <>
+                  <Link
+                    href={currentUser.role === "alumni" ? "/profile" : "/dashboard"}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center justify-center px-4 py-2.5 text-xs font-bold text-[#0D9488] bg-emerald-50 rounded-full border border-emerald-200"
+                  >
+                    Profil Saya ({currentUser.name})
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="w-full py-2.5 text-xs font-semibold text-rose-600 bg-white border border-rose-200 rounded-full text-center"
+                  >
+                    Keluar dari Akun
+                  </button>
+                </>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Link
+                    href="/login"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex-1 text-center py-2 text-xs font-semibold text-[#0F172A] border border-[#CBD5E1] rounded-full"
+                  >
+                    Masuk
+                  </Link>
+                  <Link
+                    href="/register"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex-1 text-center py-2 text-xs font-bold text-white bg-[#0D9488] rounded-full"
+                  >
+                    Daftar
+                  </Link>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>

@@ -162,6 +162,16 @@ export default function ProfileUpdatePage() {
     }, 600);
   };
 
+  // Loading state while checking authentication
+  if (isAuthenticated === null) {
+    return (
+      <div className="py-24 bg-[#F8FAFC] flex flex-col justify-center items-center gap-3">
+        <div className="w-8 h-8 rounded-full border-2 border-emerald-600 border-t-transparent animate-spin" />
+        <p className="text-xs text-[#64748B]">Memverifikasi sesi akun alumni...</p>
+      </div>
+    );
+  }
+
   // If user is not logged in, show access guard
   if (isAuthenticated === false) {
     return (
