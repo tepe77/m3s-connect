@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\AlumniController;
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\ForumController;
 use App\Http\Controllers\Api\V1\NewsController;
 use App\Http\Controllers\Api\V1\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -37,5 +38,18 @@ Route::prefix('v1')->group(function () {
         Route::get('/', [NewsController::class, 'index']);
         Route::get('/{slug}', [NewsController::class, 'show']);
         Route::post('/{slug}/comments', [NewsController::class, 'storeComment']);
+    });
+
+    // Community Forum Routes (Discourse-style)
+    Route::prefix('forum')->group(function () {
+        Route::get('/categories', [ForumController::class, 'categories']);
+        Route::get('/threads', [ForumController::class, 'index']);
+        Route::get('/threads/{slug}', [ForumController::class, 'show']);
+
+        Route::middleware('auth:sanctum')->group(function () {
+            Route::post('/threads', [ForumController::class, 'storeThread']);
+            Route::post('/threads/{id}/posts', [ForumController::class, 'storePost']);
+            Route::post('/threads/{id}/like', [ForumController::class, 'toggleThreadLike']);
+        });
     });
 });
