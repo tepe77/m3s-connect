@@ -3,6 +3,15 @@ import Image from "next/image";
 import { Container } from "@/components/ui/Container";
 import { NEWS_ITEMS, NewsItem } from "@/data/newsData";
 
+function resolveImageUrl(url: string | undefined | null, fallbackUrl: string): string {
+  if (!url) return fallbackUrl;
+  const match = url.match(/(news-[a-z0-9-]+|doc-[a-z0-9-]+|avatar-[a-z0-9-]+)\.(jpg|png|webp)/i);
+  if (match) {
+    return `/images/${match[0]}`;
+  }
+  return url;
+}
+
 async function getNewsList(): Promise<NewsItem[]> {
   try {
     const res = await fetch("http://localhost:8000/api/v1/news", {
@@ -33,9 +42,9 @@ async function getNewsList(): Promise<NewsItem[]> {
             author: {
               name: item.author?.name || fallback?.author?.name || "Redaksi M3S Connect",
               role: fallback?.author?.role || "Divisi Publikasi",
-              avatar: item.author?.avatar_url || fallback?.author?.avatar || "/images/avatar-ahmad.jpg",
+              avatar: resolveImageUrl(item.author?.avatar_url || item.author?.avatar, fallback?.author?.avatar || "/images/avatar-ahmad.jpg"),
             },
-            thumbnail: item.cover_image_url || fallback?.thumbnail || "/images/news-reuni.jpg",
+            thumbnail: resolveImageUrl(item.cover_image_url || item.cover_image, fallback?.thumbnail || "/images/news-reuni.jpg"),
             contentImages: fallback?.contentImages || [],
             contentHtml: fallback?.contentHtml || [item.content],
             comments: fallback?.comments || [],

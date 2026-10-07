@@ -9,6 +9,15 @@ interface PageProps {
   }>;
 }
 
+function resolveNewsImage(url: string | undefined | null, fallbackUrl: string): string {
+  if (!url) return fallbackUrl;
+  const match = url.match(/(news-[a-z0-9-]+|doc-[a-z0-9-]+|avatar-[a-z0-9-]+)\.(jpg|png|webp)/i);
+  if (match) {
+    return `/images/${match[0]}`;
+  }
+  return url;
+}
+
 async function getNewsBySlug(slug: string): Promise<NewsItem | null> {
   const fallback = NEWS_ITEMS.find((n) => n.slug === slug) || null;
 
@@ -60,9 +69,9 @@ async function getNewsBySlug(slug: string): Promise<NewsItem | null> {
           author: {
             name: apiData.author?.name || fallback?.author?.name || "Redaksi M3S Connect",
             role: fallback?.author?.role || "Divisi Publikasi",
-            avatar: fallback?.author?.avatar || "/images/avatar-ahmad.jpg",
+            avatar: resolveNewsImage(apiData.author?.avatar_url || apiData.author?.avatar, fallback?.author?.avatar || "/images/avatar-ahmad.jpg"),
           },
-          thumbnail: fallback?.thumbnail || (apiData.cover_image ? (apiData.cover_image.startsWith("http") ? apiData.cover_image : `/storage/${apiData.cover_image.replace(/^\//, '')}`) : "/images/news-reuni.jpg"),
+          thumbnail: resolveNewsImage(apiData.cover_image, fallback?.thumbnail || "/images/news-reuni.jpg"),
           contentImages: Array.isArray(apiData.content_images) && apiData.content_images.length > 0 ? apiData.content_images : (fallback?.contentImages || []),
           contentHtml: fallback?.contentHtml || [apiData.content],
           comments,
@@ -107,4 +116,3 @@ export default async function NewsDetailPage({ params }: PageProps) {
 
   return <NewsDetailClient initialNews={item} />;
 }
-
