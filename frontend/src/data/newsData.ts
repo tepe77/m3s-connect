@@ -107,15 +107,6 @@ export const NEWS_ITEMS: NewsItem[] = [
         content: "Terima kasih untuk panitia yang sudah menyiapkan acara sebaik ini. Usul untuk reuni berikutnya diadakan sesi panel sharing karir teknologi secara khusus.",
         isVerifiedAlumni: true,
       },
-      {
-        id: "c-3",
-        authorName: "Rina Oktaviani",
-        authorEmail: "rina@karyarasa.id",
-        avatarUrl: "/images/avatar-rina.jpg",
-        createdAt: "13 Mei 2025 pukul 11:20",
-        content: "Stand UMKM alumni juga ramai peminat. Bangga menjadi bagian dari keluarga besar MAN 3 Sleman!",
-        isVerifiedAlumni: true,
-      },
     ],
   },
   {

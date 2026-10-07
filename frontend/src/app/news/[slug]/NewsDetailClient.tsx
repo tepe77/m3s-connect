@@ -24,8 +24,50 @@ export function NewsDetailClient({ initialNews }: NewsDetailClientProps) {
   const [successMessage, setSuccessMessage] = useState("");
   const [copiedLink, setCopiedLink] = useState(false);
 
-  // Load saved commenter info from localStorage on mount
+  // Social share URL with hydration-safe initial state
+  const [shareUrl, setShareUrl] = useState(`https://m3s-connect.id/news/${news.slug}`);
+
+  // Fetch real-time live comments from backend API
+  const fetchLiveComments = async () => {
+    try {
+      const res = await fetch(`http://localhost:8000/api/v1/news/${initialNews.slug}`, {
+        cache: "no-store",
+      });
+      if (res.ok) {
+        const json = await res.json();
+        const apiData = json?.data;
+        if (apiData?.comments && Array.isArray(apiData.comments)) {
+          const liveComments: NewsComment[] = apiData.comments.map((c: any) => {
+            const d = new Date(c.created_at);
+            const formattedDate = !isNaN(d.getTime())
+              ? `${d.getDate()} ${d.toLocaleString("id-ID", { month: "long" })} ${d.getFullYear()} pukul ${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}`
+              : c.created_at;
+
+            return {
+              id: c.id,
+              authorName: c.author_name,
+              authorEmail: c.author_email,
+              authorUrl: c.author_url || undefined,
+              avatarUrl: "/images/avatar-ahmad.jpg",
+              createdAt: formattedDate,
+              content: c.content,
+              isVerifiedAlumni: Boolean(c.user_id),
+            };
+          });
+          setComments(liveComments);
+        }
+      }
+    } catch {
+      // Backend not accessible, keep current state
+    }
+  };
+
+  // Load saved commenter info from localStorage and set client URL
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      setShareUrl(window.location.href);
+    }
+
     try {
       const savedName = localStorage.getItem("m3s_comment_name");
       const savedEmail = localStorage.getItem("m3s_comment_email");
@@ -34,31 +76,25 @@ export function NewsDetailClient({ initialNews }: NewsDetailClientProps) {
       if (savedEmail) setAuthorEmail(savedEmail);
       if (savedUrl) setAuthorUrl(savedUrl);
       if (savedName || savedEmail) setSaveInfo(true);
-
-      // Check stored custom comments for this article
-      const localComments = localStorage.getItem(`m3s_comments_${initialNews.slug}`);
-      if (localComments) {
-        const parsed = JSON.parse(localComments);
-        setComments([...initialNews.comments, ...parsed]);
-      }
     } catch {
       // LocalStorage error handled gracefully
     }
-  }, [initialNews.slug, initialNews.comments]);
+
+    fetchLiveComments();
+  }, [initialNews.slug]);
 
   const handleCopyLink = () => {
     if (typeof window !== "undefined") {
-      navigator.clipboard.writeText(window.location.href);
+      navigator.clipboard.writeText(shareUrl);
       setCopiedLink(true);
       setTimeout(() => setCopiedLink(false), 3000);
     }
   };
 
-  const currentUrl = typeof window !== "undefined" ? window.location.href : `https://m3s-connect.id/news/${news.slug}`;
   const shareTitle = encodeURIComponent(news.title);
-  const encodedUrl = encodeURIComponent(currentUrl);
+  const encodedUrl = encodeURIComponent(shareUrl);
 
-  const handleSubmitComment = (e: React.FormEvent) => {
+  const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!commentText.trim() || !authorName.trim() || !authorEmail.trim()) {
       return;
@@ -66,64 +102,44 @@ export function NewsDetailClient({ initialNews }: NewsDetailClientProps) {
 
     setIsSubmitting(true);
 
-    const now = new Date();
-    const formattedDate = `${now.getDate()} ${now.toLocaleString("id-ID", { month: "long" })} ${now.getFullYear()} pukul ${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`;
+    try {
+      const res = await fetch(`http://localhost:8000/api/v1/news/${news.slug}/comments`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+        body: JSON.stringify({
+          author_name: authorName.trim(),
+          author_email: authorEmail.trim(),
+          author_url: authorUrl.trim() || undefined,
+          content: commentText.trim(),
+        }),
+      });
 
-    const newComment: NewsComment = {
-      id: "comment-" + Date.now(),
-      authorName: authorName.trim(),
-      authorEmail: authorEmail.trim(),
-      authorUrl: authorUrl.trim() || undefined,
-      avatarUrl: "/images/avatar-siti.jpg",
-      createdAt: formattedDate,
-      content: commentText.trim(),
-      isVerifiedAlumni: false,
-    };
-
-    // Try posting to Laravel backend API asynchronously
-    fetch(`http://localhost:8000/api/v1/news/${news.slug}/comments`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-      },
-      body: JSON.stringify({
-        author_name: authorName.trim(),
-        author_email: authorEmail.trim(),
-        author_url: authorUrl.trim() || undefined,
-        content: commentText.trim(),
-      }),
-    }).catch(() => {
-      // Backend request fails silently in offline/static environments
-    });
-
-    setTimeout(() => {
-      const updated = [...comments, newComment];
-      setComments(updated);
-
-      if (saveInfo) {
-        localStorage.setItem("m3s_comment_name", authorName.trim());
-        localStorage.setItem("m3s_comment_email", authorEmail.trim());
-        if (authorUrl.trim()) {
-          localStorage.setItem("m3s_comment_url", authorUrl.trim());
-        }
-      } else {
-        localStorage.removeItem("m3s_comment_name");
-        localStorage.removeItem("m3s_comment_email");
-        localStorage.removeItem("m3s_comment_url");
+      if (res.ok) {
+        await fetchLiveComments();
       }
+    } catch {
+      // Backend request fails silently in offline/static environments
+    }
 
-      // Persist user comments for this article
-      const stored = localStorage.getItem(`m3s_comments_${news.slug}`);
-      const list = stored ? JSON.parse(stored) : [];
-      list.push(newComment);
-      localStorage.setItem(`m3s_comments_${news.slug}`, JSON.stringify(list));
+    if (saveInfo) {
+      localStorage.setItem("m3s_comment_name", authorName.trim());
+      localStorage.setItem("m3s_comment_email", authorEmail.trim());
+      if (authorUrl.trim()) {
+        localStorage.setItem("m3s_comment_url", authorUrl.trim());
+      }
+    } else {
+      localStorage.removeItem("m3s_comment_name");
+      localStorage.removeItem("m3s_comment_email");
+      localStorage.removeItem("m3s_comment_url");
+    }
 
-      setCommentText("");
-      setIsSubmitting(false);
-      setSuccessMessage("Komentar Anda berhasil dipublikasikan dan menunggu moderasi lanjutan.");
-      setTimeout(() => setSuccessMessage(""), 6000);
-    }, 400);
+    setCommentText("");
+    setIsSubmitting(false);
+    setSuccessMessage("Komentar Anda berhasil dikirimkan!");
+    setTimeout(() => setSuccessMessage(""), 6000);
   };
 
   return (
