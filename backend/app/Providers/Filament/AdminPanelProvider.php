@@ -18,6 +18,9 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
+use App\Filament\Pages\Auth\Login;
+use Filament\View\PanelsRenderHook;
+
 class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
@@ -26,8 +29,18 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->login()
-            ->brandName('M3S Connect | Admin & Moderasi')
+            ->login(Login::class)
+            ->brandName('M3S Connect Admin Panel')
+            ->brandLogo(fn () => view('filament.admin.logo'))
+            ->brandLogoHeight('2.5rem')
+            ->renderHook(
+                PanelsRenderHook::HEAD_END,
+                fn () => view('filament.admin.custom-styles'),
+            )
+            ->renderHook(
+                PanelsRenderHook::AUTH_LOGIN_FORM_AFTER,
+                fn () => view('filament.admin.login-credentials-hint'),
+            )
             ->colors([
                 'primary' => Color::Teal,
             ])
