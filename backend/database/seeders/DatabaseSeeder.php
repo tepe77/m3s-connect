@@ -324,5 +324,46 @@ class DatabaseSeeder extends Seeder
                 'status' => EventStatus::PUBLISHED,
             ]
         );
+
+        // 8. Pending Alumni for Verification Testing
+        $pendingAlumni = User::firstOrCreate(
+            ['email' => 'rizky.ramadhan@alumni.m3s.id'],
+            [
+                'name' => 'Rizky Ramadhan, S.Kom.',
+                'password' => Hash::make('Password123!'),
+                'role' => UserRole::ALUMNI,
+                'status' => UserStatus::PENDING,
+            ]
+        );
+
+        AlumniProfile::firstOrCreate(
+            ['user_id' => $pendingAlumni->id],
+            [
+                'graduation_year' => 2021,
+                'graduation_class' => 'IPA 1',
+                'occupation' => 'Frontend Engineer',
+                'company' => 'PT Inovasi Digital Nusantara',
+                'current_city' => 'Sleman',
+                'current_country' => 'Indonesia',
+                'visibility' => ProfileVisibility::PUBLIC,
+            ]
+        );
+
+        // 9. Sample Spam Report for Moderation Testing
+        $sampleThread = ForumThread::first();
+        if ($sampleThread) {
+            \App\Models\Report::firstOrCreate(
+                [
+                    'reportable_type' => ForumThread::class,
+                    'reportable_id' => $sampleThread->id,
+                ],
+                [
+                    'user_id' => $alumni1->id,
+                    'reason' => 'spam',
+                    'description' => 'Terdapat indikasi pesan promosi komersial tidak berizin pada topik ini.',
+                    'status' => \App\Enums\ReportStatus::PENDING,
+                ]
+            );
+        }
     }
 }
