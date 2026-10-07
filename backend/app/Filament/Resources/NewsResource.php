@@ -2,16 +2,16 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\NewsStatus;
 use App\Filament\Resources\NewsResource\Pages;
-use App\Filament\Resources\NewsResource\RelationManagers;
 use App\Models\News;
 use Filament\Forms;
+use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Str;
 
 class NewsResource extends Resource
 {
@@ -21,36 +21,143 @@ class NewsResource extends Resource
 
     protected static ?string $navigationLabel = 'Berita & Pengumuman';
 
+    protected static ?string $modelLabel = 'Berita';
+
+    protected static ?string $pluralModelLabel = 'Berita & Pengumuman';
+
     protected static ?string $navigationIcon = 'heroicon-o-newspaper';
+
+    protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('category_id')
-                    ->relationship('category', 'name')
-                    ->required(),
-                Forms\Components\Select::make('author_id')
-                    ->relationship('author', 'name')
-                    ->required(),
-                Forms\Components\TextInput::make('title')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('slug')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\Textarea::make('excerpt')
-                    ->columnSpanFull(),
-                Forms\Components\Textarea::make('content')
-                    ->required()
-                    ->columnSpanFull(),
-                Forms\Components\FileUpload::make('cover_image')
-                    ->image(),
-                Forms\Components\TextInput::make('status')
-                    ->required()
-                    ->maxLength(255)
-                    ->default('draft'),
-                Forms\Components\DateTimePicker::make('published_at'),
+                Forms\Components\Grid::make(12)
+                    ->schema([
+                        // Left Column: Main Article Content (8 columns)
+                        Forms\Components\Group::make([
+                            Forms\Components\Section::make('Konten Utama Berita')
+                                ->schema([
+                                    Forms\Components\TextInput::make('title')
+                                        ->label('Judul Berita')
+                                        ->placeholder('Masukkan judul artikel atau pengumuman madrasah...')
+                                        ->required()
+                                        ->maxLength(255)
+                                        ->live(onBlur: true)
+                                        ->afterStateUpdated(function (string $operation, ?string $state, Forms\Set $set): void {
+                                            if ($operation === 'create' && filled($state)) {
+                                                $set('slug', Str::slug($state));
+                                            }
+                                        }),
+
+                                    Forms\Components\TextInput::make('slug')
+                                        ->label('Slug URL Berita')
+                                        ->placeholder('judul-berita-otomatis')
+                                        ->required()
+                                        ->maxLength(255)
+                                        ->unique(News::class, 'slug', ignoreRecord: true)
+                                        ->helperText('Otomatis dihasilkan dari judul dengan tanda hubung (-) sebagai pengganti spasi.')
+                                        ->suffixAction(
+                                            Action::make('generateSlug')
+                                                ->icon('heroicon-m-arrow-path')
+                                                ->tooltip('Buat ulang slug dari judul saat ini')
+                                                ->action(function (Forms\Get $get, Forms\Set $set): void {
+                                                    $title = $get('title');
+                                                    if (filled($title)) {
+                                                        $set('slug', Str::slug($title));
+                                                    }
+                                                })
+                                        ),
+
+                                    Forms\Components\RichEditor::make('content')
+                                        ->label('Isi Berita (WYSIWYG Editor)')
+                                        ->placeholder('Tuliskan naskah lengkap berita di sini... Mendukung format paragraf, heading, gambar, kutipan, dan tabel.')
+                                        ->required()
+                                        ->toolbarButtons([
+                                            'attachFiles',
+                                            'blockquote',
+                                            'bold',
+                                            'bulletList',
+                                            'codeBlock',
+                                            'h2',
+                                            'h3',
+                                            'italic',
+                                            'link',
+                                            'orderedList',
+                                            'redo',
+                                            'strike',
+                                            'underline',
+                                            'undo',
+                                        ])
+                                        ->fileAttachmentsDisk('public')
+                                        ->fileAttachmentsDirectory('news/attachments')
+                                        ->columnSpanFull(),
+
+                                    Forms\Components\Textarea::make('excerpt')
+                                        ->label('Ringkasan Singkat (Excerpt)')
+                                        ->placeholder('Ringkasan 1-2 kalimat untuk pratinjau di halaman beranda...')
+                                        ->rows(3)
+                                        ->helperText('Cuplikan paragraf pembuka yang muncul pada kartu direktori berita.')
+                                        ->columnSpanFull(),
+                                ]),
+                        ])->columnSpan(['lg' => 8]),
+
+                        // Right Column: Publishing, Meta, and Media (4 columns)
+                        Forms\Components\Group::make([
+                            Forms\Components\Section::make('Pengaturan Publikasi')
+                                ->schema([
+                                    Forms\Components\Select::make('status')
+                                        ->label('Status Berita')
+                                        ->options([
+                                            'draft' => 'Draf (Draft)',
+                                            'published' => 'Diterbitkan (Published)',
+                                            'archived' => 'Diarsipkan (Archived)',
+                                        ])
+                                        ->default('draft')
+                                        ->required(),
+
+                                    Forms\Components\DateTimePicker::make('published_at')
+                                        ->label('Waktu Publikasi')
+                                        ->default(now())
+                                        ->native(false)
+                                        ->seconds(false),
+
+                                    Forms\Components\Select::make('author_id')
+                                        ->label('Penulis / Kontributor')
+                                        ->relationship('author', 'name')
+                                        ->default(fn () => auth()->id())
+                                        ->required()
+                                        ->searchable()
+                                        ->preload(),
+                                ]),
+
+                            Forms\Components\Section::make('Kategori & Tagar')
+                                ->schema([
+                                    Forms\Components\Select::make('category_id')
+                                        ->label('Kategori Berita')
+                                        ->relationship('category', 'name')
+                                        ->required()
+                                        ->searchable()
+                                        ->preload(),
+
+                                    Forms\Components\TagsInput::make('tags')
+                                        ->label('Tagar Terkait')
+                                        ->placeholder('Ketik tagar lalu tekan enter')
+                                        ->separator(','),
+                                ]),
+
+                            Forms\Components\Section::make('Sampul Berita (Featured Image)')
+                                ->schema([
+                                    Forms\Components\FileUpload::make('cover_image')
+                                        ->label('Foto Sampul Utama')
+                                        ->image()
+                                        ->directory('news/covers')
+                                        ->imageEditor()
+                                        ->helperText('Format JPG/PNG/WebP rasio ideal 16:9.'),
+                                ]),
+                        ])->columnSpan(['lg' => 4]),
+                    ]),
             ]);
     }
 
@@ -58,51 +165,72 @@ class NewsResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id')
-                    ->label('ID'),
-                Tables\Columns\TextColumn::make('category.name'),
-                Tables\Columns\TextColumn::make('author.name'),
+                Tables\Columns\ImageColumn::make('cover_image')
+                    ->label('Sampul')
+                    ->circular(),
+
                 Tables\Columns\TextColumn::make('title')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('slug')
-                    ->searchable(),
-                Tables\Columns\ImageColumn::make('cover_image'),
-                Tables\Columns\TextColumn::make('status')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('published_at')
-                    ->dateTime()
+                    ->label('Judul Berita')
+                    ->searchable()
+                    ->sortable()
+                    ->weight('bold')
+                    ->wrap(),
+
+                Tables\Columns\TextColumn::make('category.name')
+                    ->label('Kategori')
+                    ->badge()
+                    ->color('info')
                     ->sortable(),
+
+                Tables\Columns\TextColumn::make('author.name')
+                    ->label('Penulis')
+                    ->searchable()
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('status')
+                    ->label('Status')
+                    ->badge()
+                    ->color(fn (NewsStatus|string $state): string => match ($state instanceof NewsStatus ? $state->value : $state) {
+                        'published' => 'success',
+                        'draft' => 'warning',
+                        'archived' => 'gray',
+                        default => 'gray',
+                    }),
+
+                Tables\Columns\TextColumn::make('published_at')
+                    ->label('Tgl Terbit')
+                    ->dateTime('d M Y, H:i')
+                    ->sortable(),
+
                 Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('deleted_at')
-                    ->dateTime()
+                    ->label('Dibuat')
+                    ->dateTime('d M Y')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->defaultSort('published_at', 'desc')
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('category_id')
+                    ->relationship('category', 'name')
+                    ->label('Filter Kategori'),
+
+                Tables\Filters\SelectFilter::make('status')
+                    ->label('Filter Status')
+                    ->options([
+                        'draft' => 'Draf',
+                        'published' => 'Diterbitkan',
+                        'archived' => 'Diarsipkan',
+                    ]),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
-    }
-
-    public static function getRelations(): array
-    {
-        return [
-            //
-        ];
     }
 
     public static function getPages(): array
