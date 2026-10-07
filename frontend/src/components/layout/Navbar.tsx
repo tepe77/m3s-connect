@@ -151,6 +151,17 @@ export function Navbar() {
             {currentUser ? (
               <div className="flex items-center gap-2">
                 <Link
+                  href="/messages"
+                  className="relative p-2 rounded-full hover:bg-slate-100 text-[#475569] hover:text-[#0D9488] transition-colors"
+                  title="Kotak Masuk Pesan Privat"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  </svg>
+                  <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-emerald-500" />
+                </Link>
+
+                <Link
                   href="/dashboard"
                   className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-[#0D9488] bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0D9488]"
                   title="Ruang Anggota"
@@ -255,6 +266,14 @@ export function Navbar() {
                     className="flex items-center justify-center px-4 py-2.5 text-xs font-bold text-[#0D9488] bg-emerald-50 rounded-full border border-emerald-200"
                   >
                     Ruang Anggota ({currentUser.name})
+                  </Link>
+                  <Link
+                    href="/messages"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center justify-between px-4 py-2.5 text-xs font-semibold text-[#0F172A] bg-slate-50 hover:bg-slate-100 rounded-full border border-slate-200"
+                  >
+                    <span>Pesan Masuk (Direct Messages)</span>
+                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
                   </Link>
                   <button
                     type="button"

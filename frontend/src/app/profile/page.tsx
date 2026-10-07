@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Container } from "@/components/ui/Container";
 
 interface ProfileFormData {
   name: string;
+  avatar: string;
   graduationYear: number;
   graduationClass: string;
   alumniIdentifier: string;
@@ -30,6 +31,7 @@ interface ProfileFormData {
 
 const DEFAULT_PROFILE: ProfileFormData = {
   name: "Budi Santoso, S.Kom.",
+  avatar: "/images/avatar-ahmad.jpg",
   graduationYear: 2018,
   graduationClass: "IPA 2",
   alumniIdentifier: "M3S-2018-0042",
@@ -59,6 +61,32 @@ export default function ProfileUpdatePage() {
   const [activeTab, setActiveTab] = useState<"akademik" | "karir" | "sosial" | "privasi">("akademik");
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
+  // Avatar Management states
+  const [isPresetModalOpen, setIsPresetModalOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAvatarFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Ukuran gambar maksimal adalah 5MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      setFormData((prev) => ({ ...prev, avatar: result }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSelectPresetAvatar = (avatarUrl: string) => {
+    setFormData((prev) => ({ ...prev, avatar: avatarUrl }));
+    setIsPresetModalOpen(false);
+  };
+
   // Check auth and load profile from localStorage/backend on mount
   useEffect(() => {
     try {
@@ -71,13 +99,22 @@ export default function ProfileUpdatePage() {
       setIsAuthenticated(true);
       const saved = localStorage.getItem("m3s_user_profile");
       if (saved) {
-        setFormData(JSON.parse(saved));
+        const parsed = JSON.parse(saved);
+        setFormData({
+          ...DEFAULT_PROFILE,
+          ...parsed,
+          avatar: parsed.avatar || DEFAULT_PROFILE.avatar,
+        });
       } else {
         const userStr = localStorage.getItem("m3s_user");
         if (userStr) {
           const userObj = JSON.parse(userStr);
           if (userObj.name) {
-            setFormData((prev) => ({ ...prev, name: userObj.name }));
+            setFormData((prev) => ({
+              ...prev,
+              name: userObj.name,
+              avatar: userObj.avatar || DEFAULT_PROFILE.avatar,
+            }));
           }
         }
       }
@@ -109,9 +146,17 @@ export default function ProfileUpdatePage() {
     setIsSaving(true);
     setSaveSuccess(false);
 
-    // Save to LocalStorage
+    // Save to LocalStorage & sync avatar with user session
     try {
       localStorage.setItem("m3s_user_profile", JSON.stringify(formData));
+      const userStr = localStorage.getItem("m3s_user");
+      if (userStr) {
+        const userObj = JSON.parse(userStr);
+        userObj.avatar = formData.avatar;
+        userObj.name = formData.name;
+        localStorage.setItem("m3s_user", JSON.stringify(userObj));
+        window.dispatchEvent(new Event("storage"));
+      }
     } catch {
       // LocalStorage error handled
     }
@@ -244,26 +289,60 @@ export default function ProfileUpdatePage() {
           </div>
         </div>
 
-        {/* Profile Identity Card */}
+        {/* Profile Identity Card with Avatar Management */}
         <div className="bg-white p-6 sm:p-8 rounded-3xl border border-[#E5E7EB] shadow-xs mb-8 flex flex-col md:flex-row items-center md:items-start gap-6">
-          <div className="relative shrink-0">
-            <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-emerald-50 shadow-sm bg-slate-100">
-              <Image
-                src="/images/avatar-ahmad.jpg"
-                alt={formData.name}
-                width={96}
-                height={96}
-                className="object-cover w-full h-full"
-              />
+          <div className="relative shrink-0 flex flex-col items-center gap-2.5">
+            <div className="relative">
+              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden border-4 border-emerald-100 shadow-sm bg-slate-100 relative">
+                <Image
+                  src={formData.avatar || "/images/avatar-ahmad.jpg"}
+                  alt={formData.name}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              <span
+                className="absolute bottom-1 right-1 w-6 h-6 rounded-full bg-[#10B981] border-2 border-white flex items-center justify-center text-white shadow-xs"
+                title="Alumni Terverifikasi"
+              >
+                <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+              </span>
             </div>
-            <span
-              className="absolute bottom-1 right-1 w-6 h-6 rounded-full bg-[#10B981] border-2 border-white flex items-center justify-center text-white"
-              title="Alumni Terverifikasi"
-            >
-              <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-              </svg>
-            </span>
+
+            {/* Hidden file input */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleAvatarFileChange}
+              accept="image/*"
+              className="hidden"
+            />
+
+            {/* Avatar Action Buttons */}
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="px-3 py-1.5 text-[11px] font-bold text-white bg-[#0D9488] hover:bg-[#0f766e] rounded-full shadow-2xs transition-colors flex items-center gap-1"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <span>Ubah Foto</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setIsPresetModalOpen(true)}
+                className="px-2.5 py-1.5 text-[11px] font-semibold text-[#475569] hover:text-[#0D9488] bg-slate-100 hover:bg-slate-200 rounded-full transition-colors border border-slate-200"
+                title="Pilih Avatar Preset Mayoga"
+              >
+                Preset
+              </button>
+            </div>
           </div>
 
           <div className="flex-1 text-center md:text-left space-y-2">
@@ -386,21 +465,44 @@ export default function ProfileUpdatePage() {
                 </div>
 
                 <div>
-                  <label htmlFor="graduationYear" className="block text-xs font-bold text-[#0F172A] uppercase tracking-wider mb-1.5">
-                    Tahun Kelulusan <span className="text-rose-500">*</span>
+                  <label htmlFor="graduationYear" className="block text-xs font-bold text-[#0F172A] uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                    <span>Tahun Kelulusan (Angkatan) <span className="text-rose-500">*</span></span>
+                    <span className="text-[10px] text-[#0D9488] font-semibold lowercase">30+ angkatan</span>
                   </label>
-                  <select
-                    id="graduationYear"
-                    value={formData.graduationYear}
-                    onChange={(e) => setFormData({ ...formData, graduationYear: parseInt(e.target.value) })}
-                    className="w-full px-4 py-2.5 text-sm rounded-xl border border-[#CBD5E1] bg-white focus:outline-none focus:ring-2 focus:ring-[#0D9488] text-[#0F172A]"
-                  >
-                    {Array.from({ length: 30 }, (_, i) => 2026 - i).map((yr) => (
-                      <option key={yr} value={yr}>
-                        Angkatan {yr}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    <select
+                      id="graduationYear"
+                      value={formData.graduationYear}
+                      onChange={(e) => setFormData({ ...formData, graduationYear: parseInt(e.target.value) })}
+                      className="w-full appearance-none pl-4 pr-10 py-2.5 text-xs sm:text-sm font-medium rounded-xl border border-[#CBD5E1] hover:border-[#94A3B8] bg-white focus:outline-none focus:border-[#0D9488] focus:ring-4 focus:ring-[#0D9488]/10 text-[#0F172A] shadow-2xs transition-all"
+                    >
+                      <optgroup label="Dekade 2020-an">
+                        {[2026, 2025, 2024, 2023, 2022, 2021, 2020].map((yr) => (
+                          <option key={yr} value={yr}>Angkatan {yr}</option>
+                        ))}
+                      </optgroup>
+                      <optgroup label="Dekade 2010-an">
+                        {[2019, 2018, 2017, 2016, 2015, 2014, 2013, 2012, 2011, 2010].map((yr) => (
+                          <option key={yr} value={yr}>Angkatan {yr}</option>
+                        ))}
+                      </optgroup>
+                      <optgroup label="Dekade 2000-an">
+                        {[2009, 2008, 2007, 2006, 2005, 2004, 2003, 2002, 2001, 2000].map((yr) => (
+                          <option key={yr} value={yr}>Angkatan {yr}</option>
+                        ))}
+                      </optgroup>
+                      <optgroup label="Dekade 1990-an">
+                        {[1999, 1998, 1997, 1996, 1995, 1994, 1993, 1992, 1991, 1990].map((yr) => (
+                          <option key={yr} value={yr}>Angkatan {yr}</option>
+                        ))}
+                      </optgroup>
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-[#94A3B8]">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </div>
                 </div>
 
                 <div>
@@ -421,15 +523,22 @@ export default function ProfileUpdatePage() {
                   <label htmlFor="gender" className="block text-xs font-bold text-[#0F172A] uppercase tracking-wider mb-1.5">
                     Jenis Kelamin
                   </label>
-                  <select
-                    id="gender"
-                    value={formData.gender}
-                    onChange={(e) => setFormData({ ...formData, gender: e.target.value as "male" | "female" })}
-                    className="w-full px-4 py-2.5 text-sm rounded-xl border border-[#CBD5E1] bg-white focus:outline-none focus:ring-2 focus:ring-[#0D9488] text-[#0F172A]"
-                  >
-                    <option value="male">Laki-laki</option>
-                    <option value="female">Perempuan</option>
-                  </select>
+                  <div className="relative">
+                    <select
+                      id="gender"
+                      value={formData.gender}
+                      onChange={(e) => setFormData({ ...formData, gender: e.target.value as "male" | "female" })}
+                      className="w-full appearance-none pl-4 pr-10 py-2.5 text-xs sm:text-sm font-medium rounded-xl border border-[#CBD5E1] hover:border-[#94A3B8] bg-white focus:outline-none focus:border-[#0D9488] focus:ring-4 focus:ring-[#0D9488]/10 text-[#0F172A] shadow-2xs transition-all"
+                    >
+                      <option value="male">Laki-laki</option>
+                      <option value="female">Perempuan</option>
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-[#94A3B8]">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </div>
                 </div>
 
                 <div>
@@ -695,7 +804,7 @@ export default function ProfileUpdatePage() {
               </div>
 
               <div className="space-y-4">
-                <label className="flex items-start gap-3.5 p-4 rounded-2xl border border-[#E5E7EB] hover:border-emerald-300 cursor-pointer transition-colors bg-slate-50/50">
+                <label className={`flex items-start gap-3.5 p-4 sm:p-5 rounded-2xl border cursor-pointer transition-all ${formData.visibility === "public" ? "border-[#0D9488] bg-emerald-50/40 ring-1 ring-[#0D9488] shadow-2xs" : "border-[#E2E8F0] bg-white hover:border-[#CBD5E1]"}`}>
                   <input
                     type="radio"
                     name="visibility"
@@ -705,16 +814,21 @@ export default function ProfileUpdatePage() {
                     className="mt-1 h-4 w-4 text-[#0D9488] focus:ring-[#0D9488]"
                   />
                   <div className="space-y-0.5">
-                    <span className="text-sm font-bold text-[#0F172A] block">
-                      Publik (Direkomendasikan)
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-bold text-[#0F172A]">
+                        Publik (Terbuka untuk Semua Pengunjung)
+                      </span>
+                      <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-[#0D9488]">
+                        Direkomendasikan
+                      </span>
+                    </div>
                     <span className="text-xs text-[#64748B] block leading-relaxed">
-                      Profil Anda dapat dicari dan dilihat oleh seluruh pengunjung dan alumni MAN 3 Sleman di direktori komunitas.
+                      Profil Anda beserta tautan media sosial dapat dicari dan dilihat oleh seluruh pengunjung direktori M3S Connect.
                     </span>
                   </div>
                 </label>
 
-                <label className="flex items-start gap-3.5 p-4 rounded-2xl border border-[#E5E7EB] hover:border-emerald-300 cursor-pointer transition-colors bg-slate-50/50">
+                <label className={`flex items-start gap-3.5 p-4 sm:p-5 rounded-2xl border cursor-pointer transition-all ${formData.visibility === "members" ? "border-[#0D9488] bg-emerald-50/40 ring-1 ring-[#0D9488] shadow-2xs" : "border-[#E2E8F0] bg-white hover:border-[#CBD5E1]"}`}>
                   <input
                     type="radio"
                     name="visibility"
@@ -724,16 +838,18 @@ export default function ProfileUpdatePage() {
                     className="mt-1 h-4 w-4 text-[#0D9488] focus:ring-[#0D9488]"
                   />
                   <div className="space-y-0.5">
-                    <span className="text-sm font-bold text-[#0F172A] block">
-                      Hanya Sesama Alumni Terdaftar
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-bold text-[#0F172A]">
+                        Hanya Sesama Alumni Terdaftar (Members Only)
+                      </span>
+                    </div>
                     <span className="text-xs text-[#64748B] block leading-relaxed">
-                      Profil hanya dapat dilihat oleh alumni yang telah masuk dengan akun sah yang terverifikasi.
+                      Pengunjung umum hanya melihat nama & angkatan. Tautan LinkedIn, GitHub, email, dan website hanya terbuka ketika sesama alumni telah masuk (login).
                     </span>
                   </div>
                 </label>
 
-                <label className="flex items-start gap-3.5 p-4 rounded-2xl border border-[#E5E7EB] hover:border-emerald-300 cursor-pointer transition-colors bg-slate-50/50">
+                <label className={`flex items-start gap-3.5 p-4 sm:p-5 rounded-2xl border cursor-pointer transition-all ${formData.visibility === "private" ? "border-[#0D9488] bg-emerald-50/40 ring-1 ring-[#0D9488] shadow-2xs" : "border-[#E2E8F0] bg-white hover:border-[#CBD5E1]"}`}>
                   <input
                     type="radio"
                     name="visibility"
@@ -779,6 +895,47 @@ export default function ProfileUpdatePage() {
             </div>
           </div>
         </form>
+
+        {/* Preset Avatar Modal */}
+        {isPresetModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+            <div className="bg-white w-full max-w-sm rounded-3xl border border-[#CBD5E1] shadow-2xl p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-bold text-[#0F172A]">Pilih Avatar Preset</h3>
+                <button
+                  type="button"
+                  onClick={() => setIsPresetModalOpen(false)}
+                  className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-[#475569] flex items-center justify-center text-xs"
+                >
+                  ✕
+                </button>
+              </div>
+              <p className="text-xs text-[#64748B]">
+                Pilih salah satu foto profil standar alumni MAN 3 Sleman berikut:
+              </p>
+              <div className="grid grid-cols-2 gap-3 pt-1">
+                {[
+                  { name: "Ahmad Fauzi", url: "/images/avatar-ahmad.jpg" },
+                  { name: "Siti Rahmawati", url: "/images/avatar-siti.jpg" },
+                  { name: "Rina Oktaviani", url: "/images/avatar-rina.jpg" },
+                  { name: "Kampus Mayoga", url: "/images/hero-man3-sleman.jpg" },
+                ].map((item) => (
+                  <button
+                    key={item.url}
+                    type="button"
+                    onClick={() => handleSelectPresetAvatar(item.url)}
+                    className="p-3 rounded-2xl border border-slate-200 hover:border-[#0D9488] hover:bg-emerald-50/50 flex flex-col items-center gap-2 transition-all group"
+                  >
+                    <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-slate-200 group-hover:border-[#0D9488] relative">
+                      <Image src={item.url} alt={item.name} fill className="object-cover" />
+                    </div>
+                    <span className="text-xs font-semibold text-[#0F172A]">{item.name}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </Container>
     </div>
   );

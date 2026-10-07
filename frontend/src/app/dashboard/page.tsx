@@ -184,6 +184,26 @@ export default function MemberDashboardPage() {
 
           {/* Sidebar Column */}
           <div className="space-y-6">
+            {/* Direct Messages Quick Card */}
+            <div className="bg-white p-6 rounded-2xl border border-[#E2E8F0] shadow-2xs space-y-3.5">
+              <div className="flex items-center justify-between">
+                <h2 className="text-base font-bold text-[#0F172A]">Pesan Privat</h2>
+                <Link href="/messages" className="text-xs font-semibold text-[#0D9488] hover:underline">
+                  Kotak Masuk &rarr;
+                </Link>
+              </div>
+              <p className="text-xs text-[#64748B]">
+                Terhubung dan berkirim pesan langsung secara aman dengan sesama alumni.
+              </p>
+              <Link
+                href="/messages"
+                className="w-full inline-flex items-center justify-center gap-2 py-2 px-3.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-[#0D9488] text-xs font-bold transition-colors border border-emerald-200"
+              >
+                <span>✉️</span>
+                <span>Buka Pesan Masuk</span>
+              </Link>
+            </div>
+
             {/* Upcoming Events */}
             <div className="bg-white p-6 rounded-lg border border-[#E2E8F0] space-y-4">
               <h2 className="text-base font-bold text-[#0F172A]">Kegiatan Mendatang</h2>
