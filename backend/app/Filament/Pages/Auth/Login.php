@@ -14,11 +14,11 @@ class Login extends BaseLogin
 
     public function getHeading(): string | Htmlable
     {
-        return 'Masuk ke Panel';
+        return '';
     }
 
     public function getSubheading(): string | Htmlable | null
     {
-        return 'Akses portal administrasi dan moderasi M3S Connect';
+        return null;
     }
 }

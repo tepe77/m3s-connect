@@ -37,10 +37,6 @@ class AdminPanelProvider extends PanelProvider
                 PanelsRenderHook::HEAD_END,
                 fn () => view('filament.admin.custom-styles'),
             )
-            ->renderHook(
-                PanelsRenderHook::AUTH_LOGIN_FORM_AFTER,
-                fn () => view('filament.admin.login-credentials-hint'),
-            )
             ->colors([
                 'primary' => Color::Teal,
             ])
