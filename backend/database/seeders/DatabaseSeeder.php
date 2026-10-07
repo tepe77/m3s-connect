@@ -155,42 +155,81 @@ class DatabaseSeeder extends Seeder
         $profile1->skills()->syncWithoutDetaching([$skills[0]->id, $skills[1]->id, $skills[2]->id, $skills[3]->id]);
         $profile2->skills()->syncWithoutDetaching([$skills[6]->id, $skills[7]->id]);
 
-        // 4. Forum Categories
-        $catUmum = ForumCategory::firstOrCreate(
-            ['slug' => 'diskusi-umum'],
+        // 4. Forum Categories (Synchronized with frontend portal)
+        $forumCategories = [
             [
+                'slug' => 'diskusi-umum',
                 'name' => 'Diskusi Umum',
-                'description' => 'Ruang santai bertukar kabar, kenangan masa sekolah, dan obrolan bebas antar alumni.',
-                'icon' => 'chat-bubble-left-right',
-                'image' => '/images/hero-man3-sleman.jpg',
+                'description' => 'Ruang silaturahmi santai, kabar antar angkatan, dan obrolan bebas warga Mayoga.',
+                'color' => '#0D9488',
+                'icon' => 'chat',
+                'image' => 'forum-categories/hero-man3-sleman.jpg',
                 'sort_order' => 1,
                 'is_active' => true,
-            ]
-        );
-
-        $catKarir = ForumCategory::firstOrCreate(
-            ['slug' => 'karir-dan-profesi'],
+            ],
             [
+                'slug' => 'karir-dan-profesi',
                 'name' => 'Karir & Profesi',
-                'description' => 'Informasi lowongan pekerjaan, magang, bimbingan karir, dan networking profesional.',
+                'description' => 'Lowongan kerja, info magang, review CV, dan peluang kolaborasi profesional alumni.',
+                'color' => '#2563EB',
                 'icon' => 'briefcase',
-                'image' => '/images/news-internasional.jpg',
+                'image' => 'forum-categories/news-internasional.jpg',
                 'sort_order' => 2,
                 'is_active' => true,
-            ]
-        );
-
-        $catReuni = ForumCategory::firstOrCreate(
-            ['slug' => 'kegiatan-dan-reuni'],
+            ],
             [
+                'slug' => 'kegiatan-dan-reuni',
                 'name' => 'Kegiatan & Reuni',
-                'description' => 'Agenda temu kangen, bakti sosial, dan kepanitiaan alumni.',
+                'description' => 'Agenda temu kangen akbar, bakti sosial ramadan, silaturahmi angkatan, dan kepanitiaan.',
+                'color' => '#D97706',
                 'icon' => 'calendar',
-                'image' => '/images/news-reuni.jpg',
+                'image' => 'forum-categories/news-reuni.jpg',
                 'sort_order' => 3,
                 'is_active' => true,
-            ]
-        );
+            ],
+            [
+                'slug' => 'beasiswa-dan-pendidikan',
+                'name' => 'Beasiswa & Pendidikan',
+                'description' => 'Informasi beasiswa S1/S2/S3 dalam dan luar negeri, tips seleksi, dan bimbingan studi.',
+                'color' => '#7C3AED',
+                'icon' => 'academic',
+                'image' => 'forum-categories/news-beasiswa.jpg',
+                'sort_order' => 4,
+                'is_active' => true,
+            ],
+            [
+                'slug' => 'bisnis-dan-umkm',
+                'name' => 'Bisnis & UMKM',
+                'description' => 'Etalase usaha alumni, kemitraan rantai pasok, dan sharing strategi wirausaha.',
+                'color' => '#059669',
+                'icon' => 'store',
+                'image' => 'forum-categories/news-peluncuran.jpg',
+                'sort_order' => 5,
+                'is_active' => true,
+            ],
+            [
+                'slug' => 'teknologi-dan-inovasi',
+                'name' => 'Teknologi & Digital',
+                'description' => 'Diskusi rekayasa perangkat lunak, AI, cloud computing, dan inisiatif digital madrasah.',
+                'color' => '#DC2626',
+                'icon' => 'chip',
+                'image' => 'forum-categories/doc-wisuda.jpg',
+                'sort_order' => 6,
+                'is_active' => true,
+            ],
+        ];
+
+        $categoriesMap = [];
+        foreach ($forumCategories as $categoryData) {
+            $categoriesMap[$categoryData['slug']] = ForumCategory::updateOrCreate(
+                ['slug' => $categoryData['slug']],
+                $categoryData
+            );
+        }
+
+        $catUmum = $categoriesMap['diskusi-umum'];
+        $catKarir = $categoriesMap['karir-dan-profesi'];
+        $catReuni = $categoriesMap['kegiatan-dan-reuni'];
 
         // 5. Initial Forum Threads
         $thread1 = ForumThread::firstOrCreate(

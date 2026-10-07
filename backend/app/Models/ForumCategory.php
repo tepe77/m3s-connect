@@ -30,6 +30,27 @@ class ForumCategory extends Model
         ];
     }
 
+    protected $appends = [
+        'image_url',
+    ];
+
+    public function getImageUrlAttribute(): ?string
+    {
+        if (blank($this->image)) {
+            return null;
+        }
+
+        if (str_starts_with($this->image, 'http://') || str_starts_with($this->image, 'https://')) {
+            return $this->image;
+        }
+
+        if (str_starts_with($this->image, '/images/') || str_starts_with($this->image, 'images/')) {
+            return url(ltrim($this->image, '/'));
+        }
+
+        return asset('storage/' . ltrim($this->image, '/'));
+    }
+
     public function threads(): HasMany
     {
         return $this->hasMany(ForumThread::class, 'category_id');

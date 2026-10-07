@@ -102,13 +102,17 @@ class ForumCategoryResource extends Resource
                                         ->default('chat')
                                         ->required(),
 
-                                    Forms\Components\TextInput::make('image')
-                                        ->label('URL Sampul Visual (Banner)')
-                                        ->placeholder('/images/hero-man3-sleman.jpg')
-                                        ->default('/images/hero-man3-sleman.jpg')
-                                        ->maxLength(255)
+                                    Forms\Components\FileUpload::make('image')
+                                        ->label('Sampul Visual Kategori (Banner)')
+                                        ->image()
+                                        ->imageEditor()
+                                        ->imageCropAspectRatio('16:9')
+                                        ->directory('forum-categories')
+                                        ->disk('public')
+                                        ->visibility('public')
+                                        ->maxSize(4096)
                                         ->columnSpanFull()
-                                        ->helperText('Path gambar dokumentasi madrasah di portal frontend.'),
+                                        ->helperText('Unggah berkas gambar sampul banner kategori forum (format JPG, PNG, atau WebP, maks. 4MB). Anda dapat melakukan crop dan sesuaikan rasio gambar dengan editor terintegrasi.'),
                                 ])->columns(2),
                         ])->columnSpan(['lg' => 8]),
 
@@ -140,7 +144,25 @@ class ForumCategoryResource extends Resource
             ->columns([
                 Tables\Columns\ImageColumn::make('image')
                     ->label('Sampul')
-                    ->circular(),
+                    ->circular()
+                    ->disk('public')
+                    ->defaultImageUrl(asset('images/hero-man3-sleman.jpg'))
+                    ->checkFileExistence(false)
+                    ->getStateUsing(function (ForumCategory $record): ?string {
+                        if (empty($record->image)) {
+                            return null;
+                        }
+
+                        if (str_starts_with($record->image, 'http://') || str_starts_with($record->image, 'https://')) {
+                            return $record->image;
+                        }
+
+                        if (str_starts_with($record->image, '/images/') || str_starts_with($record->image, 'images/')) {
+                            return asset(ltrim($record->image, '/'));
+                        }
+
+                        return asset('storage/' . ltrim($record->image, '/'));
+                    }),
 
                 Tables\Columns\ColorColumn::make('color')
                     ->label('Warna'),
