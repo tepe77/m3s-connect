@@ -152,8 +152,11 @@ class NewsResource extends Resource
                                     Forms\Components\FileUpload::make('cover_image')
                                         ->label('Foto Sampul Utama')
                                         ->image()
+                                        ->disk('public')
                                         ->directory('news/covers')
+                                        ->visibility('public')
                                         ->imageEditor()
+                                        ->imageCropAspectRatio('16:9')
                                         ->helperText('Format JPG/PNG/WebP rasio ideal 16:9.'),
                                 ]),
                         ])->columnSpan(['lg' => 4]),
@@ -167,7 +170,25 @@ class NewsResource extends Resource
             ->columns([
                 Tables\Columns\ImageColumn::make('cover_image')
                     ->label('Sampul')
-                    ->circular(),
+                    ->circular()
+                    ->disk('public')
+                    ->defaultImageUrl(asset('images/news-reuni.jpg'))
+                    ->checkFileExistence(false)
+                    ->getStateUsing(function (News $record): ?string {
+                        if (empty($record->cover_image)) {
+                            return null;
+                        }
+
+                        if (str_starts_with($record->cover_image, 'http://') || str_starts_with($record->cover_image, 'https://')) {
+                            return $record->cover_image;
+                        }
+
+                        if (str_starts_with($record->cover_image, '/images/') || str_starts_with($record->cover_image, 'images/')) {
+                            return asset(ltrim($record->cover_image, '/'));
+                        }
+
+                        return asset('storage/' . ltrim($record->cover_image, '/'));
+                    }),
 
                 Tables\Columns\TextColumn::make('title')
                     ->label('Judul Berita')
@@ -197,6 +218,13 @@ class NewsResource extends Resource
                         default => 'gray',
                     }),
 
+                Tables\Columns\TextColumn::make('all_comments_count')
+                    ->counts('allComments')
+                    ->label('Komentar')
+                    ->badge()
+                    ->color('gray')
+                    ->sortable(),
+
                 Tables\Columns\TextColumn::make('published_at')
                     ->label('Tgl Terbit')
                     ->dateTime('d M Y, H:i')
@@ -223,6 +251,13 @@ class NewsResource extends Resource
                     ]),
             ])
             ->actions([
+                Tables\Actions\Action::make('preview_portal')
+                    ->label('Lihat')
+                    ->icon('heroicon-m-arrow-top-right-on-square')
+                    ->color('gray')
+                    ->url(fn (News $record): string => "http://localhost:3000/news/{$record->slug}")
+                    ->openUrlInNewTab(),
+
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])
