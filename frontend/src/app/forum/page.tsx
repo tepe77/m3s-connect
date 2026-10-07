@@ -3,10 +3,25 @@
 import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import {
+  Search,
+  Plus,
+  Filter,
+  ChevronLeft,
+  ChevronRight,
+  X,
+  MessageSquare,
+  Sparkles,
+} from "lucide-react";
+
 import { Container } from "@/components/ui/Container";
 import { ForumSidebar } from "@/components/forum/ForumSidebar";
 import { TopicListRow } from "@/components/forum/TopicListRow";
 import { CategoryGridView } from "@/components/forum/CategoryGridView";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+
 import {
   FORUM_CATEGORIES,
   ForumTopic,
@@ -95,40 +110,40 @@ function ForumContent() {
   const selectedCategoryObj = FORUM_CATEGORIES.find((c) => c.slug === selectedCategorySlug);
 
   return (
-    <div className="py-6 sm:py-10 bg-[#F8FAFC]">
+    <div className="py-6 sm:py-10 bg-slate-50/50 min-h-screen">
       <Container size="wide">
         {/* Top Breadcrumb & Mobile Filter Button */}
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-          <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-[#64748B]">
-            <Link href="/" className="hover:text-[#0D9488] transition-colors">
+          <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-slate-500">
+            <Link href="/" className="hover:text-emerald-700 transition-colors">
               Beranda
             </Link>
             <span>/</span>
-            <span className="text-[#0F172A] font-semibold">Forum Komunitas</span>
+            <span className="text-slate-900 font-semibold">Forum Komunitas</span>
             {selectedCategoryObj && (
               <>
                 <span>/</span>
-                <span className="font-bold text-[#0D9488]">{selectedCategoryObj.name}</span>
+                <span className="font-bold text-emerald-700">{selectedCategoryObj.name}</span>
               </>
             )}
             {selectedTag && (
               <>
                 <span>/</span>
-                <span className="font-bold text-[#0D9488]">#{selectedTag}</span>
+                <span className="font-bold text-emerald-700">#{selectedTag}</span>
               </>
             )}
           </nav>
 
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
-            className="lg:hidden inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full bg-white border border-[#CBD5E1] text-[#0F172A]"
+            className="lg:hidden rounded-full gap-1.5 text-xs font-semibold"
           >
-            <svg className="w-4 h-4 text-[#0D9488]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.707 7.293A1 1 0 013 6.586V4z" />
-            </svg>
+            <Filter className="w-3.5 h-3.5 text-emerald-600" />
             <span>Navigasi & Kategori</span>
-          </button>
+          </Button>
         </div>
 
         {/* 2-Columns Discourse Grid */}
@@ -161,132 +176,121 @@ function ForumContent() {
           {/* Right Column: Discourse Main Topic Area (8-9 cols) */}
           <main className="lg:col-span-8 xl:col-span-9 space-y-5">
             {/* Action Bar: Discourse Filter Tabs + Search + Create Topic Button */}
-            <div className="bg-white p-4 sm:p-5 rounded-2xl border border-[#E2E8F0] shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
               {/* Discourse Tab Navigation */}
-              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                <button
+              <div className="flex flex-wrap items-center gap-1.5">
+                <Button
                   type="button"
+                  variant={activeTab === "latest" && !selectedCategorySlug && !selectedTag ? "default" : "ghost"}
+                  size="sm"
                   onClick={() => {
                     setActiveTab("latest");
                     setSelectedCategorySlug(null);
                     setSelectedTag(null);
                   }}
-                  className={`px-3.5 py-1.5 text-xs font-bold rounded-full transition-colors ${
-                    activeTab === "latest" && !selectedCategorySlug && !selectedTag
-                      ? "bg-[#0D9488] text-white shadow-2xs"
-                      : "text-[#475569] hover:bg-slate-100"
-                  }`}
+                  className="rounded-full text-xs font-bold h-8 px-4"
                 >
                   Terbaru
-                </button>
+                </Button>
 
-                <button
+                <Button
                   type="button"
+                  variant={activeTab === "categories" ? "default" : "ghost"}
+                  size="sm"
                   onClick={() => {
                     setActiveTab("categories");
                     setSelectedCategorySlug(null);
                     setSelectedTag(null);
                   }}
-                  className={`px-3.5 py-1.5 text-xs font-bold rounded-full transition-colors ${
-                    activeTab === "categories"
-                      ? "bg-[#0D9488] text-white shadow-2xs"
-                      : "text-[#475569] hover:bg-slate-100"
-                  }`}
+                  className="rounded-full text-xs font-bold h-8 px-4"
                 >
                   Kategori
-                </button>
+                </Button>
 
-                <button
+                <Button
                   type="button"
+                  variant={activeTab === "top" ? "default" : "ghost"}
+                  size="sm"
                   onClick={() => {
                     setActiveTab("top");
                     setSelectedCategorySlug(null);
                     setSelectedTag(null);
                   }}
-                  className={`px-3.5 py-1.5 text-xs font-bold rounded-full transition-colors ${
-                    activeTab === "top"
-                      ? "bg-[#0D9488] text-white shadow-2xs"
-                      : "text-[#475569] hover:bg-slate-100"
-                  }`}
+                  className="rounded-full text-xs font-bold h-8 px-4"
                 >
                   Populer (Top)
-                </button>
+                </Button>
               </div>
 
               {/* Right: Search Input + New Topic Button */}
               <div className="flex items-center gap-2.5">
                 <div className="relative flex-1 sm:w-56">
-                  <input
+                  <Input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Cari topik diskusi..."
-                    className="w-full pl-8 pr-3 py-1.5 text-xs rounded-full border border-[#CBD5E1] bg-white focus:outline-none focus:ring-2 focus:ring-[#0D9488] text-[#0F172A]"
+                    className="h-8 pl-8 pr-3 text-xs rounded-full border-slate-200 bg-white"
                   />
-                  <svg
-                    className="w-3.5 h-3.5 text-[#94A3B8] absolute left-2.5 top-1/2 -translate-y-1/2"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                    />
-                  </svg>
+                  <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
                 </div>
 
-                <Link
-                  href="/forum/new"
-                  className="inline-flex items-center justify-center min-h-[38px] px-4 py-1.5 text-xs font-bold text-white bg-[#0D9488] hover:bg-[#0f766e] rounded-full shadow-xs transition-colors shrink-0 gap-1.5"
+                <Button
+                  asChild
+                  size="sm"
+                  className="rounded-full px-4 h-8 text-xs font-bold gap-1.5 shadow-xs"
                 >
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
-                  </svg>
-                  <span>Topik Baru</span>
-                </Link>
+                  <Link href="/forum/new">
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Topik Baru</span>
+                  </Link>
+                </Button>
               </div>
             </div>
 
             {/* Active Filter Notification Bar */}
             {(selectedCategoryObj || selectedTag || searchQuery) && (
-              <div className="p-3 px-4 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-between gap-3 text-xs">
-                <div className="flex items-center gap-2 text-[#475569]">
-                  <span>Filter Aktif:</span>
+              <div className="p-2.5 px-4 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-between gap-3 text-xs">
+                <div className="flex flex-wrap items-center gap-2 text-slate-600">
+                  <span className="font-medium">Filter Aktif:</span>
                   {selectedCategoryObj && (
-                    <span className="inline-flex items-center gap-1 font-bold text-[#0F172A] bg-white px-2.5 py-0.5 rounded-full border border-slate-200">
+                    <Badge
+                      variant="outline"
+                      className="gap-1 font-bold text-slate-900 bg-white px-2 py-0.5 border-slate-200"
+                    >
                       <span
                         className="w-2 h-2 rounded-xs"
                         style={{ backgroundColor: selectedCategoryObj.color }}
                       />
-                      {selectedCategoryObj.name}
-                    </span>
+                      <span>{selectedCategoryObj.name}</span>
+                    </Badge>
                   )}
                   {selectedTag && (
-                    <span className="font-bold text-[#0D9488] bg-white px-2.5 py-0.5 rounded-full border border-slate-200">
+                    <Badge variant="emerald" className="px-2 py-0.5">
                       #{selectedTag}
-                    </span>
+                    </Badge>
                   )}
                   {searchQuery && (
-                    <span className="text-[#0F172A] italic">
+                    <span className="text-slate-900 font-medium italic">
                       &quot;{searchQuery}&quot;
                     </span>
                   )}
                 </div>
 
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="sm"
                   onClick={() => {
                     setSelectedCategorySlug(null);
                     setSelectedTag(null);
                     setSearchQuery("");
                   }}
-                  className="text-[11px] font-bold text-[#0D9488] hover:underline shrink-0"
+                  className="h-7 px-2 text-xs font-bold text-emerald-700 hover:text-emerald-800 hover:bg-emerald-50 shrink-0 gap-1"
                 >
-                  Hapus Filter
-                </button>
+                  <X className="w-3 h-3" />
+                  <span>Hapus Filter</span>
+                </Button>
               </div>
             )}
 
@@ -302,9 +306,9 @@ function ForumContent() {
               />
             ) : (
               /* Discourse Topics Table / Card Stream */
-              <div className="bg-white rounded-2xl border border-[#E2E8F0] shadow-xs overflow-hidden">
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
                 {/* Discourse Table Header */}
-                <div className="px-5 py-3 bg-slate-50/80 border-b border-[#E2E8F0] flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-[#94A3B8]">
+                <div className="px-5 py-3 bg-slate-50/80 border-b border-slate-200 flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-slate-400">
                   <span>Topik Diskusi</span>
                   <div className="flex items-center gap-6 font-mono">
                     <span className="hidden md:inline">Peserta</span>
@@ -316,22 +320,19 @@ function ForumContent() {
 
                 {filteredTopics.length === 0 ? (
                   <div className="p-12 text-center space-y-3">
-                    <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                      </svg>
+                    <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
+                      <MessageSquare className="w-6 h-6" />
                     </div>
-                    <h4 className="text-sm font-bold text-[#0F172A]">Tidak ada topik ditemukan</h4>
-                    <p className="text-xs text-[#64748B] max-w-sm mx-auto">
+                    <h4 className="text-sm font-bold text-slate-900">Tidak ada topik ditemukan</h4>
+                    <p className="text-xs text-slate-500 max-w-sm mx-auto">
                       Belum ada topik diskusi yang cocok dengan filter atau kata kunci pencarian Anda.
                     </p>
                     <div className="pt-2">
-                      <Link
-                        href="/forum/new"
-                        className="inline-flex items-center justify-center px-4 py-2 text-xs font-bold text-white bg-[#0D9488] rounded-full shadow-xs hover:bg-[#0f766e] transition-colors"
-                      >
-                        Mulai Topik Pertama
-                      </Link>
+                      <Button asChild size="sm" className="rounded-full px-5">
+                        <Link href="/forum/new">
+                          Mulai Topik Pertama
+                        </Link>
+                      </Button>
                     </div>
                   </div>
                 ) : (
@@ -352,49 +353,53 @@ function ForumContent() {
                     ))}
 
                     {/* Pagination Bar */}
-                    <div className="px-5 py-4 bg-slate-50/70 border-t border-[#E2E8F0] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs text-[#64748B]">
+                    <div className="px-5 py-3.5 bg-slate-50/70 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs text-slate-500">
                       <div>
-                        Menampilkan <span className="font-semibold text-[#0F172A]">{startItemIndex}</span> -{" "}
-                        <span className="font-semibold text-[#0F172A]">{endItemIndex}</span> dari{" "}
-                        <span className="font-semibold text-[#0F172A]">{filteredTopics.length}</span> topik
+                        Menampilkan <span className="font-semibold text-slate-900">{startItemIndex}</span> -{" "}
+                        <span className="font-semibold text-slate-900">{endItemIndex}</span> dari{" "}
+                        <span className="font-semibold text-slate-900">{filteredTopics.length}</span> topik
                       </div>
 
                       {totalPages > 1 && (
                         <div className="flex items-center gap-1.5 self-center sm:self-auto">
-                          <button
+                          <Button
                             type="button"
+                            variant="outline"
+                            size="sm"
                             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                             disabled={currentPage === 1}
-                            className="px-3 py-1.5 rounded-lg border border-[#CBD5E1] bg-white font-medium text-[#0F172A] hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                            className="h-8 px-2.5 rounded-lg text-xs"
                             aria-label="Halaman Sebelumnya"
                           >
-                            &larr; Prev
-                          </button>
+                            <ChevronLeft className="w-3.5 h-3.5 mr-0.5" />
+                            <span>Prev</span>
+                          </Button>
 
                           {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((pageNum) => (
-                            <button
+                            <Button
                               key={pageNum}
                               type="button"
+                              variant={currentPage === pageNum ? "default" : "outline"}
+                              size="sm"
                               onClick={() => setCurrentPage(pageNum)}
-                              className={`min-w-[32px] h-8 px-2 rounded-lg text-xs font-bold transition-colors ${
-                                currentPage === pageNum
-                                  ? "bg-[#0D9488] text-white shadow-2xs"
-                                  : "bg-white border border-[#CBD5E1] text-[#0F172A] hover:bg-slate-100"
-                              }`}
+                              className="h-8 w-8 p-0 rounded-lg text-xs font-bold"
                             >
                               {pageNum}
-                            </button>
+                            </Button>
                           ))}
 
-                          <button
+                          <Button
                             type="button"
+                            variant="outline"
+                            size="sm"
                             onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                             disabled={currentPage === totalPages}
-                            className="px-3 py-1.5 rounded-lg border border-[#CBD5E1] bg-white font-medium text-[#0F172A] hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                            className="h-8 px-2.5 rounded-lg text-xs"
                             aria-label="Halaman Berikutnya"
                           >
-                            Next &rarr;
-                          </button>
+                            <span>Next</span>
+                            <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
+                          </Button>
                         </div>
                       )}
                     </div>
@@ -411,7 +416,7 @@ function ForumContent() {
 
 export default function ForumPage() {
   return (
-    <Suspense fallback={<div className="py-20 text-center text-xs text-[#64748B]">Memuat forum komunitas...</div>}>
+    <Suspense fallback={<div className="py-20 text-center text-xs text-slate-500">Memuat forum komunitas...</div>}>
       <ForumContent />
     </Suspense>
   );

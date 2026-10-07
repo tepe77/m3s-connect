@@ -3,8 +3,41 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect, useRef } from "react";
+import {
+  Bold,
+  Italic,
+  Quote,
+  Code,
+  Smile,
+  Link as LinkIcon,
+  Image as ImageIcon,
+  Video as VideoIcon,
+  Upload,
+  Send,
+  Lock,
+  MessageSquare,
+  X,
+  Sparkles,
+} from "lucide-react";
+
 import { ForumAuthor } from "@/data/forumData";
 import { RichContentRenderer } from "./RichContentRenderer";
+
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface ReplyComposerProps {
   isLocked: boolean;
@@ -21,17 +54,17 @@ export function ReplyComposer({
 }: ReplyComposerProps) {
   const [currentUser, setCurrentUser] = useState<ForumAuthor | null>(null);
   const [replyText, setReplyText] = useState("");
-  const [activeMode, setActiveMode] = useState<"write" | "preview">("write");
+  const [activeTab, setActiveTab] = useState<string>("write");
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Media Tool Dialog States
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [showLinkModal, setShowLinkModal] = useState(false);
-  const [showImageModal, setShowImageModal] = useState(false);
-  const [showVideoModal, setShowVideoModal] = useState(false);
+  // Dialog States
+  const [isEmojiOpen, setIsEmojiOpen] = useState(false);
+  const [isLinkDialogOpen, setIsLinkDialogOpen] = useState(false);
+  const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
+  const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false);
 
-  // Form Inputs for Modals
+  // Dialog Inputs
   const [linkText, setLinkText] = useState("");
   const [linkUrl, setLinkUrl] = useState("");
   const [imageCaption, setImageCaption] = useState("");
@@ -41,7 +74,7 @@ export function ReplyComposer({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const POPULAR_EMOJIS = [
-    "👍", "❤️", "🎉", "🔥", "👏", "🤝", "🎓", "🚀", "💡", "😊", "🙌", "✨", "☕", "🌟", "📚"
+    "👍", "❤️", "🎉", "🔥", "👏", "🤝", "🎓", "🚀", "💡", "😊", "🙌", "✨", "☕", "🌟", "📚", "💯"
   ];
 
   useEffect(() => {
@@ -53,7 +86,7 @@ export function ReplyComposer({
         setCurrentUser({
           id: u.id || "user-current",
           name: u.name || "Alumni Terdaftar",
-          avatar: "/images/avatar-ahmad.jpg",
+          avatar: u.avatar || "/images/avatar-ahmad.jpg",
           role: u.role || "alumni",
           graduationYear: 2018,
           occupation: "Alumni Terverifikasi",
@@ -66,8 +99,8 @@ export function ReplyComposer({
     }
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (!replyText.trim()) return;
 
     setSubmitting(true);
@@ -82,13 +115,13 @@ export function ReplyComposer({
 
       if (success) {
         setReplyText("");
-        setActiveMode("write");
+        setActiveTab("write");
         if (onClearTarget) onClearTarget();
       } else {
         setErrorMessage("Gagal mengirimkan balasan. Silakan coba sesaat lagi.");
       }
     } catch {
-      setErrorMessage("Terjadi kesalahan koneksi server.");
+      setErrorMessage("Terjadi gangguan koneksi ke server.");
     } finally {
       setSubmitting(false);
     }
@@ -100,6 +133,7 @@ export function ReplyComposer({
 
   const insertEmoji = (emoji: string) => {
     setReplyText((prev) => `${prev} ${emoji} `);
+    setIsEmojiOpen(false);
   };
 
   const handleInsertLink = (e: React.FormEvent) => {
@@ -109,7 +143,7 @@ export function ReplyComposer({
     setReplyText((prev) => `${prev} [${title}](${linkUrl.trim()}) `);
     setLinkText("");
     setLinkUrl("");
-    setShowLinkModal(false);
+    setIsLinkDialogOpen(false);
   };
 
   const handleInsertImage = (e: React.FormEvent) => {
@@ -119,7 +153,7 @@ export function ReplyComposer({
     setReplyText((prev) => `${prev}\n\n![${caption}](${imageUrl.trim()})\n\n`);
     setImageCaption("");
     setImageUrl("");
-    setShowImageModal(false);
+    setIsImageDialogOpen(false);
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -149,302 +183,360 @@ export function ReplyComposer({
     if (!videoUrl.trim()) return;
     setReplyText((prev) => `${prev}\n\n[video: ${videoUrl.trim()}]\n\n`);
     setVideoUrl("");
-    setShowVideoModal(false);
+    setIsVideoDialogOpen(false);
   };
 
   // Case 1: Topic is locked
   if (isLocked) {
     return (
-      <div className="p-6 rounded-3xl bg-slate-100 border border-slate-200 text-center space-y-2">
-        <div className="w-10 h-10 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center mx-auto">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-          </svg>
+      <Card className="bg-slate-50 border-slate-200 text-center p-6 sm:p-8">
+        <div className="w-12 h-12 rounded-2xl bg-slate-200 text-slate-600 flex items-center justify-center mx-auto mb-3">
+          <Lock className="w-6 h-6" />
         </div>
-        <h4 className="text-sm font-bold text-[#0F172A]">Topik Ini Telah Dikunci</h4>
-        <p className="text-xs text-[#64748B]">
-          Moderator telah mengunci topik ini. Balasan baru tidak lagi diterima untuk menjaga arsip diskusi.
+        <h4 className="text-base font-extrabold text-[#0F172A]">Topik Ini Telah Dikunci</h4>
+        <p className="text-xs text-[#64748B] max-w-md mx-auto mt-1">
+          Moderator telah mengunci topik diskusi ini. Balasan baru tidak lagi diterima untuk menjaga integritas arsip madrasah.
         </p>
-      </div>
+      </Card>
     );
   }
 
-  // Case 2: User is not authenticated
+  // Case 2: User is not logged in
   if (!currentUser) {
     return (
-      <div className="p-6 sm:p-8 rounded-3xl bg-emerald-50/60 border border-emerald-200 text-center space-y-3">
-        <div className="w-12 h-12 rounded-2xl bg-white text-[#0D9488] shadow-2xs border border-emerald-100 flex items-center justify-center mx-auto">
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-          </svg>
+      <Card className="bg-gradient-to-r from-emerald-50/60 via-teal-50/40 to-white border-emerald-200 p-6 sm:p-8 text-center space-y-3">
+        <div className="w-12 h-12 rounded-2xl bg-white text-[#0D9488] shadow-xs border border-emerald-100 flex items-center justify-center mx-auto">
+          <MessageSquare className="w-6 h-6" />
         </div>
         <div className="space-y-1">
           <h4 className="text-base font-extrabold text-[#0F172A]">
-            Bergabung dalam Percakapan
+            Bergabung dalam Percakapan Topik Ini
           </h4>
           <p className="text-xs text-[#065F46] max-w-md mx-auto leading-relaxed">
-            Hanya anggota alumni terdaftar yang dapat membalas dan mengirimkan opini di forum ini. Masuk dengan akun Anda untuk berkontribusi.
+            Hanya sesama anggota alumni terdaftar yang dapat membalas dan mengirimkan opini di forum ini. Silakan masuk untuk berkontribusi.
           </p>
         </div>
         <div className="pt-2">
-          <Link
-            href="/login"
-            className="inline-flex items-center justify-center min-h-[42px] px-6 py-2 text-xs font-bold text-white bg-[#0D9488] hover:bg-[#0f766e] rounded-full shadow-xs transition-colors gap-1.5"
-          >
-            <span>Masuk untuk Menulis Balasan</span>
-            <span>&rarr;</span>
-          </Link>
+          <Button asChild size="lg" className="rounded-full px-7 shadow-xs">
+            <Link href="/login">
+              Masuk untuk Menulis Balasan &rarr;
+            </Link>
+          </Button>
         </div>
-      </div>
+      </Card>
     );
   }
 
-  // Case 3: Authenticated user ready to compose
+  // Case 3: Logged in composer
   return (
-    <div className="p-6 sm:p-8 rounded-3xl bg-white border border-[#E2E8F0] shadow-xs space-y-4">
-      {/* Current author bar & Reply target badge */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2.5">
-          <div className="relative w-8 h-8 rounded-full overflow-hidden bg-slate-200 ring-2 ring-emerald-50">
-            <Image
-              src={currentUser.avatar}
-              alt={currentUser.name}
-              fill
-              sizes="32px"
-              className="object-cover"
-            />
-          </div>
-          <div>
-            <span className="text-xs font-bold text-[#0F172A] block leading-tight">
-              {currentUser.name}
-            </span>
-            <span className="text-[10px] text-[#0D9488] font-medium">
-              Menulis Balasan Baru
-            </span>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {replyTarget && (
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-xs font-semibold text-[#334155] border border-slate-200">
-              <span>Membalas @{replyTarget.author.name}</span>
-              <button
-                type="button"
-                onClick={onClearTarget}
-                title="Batal membalas kutipan spesifik"
-                className="text-[#94A3B8] hover:text-[#0F172A]"
-              >
-                &times;
-              </button>
+    <Card className="bg-white border-[#E2E8F0] shadow-sm overflow-hidden">
+      <CardContent className="p-5 sm:p-7 space-y-4">
+        {/* Header Bar: Author Info, Replying Badge, and Mode Tabs */}
+        <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
+          <div className="flex items-center gap-3">
+            <div className="relative w-9 h-9 rounded-full overflow-hidden bg-slate-100 ring-2 ring-emerald-100 shrink-0">
+              <Image
+                src={currentUser.avatar}
+                alt={currentUser.name}
+                fill
+                sizes="36px"
+                className="object-cover"
+              />
             </div>
-          )}
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-[#0F172A] block leading-tight">
+                  {currentUser.name}
+                </span>
+                <Badge variant="emerald" className="text-[9px] py-0 px-1.5">
+                  Alumni Terverifikasi
+                </Badge>
+              </div>
+              <span className="text-[11px] text-[#64748B]">
+                Menulis tanggapan diskusi
+              </span>
+            </div>
+          </div>
 
-          {/* Toggle Write / Live Preview */}
-          <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-full text-xs">
-            <button
-              type="button"
-              onClick={() => setActiveMode("write")}
-              className={`px-3 py-1 rounded-full font-bold transition-colors ${
-                activeMode === "write"
-                  ? "bg-white text-[#0F172A] shadow-2xs"
-                  : "text-[#64748B] hover:text-[#0F172A]"
-              }`}
-            >
-              Tulis
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveMode("preview")}
-              className={`px-3 py-1 rounded-full font-bold transition-colors ${
-                activeMode === "preview"
-                  ? "bg-white text-[#0F172A] shadow-2xs"
-                  : "text-[#64748B] hover:text-[#0F172A]"
-              }`}
-            >
-              Pratinjau
-            </button>
+          <div className="flex items-center gap-2.5">
+            {replyTarget && (
+              <Badge variant="secondary" className="gap-1.5 py-1 px-3 text-xs bg-slate-100 hover:bg-slate-200 transition-colors">
+                <span>Membalas @{replyTarget.author.name}</span>
+                <button
+                  type="button"
+                  onClick={onClearTarget}
+                  title="Batal membalas kutipan spesifik"
+                  className="hover:text-rose-600 transition-colors"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </Badge>
+            )}
+
+            {/* Shadcn Tabs for Write vs Preview */}
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="bg-slate-100">
+                <TabsTrigger value="write">Tulis</TabsTrigger>
+                <TabsTrigger value="preview">Pratinjau</TabsTrigger>
+              </TabsList>
+            </Tabs>
           </div>
         </div>
-      </div>
 
-      {errorMessage && (
-        <div className="p-3 rounded-xl bg-rose-50 text-rose-700 text-xs font-medium border border-rose-200">
-          {errorMessage}
-        </div>
-      )}
+        {errorMessage && (
+          <div className="p-3 rounded-xl bg-rose-50 text-rose-700 text-xs font-medium border border-rose-200">
+            {errorMessage}
+          </div>
+        )}
 
-      {/* Media & Formatting Toolbar */}
-      <div className="flex flex-wrap items-center gap-1 p-1 bg-slate-50 border border-slate-200 rounded-xl text-xs">
-        {/* Markdown Tools */}
-        <button
-          type="button"
-          onClick={() => insertFormatting("**", "**")}
-          className="px-2.5 py-1 rounded-lg font-bold hover:bg-white text-[#475569] transition-colors"
-          title="Tebal (Bold)"
-        >
-          B
-        </button>
-        <button
-          type="button"
-          onClick={() => insertFormatting("*", "*")}
-          className="px-2.5 py-1 rounded-lg italic hover:bg-white text-[#475569] transition-colors"
-          title="Miring (Italic)"
-        >
-          I
-        </button>
-        <button
-          type="button"
-          onClick={() => insertFormatting("> ")}
-          className="px-2.5 py-1 rounded-lg hover:bg-white text-[#475569] transition-colors"
-          title="Kutipan (Quote)"
-        >
-          &ldquo;&rdquo;
-        </button>
-        <button
-          type="button"
-          onClick={() => insertFormatting("`", "`")}
-          className="px-2.5 py-1 rounded-lg font-mono hover:bg-white text-[#475569] transition-colors"
-          title="Kode (Inline Code)"
-        >
-          &lt;/&gt;
-        </button>
-
-        <span className="w-px h-4 bg-slate-200 mx-1" />
-
-        {/* Emoji Tool */}
-        <button
-          type="button"
-          onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-          className={`px-2.5 py-1 rounded-lg hover:bg-white transition-colors flex items-center gap-1 font-semibold ${
-            showEmojiPicker ? "bg-white text-[#0D9488]" : "text-[#475569]"
-          }`}
-          title="Pilih Emoji"
-        >
-          <span>😊</span>
-          <span>Emoji</span>
-        </button>
-
-        {/* Link Tool */}
-        <button
-          type="button"
-          onClick={() => setShowLinkModal(true)}
-          className="px-2.5 py-1 rounded-lg hover:bg-white text-[#475569] transition-colors flex items-center gap-1 font-semibold"
-          title="Sisipkan Tautan"
-        >
-          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-          </svg>
-          <span>Tautan</span>
-        </button>
-
-        {/* Photo Upload Tool */}
-        <button
-          type="button"
-          onClick={() => setShowImageModal(true)}
-          className="px-2.5 py-1 rounded-lg hover:bg-white text-[#475569] transition-colors flex items-center gap-1 font-semibold"
-          title="Unggah atau Sisipkan Foto"
-        >
-          <svg className="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
-          <span>Foto</span>
-        </button>
-
-        {/* Video Tool */}
-        <button
-          type="button"
-          onClick={() => setShowVideoModal(true)}
-          className="px-2.5 py-1 rounded-lg hover:bg-white text-[#475569] transition-colors flex items-center gap-1 font-semibold"
-          title="Sisipkan Video YouTube atau MP4"
-        >
-          <svg className="w-3.5 h-3.5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-          </svg>
-          <span>Video</span>
-        </button>
-      </div>
-
-      {/* Emoji Picker Dropdown Bar */}
-      {showEmojiPicker && (
-        <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-2xl flex flex-wrap items-center gap-1.5 shadow-xs">
-          <span className="text-[11px] font-bold text-[#64748B] mr-1">Pilih Emoji:</span>
-          {POPULAR_EMOJIS.map((emoji) => (
-            <button
-              key={emoji}
-              type="button"
-              onClick={() => insertEmoji(emoji)}
-              className="w-8 h-8 rounded-lg hover:bg-white text-base flex items-center justify-center transition-all hover:scale-110"
-            >
-              {emoji}
-            </button>
-          ))}
-          <button
+        {/* Toolbar: Markdown Formatters, Emoji, Link, Image, Video */}
+        <div className="flex flex-wrap items-center gap-1.5 p-1.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
+          <Button
             type="button"
-            onClick={() => setShowEmojiPicker(false)}
-            className="text-[11px] font-bold text-[#94A3B8] hover:text-[#0F172A] ml-auto px-2"
+            variant="ghost"
+            size="sm"
+            onClick={() => insertFormatting("**", "**")}
+            className="h-7 px-2 font-black text-slate-700"
+            title="Tebal (Bold)"
           >
-            Tutup
-          </button>
-        </div>
-      )}
+            <Bold className="w-3.5 h-3.5" />
+          </Button>
 
-      {/* Modal: Sisipkan Tautan */}
-      {showLinkModal && (
-        <div className="p-4 bg-emerald-50/70 border border-emerald-200 rounded-2xl space-y-3">
-          <div className="flex items-center justify-between">
-            <h5 className="text-xs font-bold text-[#0F172A]">Sisipkan Tautan Web</h5>
-            <button
-              type="button"
-              onClick={() => setShowLinkModal(false)}
-              className="text-xs text-[#64748B] hover:text-[#0F172A]"
-            >
-              Batal
-            </button>
-          </div>
-          <form onSubmit={handleInsertLink} className="space-y-2">
-            <input
-              type="text"
-              value={linkText}
-              onChange={(e) => setLinkText(e.target.value)}
-              placeholder="Teks tautan (opsional, contoh: Web Resmi Madrasah)"
-              className="w-full px-3 py-1.5 text-xs rounded-xl border border-[#CBD5E1] bg-white"
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => insertFormatting("*", "*")}
+            className="h-7 px-2 italic text-slate-700"
+            title="Miring (Italic)"
+          >
+            <Italic className="w-3.5 h-3.5" />
+          </Button>
+
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => insertFormatting("> ")}
+            className="h-7 px-2 text-slate-700"
+            title="Kutipan (Quote)"
+          >
+            <Quote className="w-3.5 h-3.5" />
+          </Button>
+
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => insertFormatting("`", "`")}
+            className="h-7 px-2 font-mono text-slate-700"
+            title="Inline Code"
+          >
+            <Code className="w-3.5 h-3.5" />
+          </Button>
+
+          <div className="w-px h-4 bg-slate-200 mx-1" />
+
+          {/* Emoji Popover */}
+          <Popover open={isEmojiOpen} onOpenChange={setIsEmojiOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-7 px-2.5 gap-1 text-slate-700 hover:text-[#0D9488]"
+              >
+                <Smile className="w-3.5 h-3.5 text-amber-500" />
+                <span>Emoji</span>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="start" className="w-72 p-3">
+              <div className="space-y-2">
+                <span className="text-[11px] font-bold text-[#64748B] block">
+                  Pilih Emoji Cepat
+                </span>
+                <div className="grid grid-cols-8 gap-1">
+                  {POPULAR_EMOJIS.map((emoji) => (
+                    <button
+                      key={emoji}
+                      type="button"
+                      onClick={() => insertEmoji(emoji)}
+                      className="h-7 w-7 rounded-lg hover:bg-slate-100 text-base flex items-center justify-center transition-transform hover:scale-110"
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
+
+          {/* Link Dialog Trigger */}
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsLinkDialogOpen(true)}
+            className="h-7 px-2.5 gap-1 text-slate-700 hover:text-[#0D9488]"
+          >
+            <LinkIcon className="w-3.5 h-3.5 text-blue-500" />
+            <span>Tautan</span>
+          </Button>
+
+          {/* Photo Dialog Trigger */}
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsImageDialogOpen(true)}
+            className="h-7 px-2.5 gap-1 text-slate-700 hover:text-[#0D9488]"
+          >
+            <ImageIcon className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Foto</span>
+          </Button>
+
+          {/* Video Dialog Trigger */}
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsVideoDialogOpen(true)}
+            className="h-7 px-2.5 gap-1 text-slate-700 hover:text-[#0D9488]"
+          >
+            <VideoIcon className="w-3.5 h-3.5 text-rose-500" />
+            <span>Video</span>
+          </Button>
+        </div>
+
+        {/* Editor Area / Preview Area */}
+        {activeTab === "write" ? (
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <Textarea
+              rows={4}
+              value={replyText}
+              onChange={(e) => setReplyText(e.target.value)}
+              placeholder="Tuliskan pandangan, ide, atau tanggapan Anda di sini... Mendukung Markdown, gambar, dan emoji."
+              className="min-h-[140px] text-xs sm:text-sm resize-y rounded-2xl border-[#CBD5E1] p-4 focus-visible:ring-[#0D9488]/25 focus-visible:border-[#0D9488]"
             />
-            <div className="flex gap-2">
-              <input
+
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+              <div className="flex items-center gap-1.5 text-[11px] text-[#94A3B8]">
+                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                <span>Tekan Shift+Enter untuk baris baru</span>
+              </div>
+
+              <Button
+                type="submit"
+                disabled={submitting || !replyText.trim()}
+                className="rounded-full px-6 gap-2 shadow-xs"
+              >
+                {submitting ? (
+                  <span>Mengirimkan...</span>
+                ) : (
+                  <>
+                    <span>Kirim Balasan</span>
+                    <Send className="w-3.5 h-3.5" />
+                  </>
+                )}
+              </Button>
+            </div>
+          </form>
+        ) : (
+          <div className="space-y-3">
+            <div className="p-5 rounded-2xl border border-slate-200 bg-slate-50/70 min-h-[140px]">
+              {replyText.trim() ? (
+                <RichContentRenderer content={replyText} />
+              ) : (
+                <p className="text-xs text-[#94A3B8] italic">
+                  Belum ada konten balasan untuk ditampilkan pada pratinjau.
+                </p>
+              )}
+            </div>
+
+            <div className="flex items-center justify-between pt-1">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setActiveTab("write")}
+                className="rounded-full"
+              >
+                &larr; Kembali Menulis
+              </Button>
+
+              <Button
+                type="button"
+                onClick={() => handleSubmit()}
+                disabled={submitting || !replyText.trim()}
+                className="rounded-full px-6 gap-2 shadow-xs"
+              >
+                {submitting ? "Mengirimkan..." : "Kirim Balasan"}
+                <Send className="w-3.5 h-3.5" />
+              </Button>
+            </div>
+          </div>
+        )}
+      </CardContent>
+
+      {/* Modal 1: Sisipkan Tautan */}
+      <Dialog open={isLinkDialogOpen} onOpenChange={setIsLinkDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Sisipkan Tautan Web</DialogTitle>
+            <DialogDescription>
+              Tautan akan diformat sebagai hyperlink markdown yang dapat diklik oleh pembaca.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleInsertLink} className="space-y-3 pt-2">
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-[#0F172A]">Teks Tautan (Opsional)</label>
+              <Input
+                type="text"
+                value={linkText}
+                onChange={(e) => setLinkText(e.target.value)}
+                placeholder="Contoh: Website Resmi Alumni MAN 3 Sleman"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-[#0F172A]">URL Tujuan</label>
+              <Input
                 type="url"
                 required
                 value={linkUrl}
                 onChange={(e) => setLinkUrl(e.target.value)}
                 placeholder="https://contoh-link.com"
-                className="flex-1 px-3 py-1.5 text-xs rounded-xl border border-[#CBD5E1] bg-white"
               />
-              <button
-                type="submit"
-                className="px-4 py-1.5 text-xs font-bold text-white bg-[#0D9488] rounded-xl hover:bg-[#0f766e]"
-              >
-                Sisipkan
-              </button>
             </div>
+
+            <DialogFooter className="pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsLinkDialogOpen(false)}
+              >
+                Batal
+              </Button>
+              <Button type="submit">
+                Sisipkan Tautan
+              </Button>
+            </DialogFooter>
           </form>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
 
-      {/* Modal: Unggah / Sisipkan Foto */}
-      {showImageModal && (
-        <div className="p-4 bg-emerald-50/70 border border-emerald-200 rounded-2xl space-y-3">
-          <div className="flex items-center justify-between">
-            <h5 className="text-xs font-bold text-[#0F172A]">Unggah atau Sisipkan Foto</h5>
-            <button
-              type="button"
-              onClick={() => setShowImageModal(false)}
-              className="text-xs text-[#64748B] hover:text-[#0F172A]"
-            >
-              Batal
-            </button>
-          </div>
+      {/* Modal 2: Unggah / Sisipkan Foto */}
+      <Dialog open={isImageDialogOpen} onOpenChange={setIsImageDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Unggah atau Sisipkan Foto</DialogTitle>
+            <DialogDescription>
+              Sertakan foto dokumentasi kegiatan atau ilustrasi untuk memperkaya diskusi.
+            </DialogDescription>
+          </DialogHeader>
 
-          <form onSubmit={handleInsertImage} className="space-y-3">
-            {/* Local Upload */}
+          <form onSubmit={handleInsertImage} className="space-y-3 pt-2">
             <div>
               <input
                 type="file"
@@ -453,180 +545,134 @@ export function ReplyComposer({
                 onChange={handleFileUpload}
                 className="hidden"
               />
-              <button
+              <Button
                 type="button"
+                variant="outline"
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full py-2.5 px-4 rounded-xl border border-dashed border-[#0D9488] bg-white text-xs font-bold text-[#0D9488] hover:bg-emerald-50 transition-colors flex items-center justify-center gap-1.5"
+                className="w-full h-11 border-dashed border-[#0D9488] text-[#0D9488] bg-emerald-50/30 hover:bg-emerald-50 hover:text-[#0D9488] gap-2 rounded-2xl"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                </svg>
-                <span>Pilih Foto dari Perangkat Anda</span>
-              </button>
-            </div>
-
-            {/* Preset Samples */}
-            <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
-              <span className="text-[#64748B]">Atau pilih dokumentasi:</span>
-              <button
-                type="button"
-                onClick={() => {
-                  setImageUrl("/images/hero-man3-sleman.jpg");
-                  setImageCaption("Gedung Kampus MAN 3 Sleman");
-                }}
-                className="px-2 py-0.5 rounded-md bg-white border border-slate-200 hover:border-[#0D9488]"
-              >
-                Kampus Mayoga
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setImageUrl("/images/doc-wisuda.jpg");
-                  setImageCaption("Pelepasan Alumni");
-                }}
-                className="px-2 py-0.5 rounded-md bg-white border border-slate-200 hover:border-[#0D9488]"
-              >
-                Wisuda Alumni
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setImageUrl("/images/doc-baksos.jpg");
-                  setImageCaption("Bakti Sosial Ramadhan");
-                }}
-                className="px-2 py-0.5 rounded-md bg-white border border-slate-200 hover:border-[#0D9488]"
-              >
-                Bakti Sosial
-              </button>
+                <Upload className="w-4 h-4" />
+                <span>Pilih Foto dari Perangkat</span>
+              </Button>
             </div>
 
             <div className="space-y-1.5">
-              <input
+              <span className="text-[11px] font-semibold text-[#64748B] block">Atau pilih dokumentasi:</span>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setImageUrl("/images/hero-man3-sleman.jpg");
+                    setImageCaption("Gedung Kampus MAN 3 Sleman");
+                  }}
+                  className="h-6 text-[10px] px-2 rounded-md"
+                >
+                  Kampus Mayoga
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setImageUrl("/images/doc-wisuda.jpg");
+                    setImageCaption("Pelepasan Alumni");
+                  }}
+                  className="h-6 text-[10px] px-2 rounded-md"
+                >
+                  Wisuda Alumni
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setImageUrl("/images/doc-baksos.jpg");
+                    setImageCaption("Bakti Sosial Ramadhan");
+                  }}
+                  className="h-6 text-[10px] px-2 rounded-md"
+                >
+                  Bakti Sosial
+                </Button>
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-[#0F172A]">Keterangan Foto (Caption)</label>
+              <Input
                 type="text"
                 value={imageCaption}
                 onChange={(e) => setImageCaption(e.target.value)}
-                placeholder="Keterangan / Caption foto"
-                className="w-full px-3 py-1.5 text-xs rounded-xl border border-[#CBD5E1] bg-white"
+                placeholder="Contoh: Suasana Reuni Akbar 2026"
               />
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  required
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  placeholder="URL Foto atau hasil upload"
-                  className="flex-1 px-3 py-1.5 text-xs rounded-xl border border-[#CBD5E1] bg-white font-mono text-[11px]"
-                />
-                <button
-                  type="submit"
-                  disabled={!imageUrl.trim()}
-                  className="px-4 py-1.5 text-xs font-bold text-white bg-[#0D9488] rounded-xl hover:bg-[#0f766e] disabled:bg-slate-300"
-                >
-                  Sisipkan Foto
-                </button>
-              </div>
             </div>
-          </form>
-        </div>
-      )}
 
-      {/* Modal: Sisipkan Video */}
-      {showVideoModal && (
-        <div className="p-4 bg-emerald-50/70 border border-emerald-200 rounded-2xl space-y-3">
-          <div className="flex items-center justify-between">
-            <h5 className="text-xs font-bold text-[#0F172A]">Sisipkan Video YouTube atau MP4</h5>
-            <button
-              type="button"
-              onClick={() => setShowVideoModal(false)}
-              className="text-xs text-[#64748B] hover:text-[#0F172A]"
-            >
-              Batal
-            </button>
-          </div>
-          <form onSubmit={handleInsertVideo} className="space-y-2">
-            <div className="flex gap-2">
-              <input
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-[#0F172A]">URL Foto</label>
+              <Input
+                type="text"
+                required
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+                placeholder="https://... atau hasil upload di atas"
+                className="font-mono text-[11px]"
+              />
+            </div>
+
+            <DialogFooter className="pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsImageDialogOpen(false)}
+              >
+                Batal
+              </Button>
+              <Button type="submit" disabled={!imageUrl.trim()}>
+                Sisipkan Foto
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal 3: Sisipkan Video */}
+      <Dialog open={isVideoDialogOpen} onOpenChange={setIsVideoDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Sisipkan Video YouTube atau MP4</DialogTitle>
+            <DialogDescription>
+              Video akan disematkan langsung sebagai player responsif pada postingan Anda.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleInsertVideo} className="space-y-3 pt-2">
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-[#0F172A]">URL Video</label>
+              <Input
                 type="url"
                 required
                 value={videoUrl}
                 onChange={(e) => setVideoUrl(e.target.value)}
-                placeholder="Contoh: https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-                className="flex-1 px-3 py-1.5 text-xs rounded-xl border border-[#CBD5E1] bg-white"
+                placeholder="https://www.youtube.com/watch?v=..."
               />
-              <button
-                type="submit"
-                className="px-4 py-1.5 text-xs font-bold text-white bg-[#0D9488] rounded-xl hover:bg-[#0f766e]"
-              >
-                Sisipkan Video
-              </button>
             </div>
-            <p className="text-[11px] text-[#64748B]">
-              Mendukung link YouTube (youtube.com / youtu.be) atau file video (.mp4).
-            </p>
+
+            <DialogFooter className="pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsVideoDialogOpen(false)}
+              >
+                Batal
+              </Button>
+              <Button type="submit" disabled={!videoUrl.trim()}>
+                Sisipkan Video
+              </Button>
+            </DialogFooter>
           </form>
-        </div>
-      )}
-
-      {/* Reply Area: Write Mode vs Live Preview Mode */}
-      {activeMode === "write" ? (
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <textarea
-              rows={4}
-              value={replyText}
-              onChange={(e) => setReplyText(e.target.value)}
-              placeholder="Ketik tanggapan Anda di sini... Gunakan tombol di atas untuk menyisipkan emoji, link, foto, atau video."
-              required
-              className="w-full p-4 text-xs sm:text-sm rounded-2xl border border-[#CBD5E1] bg-white focus:outline-none focus:ring-2 focus:ring-[#0D9488] text-[#0F172A] transition-all resize-y min-h-[130px]"
-            />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <p className="text-[11px] text-[#94A3B8]">
-              Mendukung pemformatan Markdown, foto, video, dan emoji.
-            </p>
-
-            <button
-              type="submit"
-              disabled={submitting || !replyText.trim()}
-              className="inline-flex items-center justify-center min-h-[42px] px-6 py-2 text-xs font-bold text-white bg-[#0D9488] hover:bg-[#0f766e] disabled:bg-[#94A3B8] rounded-full shadow-xs transition-colors"
-            >
-              {submitting ? "Mengirimkan..." : "Kirim Balasan"}
-            </button>
-          </div>
-        </form>
-      ) : (
-        <div className="space-y-4">
-          <div className="p-5 rounded-2xl border border-slate-200 bg-slate-50 min-h-[130px]">
-            {replyText.trim() ? (
-              <RichContentRenderer content={replyText} />
-            ) : (
-              <p className="text-xs text-[#94A3B8] italic">
-                Belum ada teks untuk ditampilkan dalam pratinjau.
-              </p>
-            )}
-          </div>
-
-          <div className="flex items-center justify-between">
-            <button
-              type="button"
-              onClick={() => setActiveMode("write")}
-              className="text-xs font-bold text-[#0D9488] hover:underline"
-            >
-              &larr; Kembali Mengedit Teks
-            </button>
-
-            <button
-              type="button"
-              onClick={handleSubmit}
-              disabled={submitting || !replyText.trim()}
-              className="inline-flex items-center justify-center min-h-[42px] px-6 py-2 text-xs font-bold text-white bg-[#0D9488] hover:bg-[#0f766e] disabled:bg-[#94A3B8] rounded-full shadow-xs transition-colors"
-            >
-              {submitting ? "Mengirimkan..." : "Kirim Balasan"}
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
+        </DialogContent>
+      </Dialog>
+    </Card>
   );
 }

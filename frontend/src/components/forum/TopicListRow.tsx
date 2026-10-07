@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { Pin, Lock } from "lucide-react";
 import { ForumTopic } from "@/data/forumData";
+import { Badge } from "@/components/ui/badge";
 
 interface TopicListRowProps {
   topic: ForumTopic;
@@ -31,18 +33,16 @@ export function TopicListRow({
   };
 
   return (
-    <div className="group relative p-4 sm:p-5 hover:bg-slate-50/80 transition-colors border-b border-[#E2E8F0] last:border-b-0 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="group relative p-4 sm:p-5 hover:bg-slate-50/80 transition-colors border-b border-slate-200 last:border-b-0 flex flex-col md:flex-row md:items-center justify-between gap-4">
       {/* 1. Left Section: Title, Category Badge & Tags */}
-      <div className="flex-1 min-w-0 space-y-1.5">
+      <div className="flex-1 min-w-0 space-y-2">
         <div className="flex items-start gap-2">
           {topic.isPinned && (
             <span
               title="Topik Disematkan (Pinned)"
               className="inline-flex items-center text-amber-600 shrink-0 mt-0.5"
             >
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M10 2a1 1 0 011 1v1.323l3.954 1.582 1.599-.8a1 1 0 01.894 1.79l-1.233.616 1.738 5.42a1 1 0 01-.285 1.05A3.989 3.989 0 0115 15a3.989 3.989 0 01-2.667-1.019L11 15.323V18a1 1 0 11-2 0v-2.677l-1.333-1.342A3.989 3.989 0 015 15a3.989 3.989 0 01-2.667-1.019 1 1 0 01-.285-1.05l1.738-5.42-1.233-.617a1 1 0 01.894-1.789l1.599.799L9 4.323V3a1 1 0 011-1z" />
-              </svg>
+              <Pin className="w-4 h-4 fill-amber-600" />
             </span>
           )}
 
@@ -51,13 +51,11 @@ export function TopicListRow({
               title="Topik Terkunci (Locked)"
               className="inline-flex items-center text-slate-400 shrink-0 mt-0.5"
             >
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
+              <Lock className="w-3.5 h-3.5" />
             </span>
           )}
 
-          <h3 className="text-sm sm:text-base font-bold text-[#0F172A] group-hover:text-[#0D9488] transition-colors leading-snug">
+          <h3 className="text-sm sm:text-base font-bold text-slate-900 group-hover:text-emerald-700 transition-colors leading-snug">
             <Link href={`/forum/${topic.slug}`} className="focus:outline-none">
               {topic.title}
             </Link>
@@ -65,7 +63,7 @@ export function TopicListRow({
         </div>
 
         {/* Metadata Badges (Discourse Category Pill + Tags) */}
-        <div className="flex flex-wrap items-center gap-2 text-xs">
+        <div className="flex flex-wrap items-center gap-1.5 text-xs">
           {/* Category Pill with Colored Box */}
           <button
             type="button"
@@ -73,13 +71,17 @@ export function TopicListRow({
               e.preventDefault();
               if (onCategoryClick) onCategoryClick(topic.categorySlug);
             }}
-            className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-100 hover:bg-slate-200 text-[#334155] text-[11px] font-semibold transition-colors"
           >
-            <span
-              className="w-2 h-2 rounded-xs shrink-0"
-              style={{ backgroundColor: topic.categoryColor }}
-            />
-            <span>{topic.categoryName}</span>
+            <Badge
+              variant="outline"
+              className="gap-1.5 px-2 py-0.5 bg-slate-50 hover:bg-slate-100 text-slate-700 text-[11px] font-semibold border-slate-200 transition-colors"
+            >
+              <span
+                className="w-2 h-2 rounded-xs shrink-0"
+                style={{ backgroundColor: topic.categoryColor }}
+              />
+              <span>{topic.categoryName}</span>
+            </Badge>
           </button>
 
           {/* Tags */}
@@ -91,9 +93,13 @@ export function TopicListRow({
                 e.preventDefault();
                 if (onTagClick) onTagClick(tag);
               }}
-              className="text-[11px] text-[#64748B] hover:text-[#0D9488] font-medium transition-colors"
             >
-              #{tag}
+              <Badge
+                variant="secondary"
+                className="text-[11px] text-slate-500 hover:text-emerald-700 hover:bg-emerald-50 font-normal px-2 py-0 transition-colors"
+              >
+                #{tag}
+              </Badge>
             </button>
           ))}
         </div>
@@ -123,21 +129,18 @@ export function TopicListRow({
         {/* Discourse Metric Columns */}
         <div className="flex items-center gap-4 text-xs font-mono">
           {/* Replies */}
-          <div
+          <Badge
+            variant={topic.repliesCount > 0 ? "emerald" : "secondary"}
             title={`${topic.repliesCount} balasan`}
-            className={`min-w-[42px] px-2 py-1 rounded-md text-center font-bold transition-colors ${
-              topic.repliesCount > 0
-                ? "bg-emerald-50 text-[#0D9488] border border-emerald-100"
-                : "bg-slate-50 text-[#94A3B8]"
-            }`}
+            className="min-w-[40px] justify-center px-2 py-0.5 font-bold"
           >
             {topic.repliesCount}
-          </div>
+          </Badge>
 
           {/* Views */}
           <div
             title={`${topic.viewsCount} dilihat`}
-            className="w-12 text-right text-[#64748B] hidden sm:block"
+            className="w-12 text-right text-slate-500 hidden sm:block font-sans"
           >
             {topic.viewsCount >= 1000
               ? `${(topic.viewsCount / 1000).toFixed(1)}k`
@@ -147,7 +150,7 @@ export function TopicListRow({
           {/* Last Activity */}
           <div
             title={`Aktivitas terakhir: ${new Date(topic.lastActivityAt).toLocaleString("id-ID")}`}
-            className="w-10 text-right text-[#94A3B8] font-semibold text-[11px]"
+            className="w-10 text-right text-slate-400 font-semibold text-[11px]"
           >
             {formatTimeAgo(topic.lastActivityAt)}
           </div>

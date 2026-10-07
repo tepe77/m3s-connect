@@ -2,9 +2,27 @@
 
 import { use, useState, useEffect } from "react";
 import Link from "next/link";
+import {
+  Pin,
+  Lock,
+  Bookmark,
+  Share2,
+  Check,
+  MessageSquare,
+  Eye,
+  ArrowLeft,
+  ChevronRight,
+  Clock,
+  User,
+} from "lucide-react";
+
 import { Container } from "@/components/ui/Container";
 import { PostItem } from "@/components/forum/PostItem";
 import { ReplyComposer } from "@/components/forum/ReplyComposer";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+
 import {
   ForumTopic,
   ForumAuthor,
@@ -44,8 +62,8 @@ export default function ForumTopicPage({ params }: ForumTopicPageProps) {
 
   if (loading) {
     return (
-      <div className="py-24 text-center text-xs text-[#64748B]">
-        <div className="w-8 h-8 rounded-full border-2 border-[#0D9488] border-t-transparent animate-spin mx-auto mb-3" />
+      <div className="py-24 text-center text-xs text-slate-500">
+        <div className="w-8 h-8 rounded-full border-2 border-emerald-600 border-t-transparent animate-spin mx-auto mb-3" />
         <p>Memuat percakapan topik...</p>
       </div>
     );
@@ -53,27 +71,29 @@ export default function ForumTopicPage({ params }: ForumTopicPageProps) {
 
   if (!topic) {
     return (
-      <div className="py-20 bg-[#F8FAFC]">
+      <div className="py-20 bg-slate-50/50">
         <Container size="narrow">
-          <div className="p-8 sm:p-12 bg-white rounded-3xl border border-[#E2E8F0] shadow-xs text-center space-y-4">
-            <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <h1 className="text-xl font-extrabold text-[#0F172A]">Topik Tidak Ditemukan</h1>
-            <p className="text-xs text-[#64748B]">
-              Topik diskusi yang Anda cari mungkin telah dipindahkan atau dihapus oleh moderator.
-            </p>
-            <div className="pt-2">
-              <Link
-                href="/forum"
-                className="inline-flex items-center px-5 py-2.5 text-xs font-bold text-white bg-[#0D9488] hover:bg-[#0f766e] rounded-full transition-colors shadow-xs"
-              >
-                &larr; Kembali ke Forum
-              </Link>
-            </div>
-          </div>
+          <Card className="p-8 sm:p-12 text-center space-y-4 border-slate-200">
+            <CardContent className="space-y-4 pt-4">
+              <div className="w-14 h-14 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
+                <MessageSquare className="w-7 h-7" />
+              </div>
+              <h1 className="text-xl font-bold text-slate-900">
+                Topik Tidak Ditemukan
+              </h1>
+              <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                Topik diskusi yang Anda cari mungkin telah dipindahkan atau dihapus oleh moderator.
+              </p>
+              <div className="pt-2">
+                <Button asChild className="rounded-full px-6 gap-2">
+                  <Link href="/forum">
+                    <ArrowLeft className="w-4 h-4" />
+                    <span>Kembali ke Forum</span>
+                  </Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </Container>
       </div>
     );
@@ -144,127 +164,169 @@ export default function ForumTopicPage({ params }: ForumTopicPageProps) {
     }
   };
 
+  const formatCreationDate = (dateStr: string) => {
+    try {
+      return new Date(dateStr).toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      });
+    } catch {
+      return dateStr;
+    }
+  };
+
   return (
-    <div className="py-6 sm:py-10 bg-[#F8FAFC]">
+    <div className="py-6 sm:py-10 bg-slate-50/50 min-h-screen">
       <Container size="default">
         {/* 1. Breadcrumbs */}
-        <nav aria-label="Breadcrumb" className="mb-6 flex flex-wrap items-center gap-2 text-xs text-[#64748B]">
-          <Link href="/" className="hover:text-[#0D9488] transition-colors">
+        <nav
+          aria-label="Breadcrumb"
+          className="mb-6 flex flex-wrap items-center gap-1.5 text-xs text-slate-500"
+        >
+          <Link href="/" className="hover:text-emerald-700 transition-colors">
             Beranda
           </Link>
-          <span>/</span>
-          <Link href="/forum" className="hover:text-[#0D9488] transition-colors">
+          <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+          <Link href="/forum" className="hover:text-emerald-700 transition-colors">
             Forum
           </Link>
-          <span>/</span>
+          <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
           <Link
             href={`/forum?category=${topic.categorySlug}`}
-            className="hover:text-[#0D9488] font-medium transition-colors"
+            className="hover:text-emerald-700 font-medium transition-colors"
           >
             {topic.categoryName}
           </Link>
-          <span>/</span>
-          <span className="text-[#0F172A] font-semibold truncate max-w-xs">
+          <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+          <span className="text-slate-900 font-semibold truncate max-w-xs">
             {topic.title}
           </span>
         </nav>
 
         {/* 2. Topic Header Title & Badges */}
-        <header className="mb-8 space-y-3">
+        <header className="mb-8 space-y-4">
           <div className="flex flex-wrap items-center gap-2">
             {topic.isPinned && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
-                <svg className="w-3 h-3 fill-current" viewBox="0 0 20 20">
-                  <path d="M10 2a1 1 0 011 1v1.323l3.954 1.582 1.599-.8a1 1 0 01.894 1.79l-1.233.616 1.738 5.42a1 1 0 01-.285 1.05A3.989 3.989 0 0115 15a3.989 3.989 0 01-2.667-1.019L11 15.323V18a1 1 0 11-2 0v-2.677l-1.333-1.342A3.989 3.989 0 015 15a3.989 3.989 0 01-2.667-1.019 1 1 0 01-.285-1.05l1.738-5.42-1.233-.617a1 1 0 01.894-1.789l1.599.799L9 4.323V3a1 1 0 011-1z" />
-                </svg>
+              <Badge variant="amber" className="gap-1 px-2.5 py-0.5 text-[11px] font-bold">
+                <Pin className="w-3 h-3 fill-amber-700" />
                 <span>Disematkan</span>
-              </span>
+              </Badge>
             )}
 
             {topic.isLocked && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
-                <svg className="w-3 h-3 fill-none stroke-current" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
+              <Badge
+                variant="secondary"
+                className="gap-1 px-2.5 py-0.5 text-[11px] font-bold border border-slate-200"
+              >
+                <Lock className="w-3 h-3 text-slate-600" />
                 <span>Terkunci</span>
-              </span>
+              </Badge>
             )}
 
-            <Link
-              href={`/forum?category=${topic.categorySlug}`}
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold text-[#0F172A] bg-slate-100 hover:bg-slate-200 transition-colors border border-slate-200"
-            >
-              <span
-                className="w-2.5 h-2.5 rounded-xs"
-                style={{ backgroundColor: topic.categoryColor }}
-              />
-              <span>{topic.categoryName}</span>
+            <Link href={`/forum?category=${topic.categorySlug}`}>
+              <Badge
+                variant="outline"
+                className="gap-1.5 px-3 py-1 text-xs font-bold border-slate-200 bg-white hover:bg-slate-50 transition-colors text-slate-900"
+              >
+                <span
+                  className="w-2.5 h-2.5 rounded-xs"
+                  style={{ backgroundColor: topic.categoryColor }}
+                />
+                <span>{topic.categoryName}</span>
+              </Badge>
             </Link>
 
             {topic.tags.map((tag) => (
-              <Link
-                key={tag}
-                href={`/forum?tag=${tag}`}
-                className="text-xs font-medium text-[#64748B] hover:text-[#0D9488] transition-colors"
-              >
-                #{tag}
+              <Link key={tag} href={`/forum?tag=${tag}`}>
+                <Badge
+                  variant="secondary"
+                  className="text-xs text-slate-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors"
+                >
+                  #{tag}
+                </Badge>
               </Link>
             ))}
           </div>
 
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-[#0F172A] tracking-tight leading-tight">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
             {topic.title}
           </h1>
 
-          {/* Quick Metrics & Bookmark Bar */}
-          <div className="flex flex-wrap items-center justify-between gap-4 pt-2 border-t border-slate-200/60 text-xs text-[#64748B]">
-            <div className="flex items-center gap-4">
-              <span>
-                Diposting oleh <strong className="text-[#0F172A]">{topic.author.name}</strong>
+          {/* Quick Metrics & Actions Bar */}
+          <div className="flex flex-wrap items-center justify-between gap-4 pt-3 border-t border-slate-200/70 text-xs text-slate-500">
+            <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+              <span className="flex items-center gap-1.5">
+                <User className="w-3.5 h-3.5 text-slate-400" />
+                <span>
+                  Oleh <strong className="text-slate-900 font-semibold">{topic.author.name}</strong>
+                </span>
               </span>
               <span>•</span>
-              <span className="font-mono font-bold text-[#0D9488]">
-                {topic.repliesCount} Balasan
+              <span className="flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-slate-400" />
+                <span>{formatCreationDate(topic.createdAt)}</span>
               </span>
               <span>•</span>
-              <span className="font-mono">{topic.viewsCount} Dilihat</span>
+              <span className="flex items-center gap-1.5 font-mono text-emerald-700 font-bold">
+                <MessageSquare className="w-3.5 h-3.5" />
+                <span>{topic.repliesCount} Balasan</span>
+              </span>
+              <span>•</span>
+              <span className="flex items-center gap-1.5 font-mono">
+                <Eye className="w-3.5 h-3.5 text-slate-400" />
+                <span>{topic.viewsCount} Dilihat</span>
+              </span>
             </div>
 
             <div className="flex items-center gap-2">
-              <button
+              <Button
                 type="button"
+                variant={topic.isBookmarked ? "secondary" : "outline"}
+                size="sm"
                 onClick={handleBookmark}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
+                className={`rounded-full gap-1.5 text-xs font-semibold h-8 transition-colors ${
                   topic.isBookmarked
-                    ? "bg-amber-50 text-amber-700 border-amber-200"
-                    : "bg-white text-[#475569] border-[#CBD5E1] hover:text-[#0F172A]"
+                    ? "bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100"
+                    : "border-slate-300 text-slate-700 hover:text-slate-900"
                 }`}
               >
-                <svg
-                  className={`w-3.5 h-3.5 ${topic.isBookmarked ? "fill-current" : "fill-none"}`}
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-                </svg>
+                <Bookmark
+                  className={`w-3.5 h-3.5 ${
+                    topic.isBookmarked ? "fill-amber-600 text-amber-600" : ""
+                  }`}
+                />
                 <span>{topic.isBookmarked ? "Tersimpan" : "Simpan Topik"}</span>
-              </button>
+              </Button>
 
-              <button
+              <Button
                 type="button"
+                variant="outline"
+                size="sm"
                 onClick={handleShare}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-white text-[#475569] border border-[#CBD5E1] hover:text-[#0F172A] transition-colors"
+                className={`rounded-full gap-1.5 text-xs font-semibold h-8 border-slate-300 transition-colors ${
+                  copiedLink
+                    ? "text-emerald-700 bg-emerald-50 border-emerald-200"
+                    : "text-slate-700 hover:text-slate-900"
+                }`}
               >
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                </svg>
-                <span>{copiedLink ? "Tersalin!" : "Bagikan"}</span>
-              </button>
+                {copiedLink ? (
+                  <>
+                    <Check className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Tersalin!</span>
+                  </>
+                ) : (
+                  <>
+                    <Share2 className="w-3.5 h-3.5" />
+                    <span>Bagikan</span>
+                  </>
+                )}
+              </Button>
             </div>
           </div>
         </header>
 
-        {/* 3. Post Stream (Discourse Posts / Replies Flow) */}
+        {/* 3. Post Stream (Discourse Flow: OP followed by Replies) */}
         <div className="space-y-6 mb-10">
           {/* Post #1: The Original Post (OP) */}
           <PostItem
@@ -286,11 +348,15 @@ export default function ForumTopicPage({ params }: ForumTopicPageProps) {
 
           {/* Timeline separator if replies exist */}
           {topic.replies.length > 0 && (
-            <div className="relative py-2 flex items-center justify-center">
+            <div className="relative py-4 flex items-center justify-center">
               <div className="border-t border-slate-200 w-full" />
-              <span className="bg-[#F8FAFC] px-4 text-xs font-bold font-mono text-[#94A3B8] uppercase tracking-wider shrink-0">
+              <Badge
+                variant="outline"
+                className="absolute bg-slate-50 border-slate-200 px-4 py-1 text-xs font-mono font-bold text-slate-500 uppercase tracking-wider shadow-2xs"
+              >
+                <MessageSquare className="w-3 h-3 mr-1.5 text-emerald-600 inline" />
                 {topic.replies.length} Tanggapan Diskusi
-              </span>
+              </Badge>
             </div>
           )}
 

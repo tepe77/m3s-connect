@@ -2,8 +2,23 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import {
+  Heart,
+  Reply,
+  Share2,
+  Check,
+  CornerDownRight,
+  ShieldCheck,
+  Award,
+  Sparkles,
+} from "lucide-react";
+
 import { ForumAuthor } from "@/data/forumData";
 import { RichContentRenderer } from "./RichContentRenderer";
+
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 interface PostItemProps {
   id: string;
@@ -58,146 +73,178 @@ export function PostItem({
   };
 
   return (
-    <article
+    <Card
       id={`post-${postNumber}`}
-      className={`p-6 sm:p-8 rounded-3xl border transition-all ${
+      className={`relative transition-all duration-200 border ${
         isOP
-          ? "bg-white border-[#E2E8F0] shadow-xs"
-          : "bg-white/80 border-[#E2E8F0] hover:border-[#CBD5E1]"
+          ? "bg-white border-slate-200/90 shadow-xs ring-1 ring-emerald-500/10"
+          : "bg-white/95 border-slate-200/80 hover:border-slate-300 shadow-2xs"
       }`}
     >
-      {/* 1. Post Header: Author Avatar & Metadata */}
-      <div className="flex items-start justify-between gap-4 mb-5">
-        <div className="flex items-center gap-3">
-          <div className="relative w-11 h-11 rounded-full overflow-hidden bg-slate-200 ring-2 ring-emerald-50 shrink-0">
-            <Image
-              src={author.avatar || "/images/avatar-ahmad.jpg"}
-              alt={author.name}
-              fill
-              sizes="44px"
-              className="object-cover"
-            />
-          </div>
-
-          <div>
-            <div className="flex flex-wrap items-center gap-2">
-              <h4 className="text-sm sm:text-base font-extrabold text-[#0F172A]">
-                {author.name}
-              </h4>
-              {author.role === "admin" && (
-                <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-rose-50 text-rose-700 border border-rose-200">
-                  Admin
-                </span>
-              )}
-              {author.role === "moderator" && (
-                <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-                  Moderator
-                </span>
-              )}
-              {author.graduationYear && (
-                <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-50 text-[#0D9488] border border-emerald-200">
-                  Alumni &apos;{author.graduationYear.toString().slice(-2)}
-                  {author.graduationClass ? ` (${author.graduationClass})` : ""}
-                </span>
-              )}
-            </div>
-
-            <div className="flex items-center gap-2 text-[11px] text-[#64748B] mt-0.5">
-              <span>{author.occupation || "Anggota Komunitas"}</span>
-              <span>•</span>
-              <time dateTime={createdAt}>{formatTimestamp(createdAt)}</time>
-            </div>
-          </div>
-        </div>
-
-        {/* Post Number Badge */}
-        <div className="text-xs font-mono font-bold text-[#94A3B8]">
-          #{postNumber}
-        </div>
-      </div>
-
-      {/* 2. Parent reply quote callout if nested */}
-      {parentAuthorName && (
-        <div className="mb-4 px-3.5 py-2 rounded-xl bg-slate-50 border-l-3 border-[#0D9488] text-xs text-[#475569] flex items-center gap-1.5">
-          <svg className="w-3.5 h-3.5 text-[#0D9488] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
-          </svg>
-          <span>
-            Membalas <strong className="text-[#0F172A]">@{parentAuthorName}</strong>
-          </span>
-        </div>
+      {/* OP Subtle Accent Strip */}
+      {isOP && (
+        <div className="absolute top-0 left-6 right-6 h-0.5 bg-gradient-to-r from-emerald-500 via-teal-400 to-transparent rounded-t-full" />
       )}
 
-      {/* 3. Post Body (Rich Content with Photo, Video, Link, and Formatting support) */}
-      <div className="py-1">
-        <RichContentRenderer content={body} />
-      </div>
-
-      {/* 4. Interaction Bar (Discourse Like, Reply, Share) */}
-      <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          {/* Like Button */}
-          <button
-            type="button"
-            onClick={() => onLike && onLike(id)}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
-              isLiked
-                ? "bg-rose-50 text-rose-600 border border-rose-200"
-                : "text-[#64748B] hover:text-rose-600 hover:bg-rose-50/50"
-            }`}
-          >
-            <svg
-              className={`w-4 h-4 ${isLiked ? "fill-rose-500 text-rose-500" : "fill-none"}`}
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+      <CardContent className="p-5 sm:p-7 space-y-4">
+        {/* 1. Header: Author Avatar & Badges */}
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="relative w-11 h-11 rounded-full overflow-hidden bg-slate-100 ring-2 ring-slate-100 shrink-0">
+              <Image
+                src={author.avatar || "/images/avatar-ahmad.jpg"}
+                alt={author.name}
+                fill
+                sizes="44px"
+                className="object-cover"
               />
-            </svg>
-            <span>{likesCount}</span>
-          </button>
+            </div>
 
-          {/* Reply Button */}
-          {onReply && (
-            <button
-              type="button"
-              onClick={() => onReply(author, id)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-[#64748B] hover:text-[#0D9488] hover:bg-emerald-50 transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
-                />
-              </svg>
-              <span>Balas</span>
-            </button>
-          )}
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <h4 className="text-sm sm:text-base font-bold text-slate-900 leading-tight">
+                  {author.name}
+                </h4>
+
+                {isOP && (
+                  <Badge
+                    variant="outline"
+                    className="border-emerald-300 bg-emerald-50 text-emerald-800 text-[10px] font-bold px-2 py-0"
+                  >
+                    Penulis Topik
+                  </Badge>
+                )}
+
+                {author.role === "admin" && (
+                  <Badge
+                    variant="destructive"
+                    className="text-[10px] font-bold gap-1 px-2 py-0"
+                  >
+                    <ShieldCheck className="w-3 h-3" />
+                    <span>Admin</span>
+                  </Badge>
+                )}
+
+                {author.role === "moderator" && (
+                  <Badge
+                    variant="blue"
+                    className="text-[10px] font-bold gap-1 px-2 py-0"
+                  >
+                    <Award className="w-3 h-3" />
+                    <span>Moderator</span>
+                  </Badge>
+                )}
+
+                {author.graduationYear && (
+                  <Badge
+                    variant="emerald"
+                    className="text-[10px] font-bold px-2 py-0"
+                  >
+                    Alumni &apos;{author.graduationYear.toString().slice(-2)}
+                    {author.graduationClass ? ` (${author.graduationClass})` : ""}
+                  </Badge>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2 text-[11px] text-slate-500 mt-1">
+                <span>{author.occupation || "Anggota Komunitas"}</span>
+                <span>•</span>
+                <time dateTime={createdAt}>{formatTimestamp(createdAt)}</time>
+              </div>
+            </div>
+          </div>
+
+          {/* Post Number Badge */}
+          <Badge
+            variant="outline"
+            className="font-mono text-[11px] text-slate-400 border-slate-200 bg-slate-50 px-2 py-0.5"
+          >
+            #{postNumber}
+          </Badge>
         </div>
 
-        {/* Share Button */}
-        <button
-          type="button"
-          onClick={handleShare}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-[#94A3B8] hover:text-[#0F172A] hover:bg-slate-100 transition-colors"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
-            />
-          </svg>
-          <span>{copied ? "Tautan Tersalin!" : "Bagikan"}</span>
-        </button>
-      </div>
-    </article>
+        {/* 2. Parent reply quote callout */}
+        {parentAuthorName && (
+          <div className="px-3.5 py-2 rounded-xl bg-slate-50/90 border-l-2 border-emerald-500 text-xs text-slate-600 flex items-center gap-2">
+            <CornerDownRight className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+            <span>
+              Membalas tanggapan dari{" "}
+              <strong className="text-slate-900 font-semibold">
+                @{parentAuthorName}
+              </strong>
+            </span>
+          </div>
+        )}
+
+        {/* 3. Post Body */}
+        <div className="pt-1">
+          <RichContentRenderer content={body} />
+        </div>
+
+        {/* 4. Interaction Bar with Shadcn Buttons */}
+        <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            {/* Like Button */}
+            <Button
+              type="button"
+              variant={isLiked ? "secondary" : "ghost"}
+              size="sm"
+              onClick={() => onLike && onLike(id)}
+              className={`rounded-full h-8 px-3 text-xs font-semibold gap-1.5 transition-colors ${
+                isLiked
+                  ? "bg-rose-50 text-rose-600 hover:bg-rose-100 hover:text-rose-700 border border-rose-200"
+                  : "text-slate-600 hover:text-rose-600 hover:bg-rose-50/60"
+              }`}
+            >
+              <Heart
+                className={`w-3.5 h-3.5 ${
+                  isLiked ? "fill-rose-500 text-rose-500" : ""
+                }`}
+              />
+              <span>{likesCount}</span>
+            </Button>
+
+            {/* Reply Button */}
+            {onReply && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => onReply(author, id)}
+                className="rounded-full h-8 px-3 text-xs font-semibold gap-1.5 text-slate-600 hover:text-emerald-700 hover:bg-emerald-50"
+              >
+                <Reply className="w-3.5 h-3.5" />
+                <span>Balas</span>
+              </Button>
+            )}
+          </div>
+
+          {/* Share Button */}
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={handleShare}
+            className={`rounded-full h-8 px-3 text-xs font-medium gap-1.5 transition-colors ${
+              copied
+                ? "text-emerald-700 bg-emerald-50"
+                : "text-slate-500 hover:text-slate-900 hover:bg-slate-100"
+            }`}
+          >
+            {copied ? (
+              <>
+                <Check className="w-3.5 h-3.5 text-emerald-600" />
+                <span className="font-semibold text-emerald-700">Tersalin!</span>
+              </>
+            ) : (
+              <>
+                <Share2 className="w-3.5 h-3.5" />
+                <span>Bagikan</span>
+              </>
+            )}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
