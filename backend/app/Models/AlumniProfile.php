@@ -40,6 +40,15 @@ class AlumniProfile extends Model
         ];
     }
 
+    protected $appends = [
+        'avatar_url',
+    ];
+
+    public function getAvatarUrlAttribute(): ?string
+    {
+        return $this->user?->avatar_url ?? asset('images/avatar-ahmad.jpg');
+    }
+
     /**
      * Generate unique alumni identifier in format M3S-{YEAR}-{SEQUENCE_4_DIGIT}
      */

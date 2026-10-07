@@ -68,11 +68,22 @@ class AlumniController extends Controller
 
         $query = AlumniProfile::with(['user', 'skills', 'socialLinks', 'educations', 'experiences']);
 
+        $slugToIdentifier = [
+            'alumni-1' => 'M3S-2012-0081',
+            'alumni-2' => 'M3S-2010-0034',
+            'alumni-3' => 'M3S-2015-0112',
+            'alumni-4' => 'M3S-2018-0042',
+            'alumni-5' => 'M3S-2016-0067',
+            'alumni-6' => 'M3S-2014-0019',
+        ];
+
         if (Str::isUuid($id)) {
             $query->where(function ($q) use ($id) {
                 $q->where('id', $id)->orWhere('user_id', $id);
             });
             $profile = $query->first();
+        } elseif (isset($slugToIdentifier[$id])) {
+            $profile = $query->where('alumni_identifier', $slugToIdentifier[$id])->first();
         } elseif (preg_match('/^alumni-(\d+)$/', $id, $matches)) {
             // Support dummy/sample slug format gracefully
             $offset = max(0, ((int) $matches[1]) - 1);

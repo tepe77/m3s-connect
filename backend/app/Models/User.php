@@ -62,6 +62,27 @@ class User extends Authenticatable implements FilamentUser
         ];
     }
 
+    protected $appends = [
+        'avatar_url',
+    ];
+
+    public function getAvatarUrlAttribute(): ?string
+    {
+        if (blank($this->avatar)) {
+            return asset('images/avatar-ahmad.jpg');
+        }
+
+        if (str_starts_with($this->avatar, 'http://') || str_starts_with($this->avatar, 'https://')) {
+            return $this->avatar;
+        }
+
+        if (str_starts_with($this->avatar, '/images/') || str_starts_with($this->avatar, 'images/')) {
+            return url(ltrim($this->avatar, '/'));
+        }
+
+        return asset('storage/' . ltrim($this->avatar, '/'));
+    }
+
     public function canAccessPanel(Panel $panel): bool
     {
         return ($this->isAdmin() || $this->role === UserRole::MODERATOR) && $this->isActive();

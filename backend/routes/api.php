@@ -66,6 +66,21 @@ Route::prefix('v1')->group(function () {
         });
     });
 
+    // Public Events & Agenda Routes
+    Route::prefix('events')->group(function () {
+        Route::get('/', function () {
+            $events = \App\Models\Event::with('category')
+                ->where('status', \App\Enums\EventStatus::PUBLISHED)
+                ->orderBy('start_at', 'asc')
+                ->get();
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $events,
+            ]);
+        });
+    });
+
     // Content Report Submission (Authenticated members)
     Route::middleware('auth:sanctum')->post('/reports', [AdminController::class, 'submitReport']);
 

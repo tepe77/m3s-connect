@@ -85,7 +85,11 @@ class AlumniVerificationResource extends Resource
             ->columns([
                 Tables\Columns\ImageColumn::make('avatar')
                     ->label('Foto')
-                    ->circular(),
+                    ->circular()
+                    ->disk('public')
+                    ->defaultImageUrl(asset('images/avatar-ahmad.jpg'))
+                    ->checkFileExistence(false)
+                    ->getStateUsing(fn (User $record): ?string => $record->avatar_url),
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nama Lengkap')
                     ->searchable()

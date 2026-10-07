@@ -1,11 +1,56 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Container } from "@/components/ui/Container";
-import { NEWS_ITEMS } from "@/data/newsData";
+import { NEWS_ITEMS, NewsItem } from "@/data/newsData";
 
-export default function NewsIndexPage() {
-  const featured = NEWS_ITEMS[0];
-  const rest = NEWS_ITEMS.slice(1);
+async function getNewsList(): Promise<NewsItem[]> {
+  try {
+    const res = await fetch("http://localhost:8000/api/v1/news", {
+      cache: "no-store",
+    });
+    if (res.ok) {
+      const json = await res.json();
+      const list = json?.data?.data;
+      if (Array.isArray(list) && list.length > 0) {
+        return list.map((item: any) => {
+          const fallback = NEWS_ITEMS.find((n) => n.slug === item.slug);
+          return {
+            id: item.id,
+            slug: item.slug,
+            title: item.title,
+            excerpt: item.excerpt || fallback?.excerpt || "",
+            category: {
+              name: item.category?.parent?.name || item.category?.name || fallback?.category?.name || "Berita",
+              slug: item.category?.parent?.slug || item.category?.slug || fallback?.category?.slug || "berita",
+            },
+            subCategory: {
+              name: item.category?.parent ? item.category?.name : (fallback?.subCategory?.name || ""),
+              slug: item.category?.parent ? item.category?.slug : (fallback?.subCategory?.slug || ""),
+            },
+            tags: Array.isArray(item.tags) ? item.tags : (fallback?.tags || []),
+            publishedAt: fallback?.publishedAt || (item.published_at ? new Date(item.published_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }) : ""),
+            readTime: fallback?.readTime || "4 menit baca",
+            author: {
+              name: item.author?.name || fallback?.author?.name || "Redaksi M3S Connect",
+              role: fallback?.author?.role || "Divisi Publikasi",
+              avatar: item.author?.avatar_url || fallback?.author?.avatar || "/images/avatar-ahmad.jpg",
+            },
+            thumbnail: item.cover_image_url || fallback?.thumbnail || "/images/news-reuni.jpg",
+            contentImages: fallback?.contentImages || [],
+            contentHtml: fallback?.contentHtml || [item.content],
+            comments: fallback?.comments || [],
+          };
+        });
+      }
+    }
+  } catch {}
+  return NEWS_ITEMS;
+}
+
+export default async function NewsIndexPage() {
+  const newsList = await getNewsList();
+  const featured = newsList[0];
+  const rest = newsList.slice(1);
 
   return (
     <div className="py-8 md:py-12 bg-[#F8FAFC]">

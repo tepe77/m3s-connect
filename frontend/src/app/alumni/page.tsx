@@ -1,17 +1,55 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Container } from "@/components/ui/Container";
 import { ALUMNI_ITEMS, AlumniItem } from "@/data/alumniData";
 
 export default function AlumniDirectoryPage() {
+  const [alumniList, setAlumniList] = useState<AlumniItem[]>(ALUMNI_ITEMS);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedYear, setSelectedYear] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
 
-  const filteredAlumni = ALUMNI_ITEMS.filter((item) => {
+  useEffect(() => {
+    fetch("http://localhost:8000/api/v1/alumni")
+      .then((res) => res.json())
+      .then((json) => {
+        if (json?.data?.data && Array.isArray(json.data.data) && json.data.data.length > 0) {
+          const mapped: AlumniItem[] = json.data.data.map((p: any, idx: number) => {
+            const fallback = ALUMNI_ITEMS.find((a) => a.alumniIdentifier === p.alumni_identifier) || ALUMNI_ITEMS[idx];
+            return {
+              id: fallback?.id || `alumni-${idx + 1}`,
+              name: p.user?.name || fallback?.name || "",
+              email: p.user?.email || fallback?.email,
+              avatar: p.user?.avatar || p.avatar_url || fallback?.avatar || "/images/avatar-ahmad.jpg",
+              graduationYear: p.graduation_year || fallback?.graduationYear || 2018,
+              graduationClass: p.graduation_class || fallback?.graduationClass || "",
+              alumniIdentifier: p.alumni_identifier || fallback?.alumniIdentifier || "",
+              isVerified: true,
+              occupation: p.occupation || fallback?.occupation || "",
+              company: p.company || fallback?.company || "",
+              city: p.current_city || fallback?.city || "",
+              country: p.current_country || fallback?.country || "Indonesia",
+              bio: p.bio || fallback?.bio || "",
+              skills: Array.isArray(p.skills)
+                ? p.skills.map((s: any) => typeof s === "string" ? s : s.name)
+                : (fallback?.skills || []),
+              socialLinks: Array.isArray(p.social_links) && p.social_links.length > 0
+                ? p.social_links.map((s: any) => ({ platform: s.platform, url: s.url }))
+                : (fallback?.socialLinks || []),
+              educations: fallback?.educations,
+              experiences: fallback?.experiences,
+            };
+          });
+          setAlumniList(mapped);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const filteredAlumni = alumniList.filter((item) => {
     const matchesSearch =
       searchQuery === "" ||
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -29,7 +67,7 @@ export default function AlumniDirectoryPage() {
     return matchesSearch && matchesYear && matchesCity;
   });
 
-  const uniqueYears = Array.from(new Set(ALUMNI_ITEMS.map((a) => a.graduationYear))).sort(
+  const uniqueYears = Array.from(new Set(alumniList.map((a) => a.graduationYear))).sort(
     (a, b) => b - a
   );
 

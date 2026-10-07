@@ -42,6 +42,27 @@ class Event extends Model
         ];
     }
 
+    protected $appends = [
+        'cover_image_url',
+    ];
+
+    public function getCoverImageUrlAttribute(): ?string
+    {
+        if (blank($this->cover_image)) {
+            return asset('images/doc-baksos.jpg');
+        }
+
+        if (str_starts_with($this->cover_image, 'http://') || str_starts_with($this->cover_image, 'https://')) {
+            return $this->cover_image;
+        }
+
+        if (str_starts_with($this->cover_image, '/images/') || str_starts_with($this->cover_image, 'images/')) {
+            return url(ltrim($this->cover_image, '/'));
+        }
+
+        return asset('storage/' . ltrim($this->cover_image, '/'));
+    }
+
     public function category(): BelongsTo
     {
         return $this->belongsTo(EventCategory::class, 'category_id');

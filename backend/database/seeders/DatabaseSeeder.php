@@ -3,9 +3,11 @@
 namespace Database\Seeders;
 
 use App\Enums\EventStatus;
+use App\Enums\ForumPostStatus;
 use App\Enums\ForumThreadStatus;
 use App\Enums\NewsStatus;
 use App\Enums\ProfileVisibility;
+use App\Enums\ReportStatus;
 use App\Enums\UserRole;
 use App\Enums\UserStatus;
 use App\Models\AlumniEducation;
@@ -20,6 +22,7 @@ use App\Models\ForumThread;
 use App\Models\News;
 use App\Models\NewsCategory;
 use App\Models\NewsComment;
+use App\Models\Report;
 use App\Models\Skill;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -33,7 +36,9 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. Roles & Initial Users
+        // ---------------------------------------------------------------------
+        // 1. Roles & Initial Core Users
+        // ---------------------------------------------------------------------
         $admin = User::firstOrCreate(
             ['email' => 'admin@m3s-connect.id'],
             [
@@ -41,6 +46,7 @@ class DatabaseSeeder extends Seeder
                 'password' => Hash::make('Password123!'),
                 'role' => UserRole::ADMIN,
                 'status' => UserStatus::ACTIVE,
+                'avatar' => '/images/hero-man3-sleman.jpg',
                 'email_verified_at' => now(),
             ]
         );
@@ -52,42 +58,274 @@ class DatabaseSeeder extends Seeder
                 'password' => Hash::make('Password123!'),
                 'role' => UserRole::MODERATOR,
                 'status' => UserStatus::ACTIVE,
+                'avatar' => '/images/avatar-ahmad.jpg',
                 'email_verified_at' => now(),
             ]
         );
 
-        $alumni1 = User::firstOrCreate(
+        // ---------------------------------------------------------------------
+        // 2. 6 Verified Alumni Profiles (100% Synced with frontend alumniData.ts)
+        // ---------------------------------------------------------------------
+
+        // Alumni 1: Siti Nurhaliza, S.T.
+        $alumni1 = User::updateOrCreate(
+            ['email' => 'siti.nurhaliza@alumni.m3s.id'],
+            [
+                'name' => 'Siti Nurhaliza, S.T.',
+                'password' => Hash::make('Password123!'),
+                'role' => UserRole::ALUMNI,
+                'status' => UserStatus::ACTIVE,
+                'avatar' => '/images/avatar-siti.jpg',
+                'email_verified_at' => now(),
+            ]
+        );
+
+        $profile1 = AlumniProfile::updateOrCreate(
+            ['user_id' => $alumni1->id],
+            [
+                'graduation_year' => 2012,
+                'graduation_class' => 'IPA 1',
+                'alumni_identifier' => 'M3S-2012-0081',
+                'gender' => 'female',
+                'birth_date' => '1994-04-12',
+                'bio' => 'Pengembang aplikasi web dan antarmuka berkinerja tinggi. Senang berbagi ilmu seputar teknologi dan aktif membimbing adik-adik angkatan dalam persiapan karir rekayasa perangkat lunak.',
+                'current_city' => 'Jakarta Selatan',
+                'current_country' => 'Indonesia',
+                'occupation' => 'Software Engineer',
+                'company' => 'Tokopedia',
+                'visibility' => ProfileVisibility::PUBLIC,
+                'verified_at' => now(),
+            ]
+        );
+
+        AlumniEducation::firstOrCreate(
+            ['alumni_profile_id' => $profile1->id, 'institution' => 'Institut Teknologi Bandung'],
+            [
+                'degree' => 'S1',
+                'field_of_study' => 'Teknik Informatika',
+                'start_year' => 2012,
+                'end_year' => 2016,
+                'description' => 'Lulus dengan predikat sangat memuaskan, fokus riset sistem web terdistribusi.',
+            ]
+        );
+        AlumniEducation::firstOrCreate(
+            ['alumni_profile_id' => $profile1->id, 'institution' => 'MAN 3 Sleman (Mayoga)'],
+            [
+                'degree' => 'Madrasah Aliyah',
+                'field_of_study' => 'Jurusan IPA',
+                'start_year' => 2009,
+                'end_year' => 2012,
+                'description' => 'Aktif dalam kelompok ilmiah remaja dan olimpiade komputer.',
+            ]
+        );
+
+        AlumniExperience::firstOrCreate(
+            ['alumni_profile_id' => $profile1->id, 'company' => 'Tokopedia'],
+            [
+                'position' => 'Software Engineer',
+                'location' => 'Jakarta Selatan',
+                'start_date' => '2019-01-01',
+                'end_date' => null,
+                'is_current' => true,
+                'description' => 'Mengembangkan platform frontend berskala jutaan pengguna harian.',
+            ]
+        );
+        AlumniExperience::firstOrCreate(
+            ['alumni_profile_id' => $profile1->id, 'company' => 'Digital Studio Asia'],
+            [
+                'position' => 'Junior Frontend Developer',
+                'location' => 'Bandung',
+                'start_date' => '2016-07-01',
+                'end_date' => '2019-01-01',
+                'is_current' => false,
+                'description' => 'Membangun portal aplikasi web interaktif untuk berbagai klien institusi.',
+            ]
+        );
+
+        AlumniSocialLink::firstOrCreate(['alumni_profile_id' => $profile1->id, 'platform' => 'linkedin'], ['url' => 'https://linkedin.com/in/sitinurhaliza']);
+        AlumniSocialLink::firstOrCreate(['alumni_profile_id' => $profile1->id, 'platform' => 'github'], ['url' => 'https://github.com/sitinurhaliza']);
+        AlumniSocialLink::firstOrCreate(['alumni_profile_id' => $profile1->id, 'platform' => 'instagram'], ['url' => 'https://instagram.com/sitinurhaliza']);
+        AlumniSocialLink::firstOrCreate(['alumni_profile_id' => $profile1->id, 'platform' => 'website'], ['url' => 'https://sitinurhaliza.dev']);
+
+        // Alumni 2: Ahmad Fauzi, M.Pd.
+        $alumni2 = User::updateOrCreate(
+            ['email' => 'ahmad.fauzi@alumni.m3s.id'],
+            [
+                'name' => 'Ahmad Fauzi, M.Pd.',
+                'password' => Hash::make('Password123!'),
+                'role' => UserRole::ALUMNI,
+                'status' => UserStatus::ACTIVE,
+                'avatar' => '/images/avatar-ahmad.jpg',
+                'email_verified_at' => now(),
+            ]
+        );
+
+        $profile2 = AlumniProfile::updateOrCreate(
+            ['user_id' => $alumni2->id],
+            [
+                'graduation_year' => 2010,
+                'graduation_class' => 'IPA 2',
+                'alumni_identifier' => 'M3S-2010-0034',
+                'gender' => 'male',
+                'birth_date' => '1992-08-17',
+                'bio' => 'Dosen bidang kurikulum pendidikan sains dan teknologi madrasah. Aktif dalam kepanitiaan ikatan alumni, riset edukasi nasional, dan pengabdian masyarakat.',
+                'current_city' => 'Yogyakarta',
+                'current_country' => 'Indonesia',
+                'occupation' => 'Dosen & Peneliti',
+                'company' => 'UIN Sunan Kalijaga',
+                'visibility' => ProfileVisibility::PUBLIC,
+                'verified_at' => now(),
+            ]
+        );
+
+        AlumniEducation::firstOrCreate(
+            ['alumni_profile_id' => $profile2->id, 'institution' => 'Universitas Negeri Yogyakarta'],
+            [
+                'degree' => 'S2',
+                'field_of_study' => 'Magister Pendidikan Sains',
+                'start_year' => 2014,
+                'end_year' => 2017,
+                'description' => 'Tesis tentang integrasi teknologi digital pada pembelajaran sains madrasah.',
+            ]
+        );
+        AlumniEducation::firstOrCreate(
+            ['alumni_profile_id' => $profile2->id, 'institution' => 'UIN Sunan Kalijaga Yogyakarta'],
+            [
+                'degree' => 'S1',
+                'field_of_study' => 'Pendidikan Fisika',
+                'start_year' => 2010,
+                'end_year' => 2014,
+                'description' => 'Lulusan terbaik fakultas tarbiyah angkatan 2010.',
+            ]
+        );
+        AlumniEducation::firstOrCreate(
+            ['alumni_profile_id' => $profile2->id, 'institution' => 'MAN 3 Sleman (Mayoga)'],
+            [
+                'degree' => 'Madrasah Aliyah',
+                'field_of_study' => 'Jurusan IPA',
+                'start_year' => 2007,
+                'end_year' => 2010,
+                'description' => 'Ketua OSIS periode 2008/2009.',
+            ]
+        );
+
+        AlumniExperience::firstOrCreate(
+            ['alumni_profile_id' => $profile2->id, 'company' => 'UIN Sunan Kalijaga'],
+            [
+                'position' => 'Dosen Tetap Fakultas Tarbiyah',
+                'location' => 'Yogyakarta',
+                'start_date' => '2018-01-01',
+                'end_date' => null,
+                'is_current' => true,
+                'description' => 'Mengampu mata kuliah kurikulum, evaluasi pembelajaran, dan media edukasi digital.',
+            ]
+        );
+        AlumniExperience::firstOrCreate(
+            ['alumni_profile_id' => $profile2->id, 'company' => 'Ikatan Alumni MAN 3 Sleman'],
+            [
+                'position' => 'Ketua Panitia Reuni Akbar 2025',
+                'location' => 'Sleman',
+                'start_date' => '2024-01-01',
+                'end_date' => '2025-05-31',
+                'is_current' => false,
+                'description' => 'Mengoordinasikan perhelatan akbar reuni lintas angkatan 1990 hingga 2024.',
+            ]
+        );
+
+        AlumniSocialLink::firstOrCreate(['alumni_profile_id' => $profile2->id, 'platform' => 'linkedin'], ['url' => 'https://linkedin.com/in/ahmadfauzi']);
+        AlumniSocialLink::firstOrCreate(['alumni_profile_id' => $profile2->id, 'platform' => 'twitter'], ['url' => 'https://x.com/ahmadfauzi']);
+        AlumniSocialLink::firstOrCreate(['alumni_profile_id' => $profile2->id, 'platform' => 'website'], ['url' => 'https://ahmadfauzi.id']);
+
+        // Alumni 3: Rina Oktaviani, S.E.
+        $alumni3 = User::updateOrCreate(
+            ['email' => 'rina.oktaviani@alumni.m3s.id'],
+            [
+                'name' => 'Rina Oktaviani, S.E.',
+                'password' => Hash::make('Password123!'),
+                'role' => UserRole::ALUMNI,
+                'status' => UserStatus::ACTIVE,
+                'avatar' => '/images/avatar-rina.jpg',
+                'email_verified_at' => now(),
+            ]
+        );
+
+        $profile3 = AlumniProfile::updateOrCreate(
+            ['user_id' => $alumni3->id],
+            [
+                'graduation_year' => 2015,
+                'graduation_class' => 'IPS 1',
+                'alumni_identifier' => 'M3S-2015-0112',
+                'gender' => 'female',
+                'birth_date' => '1997-10-05',
+                'bio' => 'Membangun ekosistem UMKM kuliner nusantara berbasis bahan pangan lokal berkualitas. Terbuka lebar untuk kolaborasi wirausaha bersama keluarga besar alumni MAN 3 Sleman.',
+                'current_city' => 'Yogyakarta',
+                'current_country' => 'Indonesia',
+                'occupation' => 'Entrepreneur (Founder)',
+                'company' => 'KaryaRasa Culinary',
+                'visibility' => ProfileVisibility::PUBLIC,
+                'verified_at' => now(),
+            ]
+        );
+
+        AlumniEducation::firstOrCreate(
+            ['alumni_profile_id' => $profile3->id, 'institution' => 'Universitas Gadjah Mada'],
+            [
+                'degree' => 'S1',
+                'field_of_study' => 'Ilmu Ekonomi & Manajemen Bisnis',
+                'start_year' => 2015,
+                'end_year' => 2019,
+                'description' => 'Fokus riset kewirausahaan kreatif dan strategi pemasaran digital produk lokal.',
+            ]
+        );
+        AlumniEducation::firstOrCreate(
+            ['alumni_profile_id' => $profile3->id, 'institution' => 'MAN 3 Sleman (Mayoga)'],
+            [
+                'degree' => 'Madrasah Aliyah',
+                'field_of_study' => 'Jurusan IPS',
+                'start_year' => 2012,
+                'end_year' => 2015,
+                'description' => 'Juara kompetisi bisnis rencana wirausaha tingkat pelajar DIY.',
+            ]
+        );
+
+        AlumniExperience::firstOrCreate(
+            ['alumni_profile_id' => $profile3->id, 'company' => 'KaryaRasa Culinary'],
+            [
+                'position' => 'Founder & CEO',
+                'location' => 'Yogyakarta',
+                'start_date' => '2020-03-01',
+                'end_date' => null,
+                'is_current' => true,
+                'description' => 'Memimpin rantai gerai kuliner dan kemitraan suplai bahan baku petani lokal.',
+            ]
+        );
+
+        AlumniSocialLink::firstOrCreate(['alumni_profile_id' => $profile3->id, 'platform' => 'linkedin'], ['url' => 'https://linkedin.com/in/rinaoktaviani']);
+        AlumniSocialLink::firstOrCreate(['alumni_profile_id' => $profile3->id, 'platform' => 'instagram'], ['url' => 'https://instagram.com/karyarasa.id']);
+        AlumniSocialLink::firstOrCreate(['alumni_profile_id' => $profile3->id, 'platform' => 'website'], ['url' => 'https://karyarasa.id']);
+
+        // Alumni 4: Budi Santoso, S.Kom.
+        $alumni4 = User::updateOrCreate(
             ['email' => 'budi.santoso@alumni.m3s.id'],
             [
-                'name' => 'Budi Santoso',
+                'name' => 'Budi Santoso, S.Kom.',
                 'password' => Hash::make('Password123!'),
                 'role' => UserRole::ALUMNI,
                 'status' => UserStatus::ACTIVE,
+                'avatar' => '/images/avatar-ahmad.jpg',
                 'email_verified_at' => now(),
             ]
         );
 
-        $alumni2 = User::firstOrCreate(
-            ['email' => 'siti.rahmawati@alumni.m3s.id'],
-            [
-                'name' => 'Siti Rahmawati',
-                'password' => Hash::make('Password123!'),
-                'role' => UserRole::ALUMNI,
-                'status' => UserStatus::ACTIVE,
-                'email_verified_at' => now(),
-            ]
-        );
-
-        // 2. Alumni Profiles
-        $profile1 = AlumniProfile::firstOrCreate(
-            ['user_id' => $alumni1->id],
+        $profile4 = AlumniProfile::updateOrCreate(
+            ['user_id' => $alumni4->id],
             [
                 'graduation_year' => 2018,
                 'graduation_class' => 'IPA 2',
                 'alumni_identifier' => 'M3S-2018-0042',
                 'gender' => 'male',
                 'birth_date' => '2000-05-14',
-                'bio' => 'Software Engineer antusias dalam pengembangan sistem web terdistribusi dan open-source.',
+                'bio' => 'Fokus pada arsitektur mikroservis terdistribusi, basis data PostgreSQL, dan sistem perpesanan berkecepatan tinggi. Senang berkontribusi pada pengembangan sistem teknologi madrasah.',
                 'current_city' => 'Yogyakarta',
                 'current_country' => 'Indonesia',
                 'occupation' => 'Senior Backend Engineer',
@@ -98,65 +336,192 @@ class DatabaseSeeder extends Seeder
         );
 
         AlumniEducation::firstOrCreate(
-            ['alumni_profile_id' => $profile1->id, 'institution' => 'Universitas Gadjah Mada'],
+            ['alumni_profile_id' => $profile4->id, 'institution' => 'Universitas Gadjah Mada'],
             [
                 'degree' => 'S1',
                 'field_of_study' => 'Teknologi Informasi',
                 'start_year' => 2018,
                 'end_year' => 2022,
-                'description' => 'Lulus Cumlaude dengan fokus riset arsitektur cloud.',
+                'description' => 'Lulus Cumlaude dengan fokus riset arsitektur cloud terdesentralisasi.',
+            ]
+        );
+        AlumniEducation::firstOrCreate(
+            ['alumni_profile_id' => $profile4->id, 'institution' => 'MAN 3 Sleman (Mayoga)'],
+            [
+                'degree' => 'Madrasah Aliyah',
+                'field_of_study' => 'Jurusan IPA',
+                'start_year' => 2015,
+                'end_year' => 2018,
+                'description' => 'Aktif di ekstrakurikuler robotika dan teknologi informasi.',
             ]
         );
 
         AlumniExperience::firstOrCreate(
-            ['alumni_profile_id' => $profile1->id, 'company' => 'Tech Nusantara'],
+            ['alumni_profile_id' => $profile4->id, 'company' => 'Tech Nusantara'],
             [
                 'position' => 'Senior Backend Engineer',
                 'location' => 'Yogyakarta',
                 'start_date' => '2022-07-01',
                 'end_date' => null,
                 'is_current' => true,
-                'description' => 'Mengembangkan backend API mikroservis dan integrasi payment gateway.',
+                'description' => 'Mengembangkan backend API mikroservis dan integrasi payment gateway terpadu.',
             ]
         );
 
-        AlumniSocialLink::firstOrCreate(
-            ['alumni_profile_id' => $profile1->id, 'platform' => 'github'],
-            ['url' => 'https://github.com/budisantoso']
+        AlumniSocialLink::firstOrCreate(['alumni_profile_id' => $profile4->id, 'platform' => 'linkedin'], ['url' => 'https://linkedin.com/in/budisantoso']);
+        AlumniSocialLink::firstOrCreate(['alumni_profile_id' => $profile4->id, 'platform' => 'github'], ['url' => 'https://github.com/budisantoso']);
+        AlumniSocialLink::firstOrCreate(['alumni_profile_id' => $profile4->id, 'platform' => 'twitter'], ['url' => 'https://x.com/budisantoso']);
+
+        // Alumni 5: Dewi Lestari, S.Psi.
+        $alumni5 = User::updateOrCreate(
+            ['email' => 'dewi.lestari@alumni.m3s.id'],
+            [
+                'name' => 'Dewi Lestari, S.Psi.',
+                'password' => Hash::make('Password123!'),
+                'role' => UserRole::ALUMNI,
+                'status' => UserStatus::ACTIVE,
+                'avatar' => '/images/avatar-rina.jpg',
+                'email_verified_at' => now(),
+            ]
         );
 
-        $profile2 = AlumniProfile::firstOrCreate(
-            ['user_id' => $alumni2->id],
+        $profile5 = AlumniProfile::updateOrCreate(
+            ['user_id' => $alumni5->id],
             [
-                'graduation_year' => 2019,
-                'graduation_class' => 'IPS 1',
-                'alumni_identifier' => 'M3S-2019-0115',
+                'graduation_year' => 2016,
+                'graduation_class' => 'IPS 2',
+                'alumni_identifier' => 'M3S-2016-0067',
                 'gender' => 'female',
-                'birth_date' => '2001-09-21',
-                'bio' => 'Digital Marketer & Community Manager yang berfokus pada edukasi publik dan branding UMKM.',
-                'current_city' => 'Jakarta Selatan',
+                'birth_date' => '1998-03-22',
+                'bio' => 'Praktisi psikologi organisasi dan pengembangan potensi SDM muda. Menyediakan bimbingan persiapan karir dan wawancara bagi lulusan baru madrasah.',
+                'current_city' => 'Jakarta Pusat',
                 'current_country' => 'Indonesia',
-                'occupation' => 'Brand Strategist',
-                'company' => 'Kreatif Media Asia',
-                'visibility' => ProfileVisibility::MEMBERS,
+                'occupation' => 'People & Culture Lead',
+                'company' => 'Inovasi Talenta Asia',
+                'visibility' => ProfileVisibility::PUBLIC,
                 'verified_at' => now(),
             ]
         );
 
-        // 3. Skills
-        $skillNames = ['Laravel', 'PostgreSQL', 'Redis', 'Next.js', 'React', 'TypeScript', 'Digital Marketing', 'Public Relations'];
-        $skills = [];
-        foreach ($skillNames as $name) {
-            $skills[] = Skill::firstOrCreate(
-                ['name' => $name],
-                ['slug' => Str::slug($name)]
+        AlumniEducation::firstOrCreate(
+            ['alumni_profile_id' => $profile5->id, 'institution' => 'Universitas Indonesia'],
+            [
+                'degree' => 'S1',
+                'field_of_study' => 'Psikologi Industri & Organisasi',
+                'start_year' => 2016,
+                'end_year' => 2020,
+                'description' => 'Fokus pada pengembangan kompetensi kerja generasi Z di industri teknologi.',
+            ]
+        );
+
+        AlumniExperience::firstOrCreate(
+            ['alumni_profile_id' => $profile5->id, 'company' => 'Inovasi Talenta Asia'],
+            [
+                'position' => 'People & Culture Lead',
+                'location' => 'Jakarta Pusat',
+                'start_date' => '2021-02-01',
+                'end_date' => null,
+                'is_current' => true,
+                'description' => 'Mengelola strategi talenta, retensi karyawan, dan program pelatihan kepemimpinan.',
+            ]
+        );
+
+        AlumniSocialLink::firstOrCreate(['alumni_profile_id' => $profile5->id, 'platform' => 'linkedin'], ['url' => 'https://linkedin.com/in/dewilestari']);
+        AlumniSocialLink::firstOrCreate(['alumni_profile_id' => $profile5->id, 'platform' => 'instagram'], ['url' => 'https://instagram.com/dewilestari']);
+
+        // Alumni 6: dr. Farhan Hakim
+        $alumni6 = User::updateOrCreate(
+            ['email' => 'farhan.hakim@alumni.m3s.id'],
+            [
+                'name' => 'dr. Farhan Hakim',
+                'password' => Hash::make('Password123!'),
+                'role' => UserRole::ALUMNI,
+                'status' => UserStatus::ACTIVE,
+                'avatar' => '/images/avatar-siti.jpg',
+                'email_verified_at' => now(),
+            ]
+        );
+
+        $profile6 = AlumniProfile::updateOrCreate(
+            ['user_id' => $alumni6->id],
+            [
+                'graduation_year' => 2014,
+                'graduation_class' => 'IPA 1',
+                'alumni_identifier' => 'M3S-2014-0019',
+                'gender' => 'male',
+                'birth_date' => '1996-11-30',
+                'bio' => 'Menjalani pendidikan spesialis kesehatan anak. Aktif sebagai koordinator tim kesehatan pada setiap gelaran bakti sosial alumni Mayoga.',
+                'current_city' => 'Sleman',
+                'current_country' => 'Indonesia',
+                'occupation' => 'Dokter Residen Pediatri',
+                'company' => 'RSUP Dr. Sardjito',
+                'visibility' => ProfileVisibility::PUBLIC,
+                'verified_at' => now(),
+            ]
+        );
+
+        AlumniEducation::firstOrCreate(
+            ['alumni_profile_id' => $profile6->id, 'institution' => 'Fakultas Kedokteran UGM'],
+            [
+                'degree' => 'Profesi Dokter',
+                'field_of_study' => 'Pendidikan Dokter & Spesialis Pediatri',
+                'start_year' => 2014,
+                'end_year' => 2020,
+                'description' => 'Lulus dengan predikat dokter teladan pelayanan primer.',
+            ]
+        );
+
+        AlumniExperience::firstOrCreate(
+            ['alumni_profile_id' => $profile6->id, 'company' => 'RSUP Dr. Sardjito'],
+            [
+                'position' => 'Dokter Residen Anak',
+                'location' => 'Yogyakarta',
+                'start_date' => '2021-06-01',
+                'end_date' => null,
+                'is_current' => true,
+                'description' => 'Melayani perawatan anak rawat inap, intensif, dan posyandu kemanusiaan.',
+            ]
+        );
+
+        AlumniSocialLink::firstOrCreate(['alumni_profile_id' => $profile6->id, 'platform' => 'linkedin'], ['url' => 'https://linkedin.com/in/farhanhakim']);
+        AlumniSocialLink::firstOrCreate(['alumni_profile_id' => $profile6->id, 'platform' => 'instagram'], ['url' => 'https://instagram.com/dr.farhanhakim']);
+        AlumniSocialLink::firstOrCreate(['alumni_profile_id' => $profile6->id, 'platform' => 'twitter'], ['url' => 'https://x.com/farhanhakim']);
+
+        // ---------------------------------------------------------------------
+        // 3. Skills Mapping
+        // ---------------------------------------------------------------------
+        $allSkills = [
+            'React', 'Next.js', 'TypeScript', 'Web Performance', 'UI Architecture',
+            'Kurikulum Madrasah', 'Metodologi Riset', 'Pendidikan Sains', 'Public Speaking', 'Pengabdian Masyarakat',
+            'Business Development', 'F&B Management', 'Digital Marketing', 'Brand Strategy', 'UMKM Mentoring',
+            'Laravel', 'PostgreSQL', 'Redis', 'Docker', 'Go',
+            'Talent Acquisition', 'Career Coaching', 'Organizational Behavior', 'HR Strategy',
+            'Kedokteran Anak', 'Layanan Kesehatan Komunitas', 'Konsultasi Medis', 'Relawan Kemanusiaan'
+        ];
+
+        $skillModels = [];
+        foreach ($allSkills as $skillName) {
+            $skillModels[$skillName] = Skill::firstOrCreate(
+                ['name' => $skillName],
+                ['slug' => Str::slug($skillName)]
             );
         }
 
-        $profile1->skills()->syncWithoutDetaching([$skills[0]->id, $skills[1]->id, $skills[2]->id, $skills[3]->id]);
-        $profile2->skills()->syncWithoutDetaching([$skills[6]->id, $skills[7]->id]);
+        $syncSkills = function (AlumniProfile $profile, array $names) use ($skillModels) {
+            $ids = array_map(fn ($n) => $skillModels[$n]->id, $names);
+            $profile->skills()->sync($ids);
+        };
 
+        $syncSkills($profile1, ['React', 'Next.js', 'TypeScript', 'Web Performance', 'UI Architecture']);
+        $syncSkills($profile2, ['Kurikulum Madrasah', 'Metodologi Riset', 'Pendidikan Sains', 'Public Speaking', 'Pengabdian Masyarakat']);
+        $syncSkills($profile3, ['Business Development', 'F&B Management', 'Digital Marketing', 'Brand Strategy', 'UMKM Mentoring']);
+        $syncSkills($profile4, ['Laravel', 'PostgreSQL', 'Redis', 'Docker', 'Go', 'Next.js']);
+        $syncSkills($profile5, ['Talent Acquisition', 'Career Coaching', 'Organizational Behavior', 'HR Strategy']);
+        $syncSkills($profile6, ['Kedokteran Anak', 'Layanan Kesehatan Komunitas', 'Konsultasi Medis', 'Relawan Kemanusiaan']);
+
+        // ---------------------------------------------------------------------
         // 4. Forum Categories (Synchronized with frontend portal)
+        // ---------------------------------------------------------------------
         $forumCategories = [
             [
                 'slug' => 'diskusi-umum',
@@ -220,43 +585,216 @@ class DatabaseSeeder extends Seeder
             ],
         ];
 
-        $categoriesMap = [];
+        $catMap = [];
         foreach ($forumCategories as $categoryData) {
-            $categoriesMap[$categoryData['slug']] = ForumCategory::updateOrCreate(
+            $catMap[$categoryData['slug']] = ForumCategory::updateOrCreate(
                 ['slug' => $categoryData['slug']],
                 $categoryData
             );
         }
 
-        $catUmum = $categoriesMap['diskusi-umum'];
-        $catKarir = $categoriesMap['karir-dan-profesi'];
-        $catReuni = $categoriesMap['kegiatan-dan-reuni'];
+        // ---------------------------------------------------------------------
+        // 5. 6 Forum Threads & Nested Posts (100% Synced with forumData.ts)
+        // ---------------------------------------------------------------------
 
-        // 5. Initial Forum Threads
-        $thread1 = ForumThread::firstOrCreate(
-            ['slug' => 'reuni-akbar-lintas-angkatan-2026'],
+        // Thread 1: Reuni Akbar Lintas Angkatan 2026
+        $thread1 = ForumThread::updateOrCreate(
+            ['slug' => 'rencana-reuni-akbar-lintas-angkatan-2026'],
             [
-                'category_id' => $catReuni->id,
-                'user_id' => $alumni1->id,
-                'title' => 'Rencana Reuni Akbar Lintas Angkatan MAN 3 Sleman 2026',
-                'body' => 'Assalamu’alaikum rekan-rekan alumni MAN 3 Sleman (Mayoga). Mari kita diskusikan agenda reuni akbar dan pembentukan panitia kerja untuk tahun ini. Silakan berikan tanggapan dan masukan tempat kegiatan.',
+                'category_id' => $catMap['kegiatan-dan-reuni']->id,
+                'user_id' => $alumni4->id,
+                'title' => 'Rencana Reuni Akbar Lintas Angkatan MAN 3 Sleman 2026: Pembentukan Panitia & Usulan Lokasi',
+                'body' => "Assalamu'alaikum Warahmatullahi Wabarakatuh rekan-rekan keluarga besar alumni MAN 3 Sleman (Mayoga).\n\nMenyambut tahun 2026, ikatan alumni merencanakan perhelatan Reuni Akbar Lintas Angkatan (1990 - 2025) sebagai momentum mempererat tali ukhuwah dan meresmikan program beasiswa abadi alumni.\n\nMelalui topik ini, kami membuka ruang diskusi terbuka untuk beberapa hal penting:\n1. Struktur Koordinator Angkatan: Perwakilan 1 - 2 narahubung per angkatan.\n2. Usulan Venue Kegiatan: Apakah lebih representatif diadakan di halaman utama kampus Mayoga atau sewa convention center di Yogyakarta?\n3. Format Agenda: Sesi sarasehan inspiratif karir, panggung seni tradisi siswa-alumni, dan bazar UMKM alumni.\n\nSilakan sampaikan pandangan, ide, dan kesediaan rekan-rekan untuk bergabung dalam kepanitiaan kerja. Terima kasih banyak atas dedikasinya!",
                 'status' => ForumThreadStatus::PUBLISHED,
                 'is_pinned' => true,
                 'is_locked' => false,
-                'views_count' => 128,
-                'last_post_at' => now(),
+                'views_count' => 1420,
+                'last_post_at' => now()->subHours(5),
             ]
         );
 
-        ForumPost::firstOrCreate(
-            ['thread_id' => $thread1->id, 'user_id' => $alumni2->id],
+        $post101 = ForumPost::updateOrCreate(
+            ['thread_id' => $thread1->id, 'user_id' => $alumni1->id, 'parent_id' => null],
             [
-                'body' => 'Wa’alaikumsalam wr wb. Usul yang sangat bagus Mas Budi. Angkatan 2019 siap berkolaborasi untuk kepanitiaan publikasi dan dokumentasi.',
-                'status' => 'published',
+                'body' => "Wa'alaikumsalam wr wb Mas Budi. Usulan yang sangat dinantikan! Menurut pandangan saya, mengadakan sesi utama di kampus Mayoga memiliki nilai historis dan nostalgia yang sangat mendalam bagi para alumni sepuh maupun muda. Angkatan 2012 siap menjadi bagian dari tim pendaftaran dan sistem registrasi online.",
+                'status' => ForumPostStatus::PUBLISHED,
             ]
         );
 
-        // 6. News Categories (with Subcategories), News, and Comments
+        ForumPost::updateOrCreate(
+            ['thread_id' => $thread1->id, 'user_id' => $alumni2->id, 'parent_id' => $post101->id],
+            [
+                'body' => "Sepakat dengan Mbak Siti. Kampus Mayoga suasananya sekarang semakin asri setelah renovasi aula baru. Kami di angkatan 2010 siap mengoordinasikan penggalangan dana program Beasiswa Abadi untuk adik-adik siswa berprestasi yang kurang mampu.",
+                'status' => ForumPostStatus::PUBLISHED,
+            ]
+        );
+
+        ForumPost::updateOrCreate(
+            ['thread_id' => $thread1->id, 'user_id' => $alumni3->id, 'parent_id' => null],
+            [
+                'body' => "Dari klaster wirausaha kuliner alumni, kami siap mendirikan 20 stan makanan nusantara dan kopi lokal untuk menjamu para tamu dan alumni. Mohon info jika jadwal technical meeting panitia sudah diagendakan.",
+                'status' => ForumPostStatus::PUBLISHED,
+            ]
+        );
+
+        ForumPost::updateOrCreate(
+            ['thread_id' => $thread1->id, 'user_id' => $alumni4->id, 'parent_id' => null],
+            [
+                'body' => "Alhamdulillah sambutan dari rekan-rekan luar biasa positif! InsyaAllah rapat koordinasi perdana via Google Meet akan dijadwalkan hari Sabtu malam pekan ini. Tautan undangan akan dibagikan di thread ini.",
+                'status' => ForumPostStatus::PUBLISHED,
+            ]
+        );
+
+        // Clean up legacy slug if present
+        ForumThread::where('slug', 'reuni-akbar-lintas-angkatan-2026')->delete();
+
+        // Thread 2: Lowongan Kerja di Tech Nusantara
+        $thread2 = ForumThread::updateOrCreate(
+            ['slug' => 'lowongan-backend-engineer-product-specialist-tech-nusantara'],
+            [
+                'category_id' => $catMap['karir-dan-profesi']->id,
+                'user_id' => $alumni4->id,
+                'title' => 'Lowongan Kerja: Backend Engineer & Product Specialist di Tech Nusantara (Terbuka untuk Alumni)',
+                'body' => "Halo rekan-rekan alumni Mayoga,\n\nKantor kami di Tech Nusantara (Yogyakarta & Jakarta hybrid) saat ini sedang membuka kesempatan berkarir untuk dua posisi:\n- Mid/Senior Backend Engineer (Laravel / Go)\n- Product Operations Specialist (Fresh Graduate / 1-2 tahun pengalaman)\n\nKriteria utama:\n- Memahami konsep clean code, RESTful API, dan basis data relasional.\n- Mau belajar dan memiliki integritas tinggi.\n- Bagi alumni MAN 3 Sleman, tersedia jalur referral langsung dan bimbingan teknis persiapan interview.\n\nBagi yang berminat, silakan kirimkan CV atau portofolio ke alamat email karir resmi atau mention saya di forum ini.",
+                'status' => ForumThreadStatus::PUBLISHED,
+                'is_pinned' => false,
+                'is_locked' => false,
+                'views_count' => 960,
+                'last_post_at' => now()->subHours(8),
+            ]
+        );
+
+        $post201 = ForumPost::updateOrCreate(
+            ['thread_id' => $thread2->id, 'user_id' => $alumni6->id, 'parent_id' => null],
+            [
+                'body' => "Terima kasih infonya Mas Budi! Untuk posisi Backend, apakah mahasiswa semester akhir yang sedang menyusun skripsi diperkenankan melamar secara remote?",
+                'status' => ForumPostStatus::PUBLISHED,
+            ]
+        );
+
+        ForumPost::updateOrCreate(
+            ['thread_id' => $thread2->id, 'user_id' => $alumni4->id, 'parent_id' => $post201->id],
+            [
+                'body' => "Bisa banget, silakan sertakan keterangan status semester akhir dan tautan repositori GitHub portofolio saat mengirimkan email ya.",
+                'status' => ForumPostStatus::PUBLISHED,
+            ]
+        );
+
+        ForumPost::updateOrCreate(
+            ['thread_id' => $thread2->id, 'user_id' => $alumni1->id, 'parent_id' => null],
+            [
+                'body' => "Rekomendasi luar biasa untuk adik-adik alumni yang ingin belajar arsitektur produksi modern. Sukses selalu tim Tech Nusantara!",
+                'status' => ForumPostStatus::PUBLISHED,
+            ]
+        );
+
+        // Thread 3: Tips Beasiswa LPDP / AAS
+        $thread3 = ForumThread::updateOrCreate(
+            ['slug' => 'panduan-tips-lolos-beasiswa-lpdp-aas-alumni-mayoga'],
+            [
+                'category_id' => $catMap['beasiswa-dan-pendidikan']->id,
+                'user_id' => $alumni2->id,
+                'title' => 'Panduan & Tips Lolos Beasiswa LPDP / AAS untuk Alumni Mayoga: Dari Esai hingga Wawancara',
+                'body' => "Banyak rekan alumni menanyakan bagaimana menyusun rencana studi dan esai kontribusi yang kuat untuk seleksi beasiswa pascasarjana.\n\nBerikut beberapa poin krusial yang perlu diperhatikan:\n1. Linearitas & Urgensi Riset: Pastikan masalah yang ingin diselesaikan terhubung erat dengan latar belakang profesional Anda.\n2. Kontribusi Nyata: Hindari narasi normatif; jelaskan langkah konkret pasca-studi di Indonesia.\n3. Persiapan Bahasa: Jangan tunda tes IELTS/TOEFL hingga mepet deadline.\n\nKami bersama tim alumni awardee LPDP bersedia mengadakan sesi bedah esai (mock review) secara cuma-cuma untuk adik-adik alumni yang sedang menyiapkan berkas tahun ini.",
+                'status' => ForumThreadStatus::PUBLISHED,
+                'is_pinned' => false,
+                'is_locked' => false,
+                'views_count' => 880,
+                'last_post_at' => now()->subDay(),
+            ]
+        );
+
+        $post301 = ForumPost::updateOrCreate(
+            ['thread_id' => $thread3->id, 'user_id' => $alumni3->id, 'parent_id' => null],
+            [
+                'body' => "Program bedah esai ini sangat bermanfaat Pak Dosen Ahmad. Waktu saya mendaftar hibah bisnis, bimbingan narasi dari senior sangat menentukan kelolosan proposal.",
+                'status' => ForumPostStatus::PUBLISHED,
+            ]
+        );
+
+        ForumPost::updateOrCreate(
+            ['thread_id' => $thread3->id, 'user_id' => $alumni2->id, 'parent_id' => $post301->id],
+            [
+                'body' => "Betul sekali Mbak Rina. Silakan bagi yang berminat mengunggah draft esai di sub-forum pendidikan ini untuk kami berikan masukan konstruktif.",
+                'status' => ForumPostStatus::PUBLISHED,
+            ]
+        );
+
+        // Thread 4: Pedoman Etika Komunitas
+        $thread4 = ForumThread::updateOrCreate(
+            ['slug' => 'pedoman-etika-tata-tertib-berdiskusi-forum-m3s-connect'],
+            [
+                'category_id' => $catMap['diskusi-umum']->id,
+                'user_id' => $admin->id,
+                'title' => 'Pedoman Etika & Tata Tertib Berdiskusi di Forum Komunitas Resmi M3S Connect',
+                'body' => "Selamat datang di Forum Komunitas Resmi MAN 3 Sleman (M3S Connect).\n\nUntuk menjaga ruang diskusi yang santun, produktif, dan menjunjung nilai kekeluargaan madrasah, berikut beberapa pedoman umum:\n- Saling Menghargai: Hargai perbedaan pendapat dan dilarang menyebarkan ujaran kebencian, fitnah, maupun isu SARA.\n- Topik Relevan: Tempatkan postingan sesuai kategori yang tepat (Karir, Reuni, Bisnis, atau Pendidikan).\n- Hindari Spam & Promosi Ilegal: Promosi usaha diizinkan pada kategori Bisnis & UMKM dengan etika yang baik.\n- Laporkan Pelanggaran: Gunakan tombol laporkan jika menemukan konten yang melanggar norma komunitas.\n\nTerima kasih atas peran aktif rekan-rekan semua dalam mewujudkan forum yang bermanfaat.",
+                'status' => ForumThreadStatus::PUBLISHED,
+                'is_pinned' => true,
+                'is_locked' => true,
+                'views_count' => 2150,
+                'last_post_at' => now()->subDays(9),
+            ]
+        );
+
+        // Thread 5: Etalase Produk Alumni
+        $thread5 = ForumThread::updateOrCreate(
+            ['slug' => 'etalase-produk-alumni-pendataan-umkm-suplier-diy-jateng'],
+            [
+                'category_id' => $catMap['bisnis-dan-umkm']->id,
+                'user_id' => $alumni3->id,
+                'title' => 'Etalase Produk Alumni: Pendataan UMKM & Suplier Bahan Baku di Wilayah DIY - Jateng',
+                'body' => "Mari saling dukung usaha sesama alumni Mayoga!\n\nBagi rekan-rekan yang memiliki usaha kuliner, kerajinan tangan, konveksi seragam, jasa konsultasi, atau produk pertanian lokal:\nSilakan balas thread ini dengan format:\n- Nama Usaha & Bidang:\n- Lokasi & Kontak / Akun Media Sosial:\n- Peluang Kerjasama / Kebutuhan Suplai:\n\nNantinya data ini akan kami rekap ke dalam direktori bisnis alumni agar lebih mudah saling berbelanja dan menjalin kemitraan.",
+                'status' => ForumThreadStatus::PUBLISHED,
+                'is_pinned' => false,
+                'is_locked' => false,
+                'views_count' => 620,
+                'last_post_at' => now()->subHours(6),
+            ]
+        );
+
+        $post501 = ForumPost::updateOrCreate(
+            ['thread_id' => $thread5->id, 'user_id' => $alumni1->id, 'parent_id' => null],
+            [
+                'body' => "Saya bantu promosikan usaha keluarga: 'Batik Tulis Mayoga Klasik' spesialis seragam batik madrasah dan kemeja sutra halus di Sleman. Senang sekali bisa saling support sesama alumni!",
+                'status' => ForumPostStatus::PUBLISHED,
+            ]
+        );
+
+        ForumPost::updateOrCreate(
+            ['thread_id' => $thread5->id, 'user_id' => $alumni3->id, 'parent_id' => $post501->id],
+            [
+                'body' => "Keren sekali Mbak Siti! Cocok banget untuk seragam panitia Reuni Akbar nanti. Sudah saya catat kontaknya.",
+                'status' => ForumPostStatus::PUBLISHED,
+            ]
+        );
+
+        // Thread 6: Pengembangan Sistem Arsip Digital
+        $thread6 = ForumThread::updateOrCreate(
+            ['slug' => 'pengembangan-sistem-arsip-digital-perpustakaan-mayoga'],
+            [
+                'category_id' => $catMap['teknologi-dan-inovasi']->id,
+                'user_id' => $alumni4->id,
+                'title' => 'Pengembangan Sistem Arsip Digital & Perpustakaan Mayoga: Panggilan Relawan Developer',
+                'body' => "Pihak madrasah berencana mendigitalkan ribuan koleksi buku langka dan arsip sejarah angkatan Mayoga sejak awal berdirinya.\n\nKami berinisiatif membentuk tim relawan pengembang sistem berbasis open-source (Next.js, Laravel, dan PostgreSQL).\nKebutuhan relawan:\n- UI/UX Designer\n- Frontend Developer\n- Backend & DevOps Engineer\n- Digital Archivist / Content Contributor\n\nPekerjaan bersifat volunter / amal jariyah untuk kemajuan almamater. Bagi yang berminat meluangkan waktu luang, mari berkolaborasi bersama.",
+                'status' => ForumThreadStatus::PUBLISHED,
+                'is_pinned' => false,
+                'is_locked' => false,
+                'views_count' => 740,
+                'last_post_at' => now()->subHours(10),
+            ]
+        );
+
+        ForumPost::updateOrCreate(
+            ['thread_id' => $thread6->id, 'user_id' => $alumni1->id, 'parent_id' => null],
+            [
+                'body' => "Saya siap berkontribusi di bagian Frontend dan komponen antarmuka ramah aksesibilitas. Project yang sangat mulia untuk masa depan madrasah!",
+                'status' => ForumPostStatus::PUBLISHED,
+            ]
+        );
+
+        // ---------------------------------------------------------------------
+        // 6. News Categories, 4 Articles, & Comments (100% Synced with newsData.ts)
+        // ---------------------------------------------------------------------
         $catKegiatan = NewsCategory::firstOrCreate(
             ['slug' => 'kegiatan-alumni'],
             ['name' => 'Kegiatan Alumni', 'description' => 'Agenda temu kangen, reuni akbar, dan silaturahmi alumni.']
@@ -333,7 +871,7 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // News 2 (supports frontend slug)
+        // News 2
         $news2 = News::updateOrCreate(
             ['slug' => 'program-beasiswa-alumni-berprestasi'],
             [
@@ -352,8 +890,6 @@ class DatabaseSeeder extends Seeder
                 'published_at' => now()->subDays(14),
             ]
         );
-
-        News::where('slug', 'program-beasiswa-untuk-alumni-berprestasi')->delete();
 
         // News 3
         $news3 = News::updateOrCreate(
@@ -399,7 +935,7 @@ class DatabaseSeeder extends Seeder
         NewsComment::updateOrCreate(
             ['news_id' => $news1->id, 'author_email' => 'budi.santoso@alumni.m3s.id'],
             [
-                'user_id' => $alumni1->id,
+                'user_id' => $alumni4->id,
                 'author_name' => 'Budi Santoso',
                 'content' => 'Alhamdulillah acara berjalan dengan sangat lancar dan penuh kenangan. Senang sekali bisa bertemu kembali dengan bapak ibu guru serta teman-teman seangkatan.',
                 'is_approved' => true,
@@ -409,24 +945,13 @@ class DatabaseSeeder extends Seeder
         NewsComment::updateOrCreate(
             ['news_id' => $news1->id, 'author_email' => 'siti.nurhaliza@tokopedia.com'],
             [
-                'user_id' => $alumni2->id,
+                'user_id' => $alumni1->id,
                 'author_name' => 'Siti Nurhaliza',
                 'content' => 'Terima kasih untuk panitia yang sudah menyiapkan acara sebaik ini. Usul untuk reuni berikutnya diadakan sesi panel sharing karir teknologi secara khusus.',
                 'is_approved' => true,
             ]
         );
 
-        NewsComment::updateOrCreate(
-            ['news_id' => $news1->id, 'author_email' => 'rina@karyarasa.id'],
-            [
-                'user_id' => null,
-                'author_name' => 'Rina Oktaviani',
-                'content' => 'Stand UMKM alumni juga ramai peminat. Bangga menjadi bagian dari keluarga besar MAN 3 Sleman!',
-                'is_approved' => true,
-            ]
-        );
-
-        // Pending comment for News 1 (for moderation queue)
         NewsComment::updateOrCreate(
             ['news_id' => $news1->id, 'author_email' => 'ahmad.fauzi@gmail.com'],
             [
@@ -441,14 +966,13 @@ class DatabaseSeeder extends Seeder
         NewsComment::updateOrCreate(
             ['news_id' => $news2->id, 'author_email' => 'farhan@student.ugm.ac.id'],
             [
-                'user_id' => null,
+                'user_id' => $alumni6->id,
                 'author_name' => 'Farhan Hakim',
                 'content' => 'Terima kasih banyak atas program beasiswa ini. Sangat membantu adik-adik angkatan yang sedang menempuh semester akhir perkuliahan.',
                 'is_approved' => true,
             ]
         );
 
-        // Pending comment for News 2 (for moderation queue)
         NewsComment::updateOrCreate(
             ['news_id' => $news2->id, 'author_email' => 'dinda.lestari@ui.ac.id'],
             [
@@ -459,19 +983,23 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // 7. Event Categories & Events
+        // ---------------------------------------------------------------------
+        // 7. Event Categories & Events (100% Synced with EventsPage.tsx)
+        // ---------------------------------------------------------------------
         $eventCat = EventCategory::firstOrCreate(
             ['slug' => 'temu-alumni'],
             ['name' => 'Temu Alumni', 'description' => 'Kegiatan silaturahmi luring maupun daring.']
         );
 
-        Event::firstOrCreate(
+        // Event 1: Webinar Karir Alumni
+        Event::updateOrCreate(
             ['slug' => 'webinar-karir-alumni-membangun-portofolio-global'],
             [
                 'category_id' => $eventCat->id,
                 'created_by' => $moderator->id,
                 'title' => 'Webinar Karir Alumni: Membangun Portofolio Global di Era Digital',
                 'description' => 'Sesi sharing bersama para alumni praktisi industri teknologi dan bisnis internasional tentang strategi karir.',
+                'cover_image' => 'events/covers/news-internasional.jpg',
                 'location' => 'Online (Zoom Meeting)',
                 'start_at' => now()->addDays(14)->setHour(19)->setMinute(0),
                 'end_at' => now()->addDays(14)->setHour(21)->setMinute(0),
@@ -482,45 +1010,190 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // 8. Pending Alumni for Verification Testing
-        $pendingAlumni = User::firstOrCreate(
+        // Event 2: Temu Kangen Silaturahmi Akbar
+        Event::updateOrCreate(
+            ['slug' => 'temu-kangen-silaturahmi-akbar-lintas-angkatan'],
+            [
+                'category_id' => $eventCat->id,
+                'created_by' => $moderator->id,
+                'title' => 'Temu Kangen & Silaturahmi Akbar Lintas Angkatan',
+                'description' => 'Pertemuan akbar untuk mempererat tali persaudaraan antar generasi Mayoga dari angkatan pertama hingga yang termuda.',
+                'cover_image' => 'events/covers/news-reuni.jpg',
+                'location' => 'Kampus MAN 3 Sleman, Jl. Magelang Km. 4',
+                'start_at' => now()->addMonths(2)->setHour(8)->setMinute(0),
+                'end_at' => now()->addMonths(2)->setHour(15)->setMinute(0),
+                'registration_start_at' => now()->addMonth(),
+                'registration_end_at' => now()->addMonths(2)->subDays(3),
+                'max_participants' => 1000,
+                'status' => EventStatus::PUBLISHED,
+            ]
+        );
+
+        // ---------------------------------------------------------------------
+        // 8. Pending Alumni for Verification (100% Synced with adminData.ts)
+        // ---------------------------------------------------------------------
+
+        // Pending 1: Rizky Ramadhan
+        $pending1 = User::updateOrCreate(
             ['email' => 'rizky.ramadhan@alumni.m3s.id'],
             [
                 'name' => 'Rizky Ramadhan, S.Kom.',
                 'password' => Hash::make('Password123!'),
                 'role' => UserRole::ALUMNI,
                 'status' => UserStatus::PENDING,
+                'avatar' => '/images/avatar-ahmad.jpg',
             ]
         );
-
-        AlumniProfile::firstOrCreate(
-            ['user_id' => $pendingAlumni->id],
+        AlumniProfile::updateOrCreate(
+            ['user_id' => $pending1->id],
             [
                 'graduation_year' => 2021,
                 'graduation_class' => 'IPA 1',
                 'occupation' => 'Frontend Engineer',
                 'company' => 'PT Inovasi Digital Nusantara',
-                'current_city' => 'Sleman',
+                'current_city' => 'Sleman, D.I. Yogyakarta',
                 'current_country' => 'Indonesia',
                 'visibility' => ProfileVisibility::PUBLIC,
             ]
         );
 
-        // 9. Sample Spam Report for Moderation Testing
-        $sampleThread = ForumThread::first();
-        if ($sampleThread) {
-            \App\Models\Report::firstOrCreate(
-                [
-                    'reportable_type' => ForumThread::class,
-                    'reportable_id' => $sampleThread->id,
-                ],
-                [
-                    'user_id' => $alumni1->id,
-                    'reason' => 'spam',
-                    'description' => 'Terdapat indikasi pesan promosi komersial tidak berizin pada topik ini.',
-                    'status' => \App\Enums\ReportStatus::PENDING,
-                ]
-            );
-        }
+        // Pending 2: Fadhilah Anindya
+        $pending2 = User::updateOrCreate(
+            ['email' => 'fadhilah.anindya@alumni.m3s.id'],
+            [
+                'name' => 'Fadhilah Anindya, S.E.',
+                'password' => Hash::make('Password123!'),
+                'role' => UserRole::ALUMNI,
+                'status' => UserStatus::PENDING,
+                'avatar' => '/images/avatar-siti.jpg',
+            ]
+        );
+        AlumniProfile::updateOrCreate(
+            ['user_id' => $pending2->id],
+            [
+                'graduation_year' => 2019,
+                'graduation_class' => 'IPS 2',
+                'occupation' => 'Financial Analyst',
+                'company' => 'Bank Syariah Indonesia',
+                'current_city' => 'Jakarta Selatan',
+                'current_country' => 'Indonesia',
+                'visibility' => ProfileVisibility::PUBLIC,
+            ]
+        );
+
+        // Pending 3: Muhammad Ihsan Kamil
+        $pending3 = User::updateOrCreate(
+            ['email' => 'ihsan.kamil@alumni.m3s.id'],
+            [
+                'name' => 'Muhammad Ihsan Kamil',
+                'password' => Hash::make('Password123!'),
+                'role' => UserRole::ALUMNI,
+                'status' => UserStatus::PENDING,
+                'avatar' => '/images/avatar-ahmad.jpg',
+            ]
+        );
+        AlumniProfile::updateOrCreate(
+            ['user_id' => $pending3->id],
+            [
+                'graduation_year' => 2023,
+                'graduation_class' => 'Keagamaan 1',
+                'occupation' => 'Mahasiswa UIN Sunan Kalijaga',
+                'company' => 'Fakultas Ushuluddin',
+                'current_city' => 'Yogyakarta',
+                'current_country' => 'Indonesia',
+                'visibility' => ProfileVisibility::PUBLIC,
+            ]
+        );
+
+        // ---------------------------------------------------------------------
+        // 9. Moderation Reports (100% Synced with adminData.ts)
+        // ---------------------------------------------------------------------
+
+        // Report 1: Spam loan reply on Topic 1
+        $spamPost = ForumPost::firstOrCreate(
+            ['thread_id' => $thread1->id, 'body' => 'Halo semua, dapatkan pinjaman dana kilat bunga 0% hubungi wa.me/6281299998888 proses 5 menit cair!'],
+            [
+                'user_id' => $pending1->id,
+                'status' => ForumPostStatus::PUBLISHED,
+            ]
+        );
+
+        Report::updateOrCreate(
+            [
+                'reportable_type' => ForumPost::class,
+                'reportable_id' => $spamPost->id,
+            ],
+            [
+                'user_id' => $alumni1->id,
+                'reason' => 'spam',
+                'description' => 'Komentar berisi promosi pinjaman online ilegal yang tidak ada kaitannya dengan agenda reuni madrasah.',
+                'status' => ReportStatus::PENDING,
+            ]
+        );
+
+        // Report 2: Spam chip thread
+        $spamThread = ForumThread::firstOrCreate(
+            ['slug' => 'jual-akun-game-chip-murah-terpercaya-garansi-resmi'],
+            [
+                'category_id' => $catMap['diskusi-umum']->id,
+                'user_id' => $pending3->id,
+                'title' => 'Jual Akun Game & Chip Murah Terpercaya Garansi Resmi',
+                'body' => 'Bagi rekan-rekan yang butuh chip game terpercaya bisa langsung transfer ke rekening admin berikut...',
+                'status' => ForumThreadStatus::PUBLISHED,
+                'is_pinned' => false,
+                'is_locked' => false,
+                'views_count' => 12,
+                'last_post_at' => now(),
+            ]
+        );
+
+        Report::updateOrCreate(
+            [
+                'reportable_type' => ForumThread::class,
+                'reportable_id' => $spamThread->id,
+            ],
+            [
+                'user_id' => $alumni4->id,
+                'reason' => 'spam',
+                'description' => 'Akun baru membuat thread jualan tidak berizin di kategori Diskusi Umum.',
+                'status' => ReportStatus::PENDING,
+            ]
+        );
+
+        // Report 3: Impersonation Profile (Hendra Saputra)
+        $fakeUser = User::firstOrCreate(
+            ['email' => 'hendra.fake@example.com'],
+            [
+                'name' => 'Hendra Saputra',
+                'password' => Hash::make('Password123!'),
+                'role' => UserRole::ALUMNI,
+                'status' => UserStatus::PENDING,
+                'avatar' => '/images/avatar-ahmad.jpg',
+            ]
+        );
+        $fakeProfile = AlumniProfile::firstOrCreate(
+            ['user_id' => $fakeUser->id],
+            [
+                'graduation_year' => 2015,
+                'graduation_class' => 'IPA 1',
+                'occupation' => 'Freelance',
+                'company' => 'Self Employed',
+                'current_city' => 'Yogyakarta',
+                'visibility' => ProfileVisibility::PUBLIC,
+            ]
+        );
+
+        Report::updateOrCreate(
+            [
+                'reportable_type' => AlumniProfile::class,
+                'reportable_id' => $fakeProfile->id,
+            ],
+            [
+                'user_id' => $alumni2->id,
+                'reason' => 'impersonation',
+                'description' => 'Mohon diverifikasi ulang keabsahan ijazah karena ada indikasi klaim identitas alumni palsu.',
+                'status' => ReportStatus::REVIEWING,
+            ]
+        );
     }
 }

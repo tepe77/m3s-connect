@@ -42,7 +42,12 @@ class EventResource extends Resource
                     ->required()
                     ->columnSpanFull(),
                 Forms\Components\FileUpload::make('cover_image')
-                    ->image(),
+                    ->label('Foto Sampul Kegiatan')
+                    ->image()
+                    ->disk('public')
+                    ->directory('events/covers')
+                    ->visibility('public')
+                    ->imageEditor(),
                 Forms\Components\TextInput::make('location')
                     ->maxLength(255),
                 Forms\Components\DateTimePicker::make('start_at')
@@ -63,15 +68,35 @@ class EventResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id')
-                    ->label('ID'),
-                Tables\Columns\TextColumn::make('category.name'),
-                Tables\Columns\TextColumn::make('created_by'),
+                Tables\Columns\ImageColumn::make('cover_image')
+                    ->label('Sampul')
+                    ->circular()
+                    ->disk('public')
+                    ->defaultImageUrl(asset('images/doc-baksos.jpg'))
+                    ->checkFileExistence(false)
+                    ->getStateUsing(function (Event $record): ?string {
+                        if (empty($record->cover_image)) {
+                            return null;
+                        }
+
+                        if (str_starts_with($record->cover_image, 'http://') || str_starts_with($record->cover_image, 'https://')) {
+                            return $record->cover_image;
+                        }
+
+                        if (str_starts_with($record->cover_image, '/images/') || str_starts_with($record->cover_image, 'images/')) {
+                            return asset(ltrim($record->cover_image, '/'));
+                        }
+
+                        return asset('storage/' . ltrim($record->cover_image, '/'));
+                    }),
                 Tables\Columns\TextColumn::make('title')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('slug')
-                    ->searchable(),
-                Tables\Columns\ImageColumn::make('cover_image'),
+                    ->label('Judul Kegiatan')
+                    ->searchable()
+                    ->sortable()
+                    ->weight('bold'),
+                Tables\Columns\TextColumn::make('category.name')
+                    ->label('Kategori')
+                    ->badge(),
                 Tables\Columns\TextColumn::make('location')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('start_at')
