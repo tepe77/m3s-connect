@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\ForumCategoryResource\Pages;
 use App\Models\ForumCategory;
 use Filament\Forms;
+use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -31,47 +32,105 @@ class ForumCategoryResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Informasi Kategori')
+                Forms\Components\Grid::make(12)
                     ->schema([
-                        Forms\Components\TextInput::make('name')
-                            ->label('Nama Kategori')
-                            ->required()
-                            ->maxLength(100)
-                            ->live(onBlur: true)
-                            ->afterStateUpdated(fn ($state, callable $set) => $set('slug', Str::slug($state))),
-                        Forms\Components\TextInput::make('slug')
-                            ->label('Slug URL')
-                            ->required()
-                            ->unique(ignoreRecord: true)
-                            ->maxLength(100),
-                        Forms\Components\ColorPicker::make('color')
-                            ->label('Warna Identitas')
-                            ->default('#0D9488'),
-                        Forms\Components\TextInput::make('icon')
-                            ->label('Nama / Kode Ikon')
-                            ->default('chat')
-                            ->maxLength(50),
-                        Forms\Components\Textarea::make('description')
-                            ->label('Deskripsi Ruang Diskusi')
-                            ->columnSpanFull(),
-                    ])->columns(2),
+                        // Left Column: Category Content and Identification (8 cols)
+                        Forms\Components\Group::make([
+                            Forms\Components\Section::make('Informasi Utama Kategori')
+                                ->description('Atur judul dan cakupan topik diskusi komunitas madrasah.')
+                                ->schema([
+                                    Forms\Components\TextInput::make('name')
+                                        ->label('Nama Kategori Forum')
+                                        ->placeholder('Misal: Peluang Karir & Magang')
+                                        ->required()
+                                        ->maxLength(100)
+                                        ->live(onBlur: true)
+                                        ->afterStateUpdated(function (string $operation, ?string $state, Forms\Set $set): void {
+                                            if ($operation === 'create' && filled($state)) {
+                                                $set('slug', Str::slug($state));
+                                            }
+                                        }),
 
-                Forms\Components\Section::make('Tampilan Visual & Pengaturan')
-                    ->schema([
-                        Forms\Components\TextInput::make('image')
-                            ->label('URL Cover Banner')
-                            ->default('/images/hero-man3-sleman.jpg')
-                            ->maxLength(255),
-                        Forms\Components\TextInput::make('sort_order')
-                            ->label('Urutan Tampil')
-                            ->required()
-                            ->numeric()
-                            ->default(1),
-                        Forms\Components\Toggle::make('is_active')
-                            ->label('Status Aktif')
-                            ->default(true)
-                            ->required(),
-                    ])->columns(3),
+                                    Forms\Components\TextInput::make('slug')
+                                        ->label('Slug URL Kategori')
+                                        ->placeholder('peluang-karir-dan-magang')
+                                        ->required()
+                                        ->maxLength(100)
+                                        ->unique(ForumCategory::class, 'slug', ignoreRecord: true)
+                                        ->helperText('Otomatis dihasilkan dari nama kategori dengan tanda hubung (-) sebagai pengganti spasi.')
+                                        ->suffixAction(
+                                            Action::make('generateSlug')
+                                                ->icon('heroicon-m-arrow-path')
+                                                ->tooltip('Buat ulang slug dari nama kategori saat ini')
+                                                ->action(function (Forms\Get $get, Forms\Set $set): void {
+                                                    $name = $get('name');
+                                                    if (filled($name)) {
+                                                        $set('slug', Str::slug($name));
+                                                    }
+                                                })
+                                        ),
+
+                                    Forms\Components\Textarea::make('description')
+                                        ->label('Deskripsi Ruang Diskusi')
+                                        ->placeholder('Jelaskan tujuan dan jenis topik yang cocok didiskusikan dalam kategori ini...')
+                                        ->rows(3)
+                                        ->columnSpanFull()
+                                        ->helperText('Deskripsi singkat akan tampil pada kartu kategori di portal alumni.'),
+                                ])->columns(2),
+
+                            Forms\Components\Section::make('Identitas Visual & Sampul')
+                                ->description('Warna tema dan gambar latar kartu kategori pada tampilan grid komunitas.')
+                                ->schema([
+                                    Forms\Components\ColorPicker::make('color')
+                                        ->label('Warna Aksen Identitas')
+                                        ->default('#0D9488')
+                                        ->required()
+                                        ->helperText('Warna penanda badge dan kartu kategori (contoh: Toska Mayoga #0D9488).'),
+
+                                    Forms\Components\Select::make('icon')
+                                        ->label('Ikon Simbol')
+                                        ->options([
+                                            'chat' => '💬 Chat / Obrolan Umum',
+                                            'briefcase' => '💼 Karir & Dunia Kerja',
+                                            'calendar' => '📅 Agenda, Reuni & Kegiatan',
+                                            'store' => '🏪 Wirausaha & Bisnis Alumni',
+                                            'chip' => '💻 Rekayasa Teknologi & AI',
+                                            'academic' => '🎓 Pendidikan & Studi Lanjut',
+                                            'heart' => '❤️ Sosial, Baksos & Kemanusiaan',
+                                            'globe' => '🌐 Komunitas Global & Wilayah',
+                                        ])
+                                        ->default('chat')
+                                        ->required(),
+
+                                    Forms\Components\TextInput::make('image')
+                                        ->label('URL Sampul Visual (Banner)')
+                                        ->placeholder('/images/hero-man3-sleman.jpg')
+                                        ->default('/images/hero-man3-sleman.jpg')
+                                        ->maxLength(255)
+                                        ->columnSpanFull()
+                                        ->helperText('Path gambar dokumentasi madrasah di portal frontend.'),
+                                ])->columns(2),
+                        ])->columnSpan(['lg' => 8]),
+
+                        // Right Column: Organization and Visibility (4 cols)
+                        Forms\Components\Group::make([
+                            Forms\Components\Section::make('Pengaturan & Visibilitas')
+                                ->schema([
+                                    Forms\Components\TextInput::make('sort_order')
+                                        ->label('Urutan Tampil (Sort Order)')
+                                        ->required()
+                                        ->numeric()
+                                        ->default(1)
+                                        ->helperText('Urutan prioritas kategori pada menu filter dan tab utama forum.'),
+
+                                    Forms\Components\Toggle::make('is_active')
+                                        ->label('Status Aktif')
+                                        ->default(true)
+                                        ->required()
+                                        ->helperText('Aktifkan agar kategori ini dapat dilihat dan digunakan oleh alumni untuk membuat topik.'),
+                                ]),
+                        ])->columnSpan(['lg' => 4]),
+                    ]),
             ]);
     }
 
@@ -80,33 +139,56 @@ class ForumCategoryResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\ImageColumn::make('image')
-                    ->label('Cover')
+                    ->label('Sampul')
                     ->circular(),
+
                 Tables\Columns\ColorColumn::make('color')
                     ->label('Warna'),
+
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nama Kategori')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->weight('bold')
+                    ->description(fn (ForumCategory $record): string => Str::limit($record->description ?? '', 55)),
+
                 Tables\Columns\TextColumn::make('slug')
-                    ->label('Slug')
-                    ->searchable()
-                    ->color('gray'),
+                    ->label('Slug URL')
+                    ->fontFamily('mono')
+                    ->color('gray')
+                    ->searchable(),
+
                 Tables\Columns\TextColumn::make('threads_count')
                     ->counts('threads')
                     ->label('Jumlah Topik')
                     ->badge()
                     ->color('success')
                     ->sortable(),
+
                 Tables\Columns\TextColumn::make('sort_order')
                     ->label('Urutan')
                     ->numeric()
                     ->sortable(),
+
                 Tables\Columns\ToggleColumn::make('is_active')
                     ->label('Aktif'),
             ])
             ->defaultSort('sort_order', 'asc')
+            ->filters([
+                Tables\Filters\TernaryFilter::make('is_active')
+                    ->label('Filter Status Aktif')
+                    ->placeholder('Semua Kategori')
+                    ->trueLabel('Hanya Kategori Aktif')
+                    ->falseLabel('Hanya Kategori Nonaktif'),
+            ])
             ->actions([
+                Tables\Actions\Action::make('preview_portal')
+                    ->label('Lihat Forum')
+                    ->icon('heroicon-m-arrow-top-right-on-square')
+                    ->color('gray')
+                    ->url(fn (ForumCategory $record): string => "http://localhost:3000/forum?category={$record->slug}")
+                    ->openUrlInNewTab(),
+
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])

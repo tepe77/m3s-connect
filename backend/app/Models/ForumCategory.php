@@ -15,6 +15,7 @@ class ForumCategory extends Model
         'name',
         'slug',
         'description',
+        'color',
         'icon',
         'image',
         'sort_order',
