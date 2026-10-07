@@ -141,7 +141,16 @@ class ForumController extends Controller
      */
     public function storePost(Request $request, string $threadId): JsonResponse
     {
-        $thread = ForumThread::findOrFail($threadId);
+        $thread = Str::isUuid($threadId)
+            ? ForumThread::find($threadId)
+            : ForumThread::where('slug', $threadId)->first();
+
+        if (!$thread) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Topik diskusi tidak ditemukan.',
+            ], 404);
+        }
 
         if ($thread->is_locked) {
             return response()->json([
@@ -178,7 +187,17 @@ class ForumController extends Controller
      */
     public function toggleThreadLike(Request $request, string $threadId): JsonResponse
     {
-        $thread = ForumThread::findOrFail($threadId);
+        $thread = Str::isUuid($threadId)
+            ? ForumThread::find($threadId)
+            : ForumThread::where('slug', $threadId)->first();
+
+        if (!$thread) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Topik diskusi tidak ditemukan.',
+            ], 404);
+        }
+
         $userId = $request->user()->id;
 
         $existing = ForumLike::where('thread_id', $thread->id)

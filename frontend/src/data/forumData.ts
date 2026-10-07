@@ -658,6 +658,27 @@ export function addTopic(newTopic: Omit<ForumTopic, "id" | "viewsCount" | "repli
 
   const updated = [created, ...topics];
   saveStoredTopics(updated);
+
+  // Background sync to backend API if authenticated
+  try {
+    const token = typeof window !== "undefined" ? localStorage.getItem("m3s_token") : null;
+    if (token) {
+      fetch("http://localhost:8000/api/v1/forum/threads", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          category_id: newTopic.categoryId,
+          title: newTopic.title,
+          body: newTopic.body,
+        }),
+      }).catch(() => {});
+    }
+  } catch {}
+
   return created;
 }
 
@@ -694,6 +715,26 @@ export function addReply(threadSlug: string, replyData: { body: string; author: 
 
   topics[topicIndex] = updatedTopic;
   saveStoredTopics(topics);
+
+  // Background sync to backend API if authenticated
+  try {
+    const token = typeof window !== "undefined" ? localStorage.getItem("m3s_token") : null;
+    if (token) {
+      fetch(`http://localhost:8000/api/v1/forum/threads/${threadSlug}/posts`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          body: replyData.body,
+          parent_id: replyData.parentId,
+        }),
+      }).catch(() => {});
+    }
+  } catch {}
+
   return newReply;
 }
 
@@ -708,6 +749,22 @@ export function toggleTopicLike(threadSlug: string): boolean {
 
   topics[topicIndex] = { ...topic, isLiked, likesCount };
   saveStoredTopics(topics);
+
+  // Background sync to backend API if authenticated
+  try {
+    const token = typeof window !== "undefined" ? localStorage.getItem("m3s_token") : null;
+    if (token) {
+      fetch(`http://localhost:8000/api/v1/forum/threads/${threadSlug}/like`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }).catch(() => {});
+    }
+  } catch {}
+
   return isLiked;
 }
 
