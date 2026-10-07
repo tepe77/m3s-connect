@@ -81,6 +81,12 @@ Route::prefix('v1')->group(function () {
         });
     });
 
+    // Public Documentation & Gallery Routes
+    Route::prefix('documentations')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\V1\DocumentationController::class, 'index']);
+        Route::get('/{slug}', [\App\Http\Controllers\Api\V1\DocumentationController::class, 'show']);
+    });
+
     // Content Report Submission (Authenticated members)
     Route::middleware('auth:sanctum')->post('/reports', [AdminController::class, 'submitReport']);
 

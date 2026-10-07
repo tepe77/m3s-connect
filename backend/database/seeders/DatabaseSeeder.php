@@ -14,6 +14,7 @@ use App\Models\AlumniEducation;
 use App\Models\AlumniExperience;
 use App\Models\AlumniProfile;
 use App\Models\AlumniSocialLink;
+use App\Models\Documentation;
 use App\Models\Event;
 use App\Models\EventCategory;
 use App\Models\ForumCategory;
@@ -1193,6 +1194,68 @@ class DatabaseSeeder extends Seeder
                 'reason' => 'impersonation',
                 'description' => 'Mohon diverifikasi ulang keabsahan ijazah karena ada indikasi klaim identitas alumni palsu.',
                 'status' => ReportStatus::REVIEWING,
+            ]
+        );
+
+        // ---------------------------------------------------------------------
+        // 8. Documentation & Activity Photo Galleries (Synced with frontend ALBUMS)
+        // ---------------------------------------------------------------------
+        Documentation::updateOrCreate(
+            ['slug' => 'reuni-akbar-2025'],
+            [
+                'title' => 'Reuni Akbar 2025',
+                'category' => 'Reuni & Temu Kangen',
+                'event_date' => '2025-05-12',
+                'photo_count' => 128,
+                'cover_image' => '/images/news-reuni.jpg',
+                'photos' => [
+                    '/images/news-reuni.jpg',
+                    '/images/hero-building.jpg',
+                    '/images/hero-man3-sleman.jpg',
+                    '/images/news-peluncuran.jpg',
+                ],
+                'description' => 'Dokumentasi kemeriahan temu kangen alumni lintas angkatan yang berlangsung di halaman kampus MAN 3 Sleman.',
+                'is_featured' => true,
+                'status' => 'published',
+                'published_at' => '2025-05-12 10:00:00',
+            ]
+        );
+
+        Documentation::updateOrCreate(
+            ['slug' => 'kegiatan-bakti-sosial-penyaluran-donasi'],
+            [
+                'title' => 'Kegiatan Bakti Sosial & Penyaluran Donasi',
+                'category' => 'Sosial & Pengabdian',
+                'event_date' => '2025-04-20',
+                'photo_count' => 45,
+                'cover_image' => '/images/doc-baksos.jpg',
+                'photos' => [
+                    '/images/doc-baksos.jpg',
+                    '/images/news-beasiswa.jpg',
+                ],
+                'description' => 'Aksi nyata kepedulian alumni dalam bakti sosial dan bantuan pendidikan untuk warga sekitar Sleman.',
+                'is_featured' => true,
+                'status' => 'published',
+                'published_at' => '2025-04-20 09:00:00',
+            ]
+        );
+
+        Documentation::updateOrCreate(
+            ['slug' => 'wisuda-pelepasan-siswa-kelas-xii'],
+            [
+                'title' => 'Wisuda & Pelepasan Siswa Kelas XII',
+                'category' => 'Seremoni Madrasah',
+                'event_date' => '2024-06-15',
+                'photo_count' => 84,
+                'cover_image' => '/images/doc-wisuda.jpg',
+                'photos' => [
+                    '/images/doc-wisuda.jpg',
+                    '/images/news-internasional.jpg',
+                ],
+                'description' => 'Momen bersejarah pelepasan wisudawan dan peresmian bergabungnya angkatan baru ke dalam keluarga besar alumni.',
+                'is_featured' => true,
+                'status' => 'published',
+                'published_at' => '2024-06-15 08:30:00',
             ]
         );
     }

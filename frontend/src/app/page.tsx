@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { HomeForumThreads } from "@/components/home/HomeForumThreads";
+import { HomeDocumentationSection } from "@/components/home/HomeDocumentationSection";
 
 export default function HomePage() {
   return (
@@ -508,86 +509,8 @@ export default function HomePage() {
               </Link>
             </div>
 
-            {/* 3 Gallery Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 flex-1">
-              {/* Doc Card 1 */}
-              <Link
-                href="/archive"
-                className="group bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden shadow-xs hover:border-emerald-300 transition-all flex flex-col"
-              >
-                <div className="relative aspect-4/3 w-full bg-slate-100">
-                  <Image
-                    src="/images/news-reuni.jpg"
-                    alt="Reuni Akbar 2025"
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="absolute bottom-2 right-2 p-1 rounded-md bg-black/60 text-white backdrop-blur-xs">
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                  </div>
-                </div>
-                <div className="p-3 space-y-1">
-                  <h3 className="text-xs font-bold text-[#0F172A] leading-tight truncate group-hover:text-[#0D9488] transition-colors">
-                    Reuni Akbar 2025
-                  </h3>
-                  <p className="text-[10px] text-[#64748B]">12 Mei 2025</p>
-                </div>
-              </Link>
-
-              {/* Doc Card 2 */}
-              <Link
-                href="/archive"
-                className="group bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden shadow-xs hover:border-emerald-300 transition-all flex flex-col"
-              >
-                <div className="relative aspect-4/3 w-full bg-slate-100">
-                  <Image
-                    src="/images/doc-baksos.jpg"
-                    alt="Kegiatan Bakti Sosial"
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="absolute bottom-2 right-2 p-1 rounded-md bg-black/60 text-white backdrop-blur-xs">
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                  </div>
-                </div>
-                <div className="p-3 space-y-1">
-                  <h3 className="text-xs font-bold text-[#0F172A] leading-tight truncate group-hover:text-[#0D9488] transition-colors">
-                    Kegiatan Bakti Sosial
-                  </h3>
-                  <p className="text-[10px] text-[#64748B]">20 April 2025</p>
-                </div>
-              </Link>
-
-              {/* Doc Card 3 */}
-              <Link
-                href="/archive"
-                className="group bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden shadow-xs hover:border-emerald-300 transition-all flex flex-col"
-              >
-                <div className="relative aspect-4/3 w-full bg-slate-100">
-                  <Image
-                    src="/images/doc-wisuda.jpg"
-                    alt="Wisuda & Pelepasan Siswa"
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="absolute bottom-2 right-2 p-1 rounded-md bg-black/60 text-white backdrop-blur-xs">
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                  </div>
-                </div>
-                <div className="p-3 space-y-1">
-                  <h3 className="text-xs font-bold text-[#0F172A] leading-tight truncate group-hover:text-[#0D9488] transition-colors">
-                    Wisuda & Pelepasan Siswa
-                  </h3>
-                  <p className="text-[10px] text-[#64748B]">15 Juni 2024</p>
-                </div>
-              </Link>
-            </div>
+            {/* 3 Dynamic Gallery Cards */}
+            <HomeDocumentationSection />
 
             {/* Slider Dots Indicator */}
             <div className="flex items-center justify-center gap-1.5 pt-4">
