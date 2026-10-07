@@ -161,6 +161,17 @@ export function Navbar() {
                   <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-emerald-500" />
                 </Link>
 
+                {(currentUser.role === "admin" || currentUser.role === "moderator") && (
+                  <Link
+                    href="/admin"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-amber-900 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-full transition-colors"
+                    title="Pusat Moderasi & Administrasi"
+                  >
+                    <span>🛡️</span>
+                    <span className="hidden sm:inline">Moderasi</span>
+                  </Link>
+                )}
+
                 <Link
                   href="/dashboard"
                   className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-[#0D9488] bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0D9488]"

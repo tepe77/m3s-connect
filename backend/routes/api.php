@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\V1\AdminController;
 use App\Http\Controllers\Api\V1\AlumniController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\DirectMessageController;
@@ -63,5 +64,28 @@ Route::prefix('v1')->group(function () {
             Route::post('/threads/{id}/posts', [ForumController::class, 'storePost']);
             Route::post('/threads/{id}/like', [ForumController::class, 'toggleThreadLike']);
         });
+    });
+
+    // Content Report Submission (Authenticated members)
+    Route::middleware('auth:sanctum')->post('/reports', [AdminController::class, 'submitReport']);
+
+    // Admin & Moderator Operations Panel
+    Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
+        Route::get('/stats', [AdminController::class, 'stats']);
+
+        // Forum Category Management
+        Route::get('/forum/categories', [AdminController::class, 'listCategories']);
+        Route::post('/forum/categories', [AdminController::class, 'storeCategory']);
+        Route::put('/forum/categories/{id}', [AdminController::class, 'updateCategory']);
+        Route::delete('/forum/categories/{id}', [AdminController::class, 'destroyCategory']);
+
+        // Moderation & Spam Reports
+        Route::get('/reports', [AdminController::class, 'listReports']);
+        Route::patch('/reports/{id}', [AdminController::class, 'handleReport']);
+
+        // Alumni Registration Verifications
+        Route::get('/alumni/verifications', [AdminController::class, 'listAlumniVerifications']);
+        Route::post('/alumni/{id}/verify', [AdminController::class, 'approveAlumni']);
+        Route::post('/alumni/{id}/reject', [AdminController::class, 'rejectAlumni']);
     });
 });

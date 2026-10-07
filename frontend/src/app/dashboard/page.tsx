@@ -109,15 +109,15 @@ export default function MemberDashboardPage() {
                   Akses {user?.role === "admin" ? "Administrator" : "Moderator Komunitas"} Aktif
                 </h4>
                 <p className="text-[11px] text-slate-300">
-                  Anda memiliki wewenang untuk menyematkan topik (Pin), mengunci diskusi, dan memoderasi direktori.
+                  Anda memiliki wewenang untuk mengelola kategori forum, meninjau laporan spam, dan memverifikasi calon alumni.
                 </p>
               </div>
             </div>
             <Link
-              href="/forum"
+              href="/admin"
               className="inline-flex items-center justify-center px-4 py-1.5 text-xs font-bold text-[#0F172A] bg-[#2DD4BF] hover:bg-emerald-300 rounded-full transition-colors shrink-0"
             >
-              Buka Moderasi Forum &rarr;
+              Buka Panel Moderasi & Admin &rarr;
             </Link>
           </div>
         )}
