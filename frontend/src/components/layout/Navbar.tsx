@@ -151,12 +151,12 @@ export function Navbar() {
             {currentUser ? (
               <div className="flex items-center gap-2">
                 <Link
-                  href={currentUser.role === "alumni" ? "/profile" : "/dashboard"}
+                  href="/dashboard"
                   className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-[#0D9488] bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0D9488]"
-                  title="Lihat Profil Saya"
+                  title="Ruang Anggota"
                 >
                   <span className="w-2 h-2 rounded-full bg-[#0D9488]" />
-                  <span className="max-w-[130px] truncate">{currentUser.name || "Profil Saya"}</span>
+                  <span className="max-w-[130px] truncate">{currentUser.name || "Ruang Anggota"}</span>
                 </Link>
                 <button
                   type="button"
@@ -250,11 +250,11 @@ export function Navbar() {
               {currentUser ? (
                 <>
                   <Link
-                    href={currentUser.role === "alumni" ? "/profile" : "/dashboard"}
+                    href="/dashboard"
                     onClick={() => setMobileMenuOpen(false)}
                     className="flex items-center justify-center px-4 py-2.5 text-xs font-bold text-[#0D9488] bg-emerald-50 rounded-full border border-emerald-200"
                   >
-                    Profil Saya ({currentUser.name})
+                    Ruang Anggota ({currentUser.name})
                   </Link>
                   <button
                     type="button"

@@ -48,8 +48,11 @@ export default function LoginPage() {
         localStorage.setItem("m3s_token", data.data.token);
         localStorage.setItem("m3s_user", JSON.stringify(data.data.user));
 
-        if (data.data.user?.role === "alumni") {
-          router.push("/profile");
+        const user = data.data.user;
+        const isOnboarded = localStorage.getItem(`m3s_onboarded_${user?.id}`);
+
+        if (!isOnboarded) {
+          router.push("/onboarding");
         } else {
           router.push("/dashboard");
         }
@@ -109,6 +112,23 @@ export default function LoginPage() {
                 className="px-3.5 py-1.5 text-xs font-semibold rounded-full bg-white border border-slate-300 hover:border-[#0D9488] hover:text-[#0D9488] text-[#0F172A] transition-colors shadow-2xs"
               >
                 Moderator
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  try {
+                    Object.keys(localStorage).forEach((key) => {
+                      if (key.startsWith("m3s_onboarded_")) {
+                        localStorage.removeItem(key);
+                      }
+                    });
+                  } catch {}
+                  fillCredentials("budi.santoso@alumni.m3s.id");
+                }}
+                className="px-3.5 py-1.5 text-xs font-semibold rounded-full bg-emerald-50 border border-emerald-300 text-[#0D9488] hover:bg-emerald-100 transition-colors shadow-2xs"
+                title="Mengosongkan riwayat orientasi agar dapat menguji alur Onboarding"
+              >
+                Uji User Baru &rarr; Onboarding
               </button>
             </div>
           </div>

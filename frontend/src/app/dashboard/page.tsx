@@ -67,47 +67,96 @@ export default function MemberDashboardPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <Link
+              href="/onboarding"
+              className="inline-flex items-center justify-center min-h-[40px] px-3.5 py-2 text-xs font-semibold text-[#0D9488] bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-full transition-colors gap-1.5"
+            >
+              <span>🧭</span>
+              <span>Tur Panduan (Walkthrough)</span>
+            </Link>
+
             {user?.role === "admin" && (
               <a
                 href="http://localhost:8000/admin"
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center justify-center min-h-[44px] px-4 py-2 text-xs font-semibold text-white bg-[#0F172A] hover:bg-[#1E293B] rounded-md transition-colors"
+                className="inline-flex items-center justify-center min-h-[40px] px-4 py-2 text-xs font-semibold text-white bg-[#0F172A] hover:bg-[#1E293B] rounded-full transition-colors"
               >
-                Buka Panel Filament Admin ↗
+                Panel Filament Admin ↗
               </a>
             )}
+
             <button
               type="button"
               onClick={handleLogout}
-              className="inline-flex items-center justify-center min-h-[44px] px-4 py-2 text-xs font-semibold text-[#EF4444] border border-[#EF4444]/30 hover:bg-[#EF4444]/10 rounded-md transition-colors"
+              className="inline-flex items-center justify-center min-h-[40px] px-4 py-2 text-xs font-semibold text-rose-600 bg-white hover:bg-rose-50 border border-rose-200 rounded-full transition-colors"
             >
               Keluar Akun
             </button>
           </div>
         </div>
 
+        {/* Moderator Notice Bar */}
+        {(user?.role === "moderator" || user?.role === "admin") && (
+          <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-emerald-900 to-[#0F172A] text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+            <div className="flex items-center gap-3">
+              <span className="w-9 h-9 rounded-xl bg-emerald-500/20 text-[#2DD4BF] flex items-center justify-center font-bold text-sm shrink-0">
+                🛡️
+              </span>
+              <div>
+                <h4 className="text-xs font-bold text-white">
+                  Akses {user?.role === "admin" ? "Administrator" : "Moderator Komunitas"} Aktif
+                </h4>
+                <p className="text-[11px] text-slate-300">
+                  Anda memiliki wewenang untuk menyematkan topik (Pin), mengunci diskusi, dan memoderasi direktori.
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/forum"
+              className="inline-flex items-center justify-center px-4 py-1.5 text-xs font-bold text-[#0F172A] bg-[#2DD4BF] hover:bg-emerald-300 rounded-full transition-colors shrink-0"
+            >
+              Buka Moderasi Forum &rarr;
+            </Link>
+          </div>
+        )}
+
         {/* Dashboard Sections Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Main Column */}
           <div className="md:col-span-2 space-y-8">
             {/* Profile Completion Card */}
-            <div className="bg-white p-6 rounded-lg border border-[#E2E8F0] space-y-3">
+            <div className="bg-white p-6 rounded-2xl border border-[#E2E8F0] shadow-2xs space-y-3.5">
               <div className="flex items-center justify-between">
                 <h2 className="text-base font-bold text-[#0F172A]">Kelengkapan Profil Alumni</h2>
-                <span className="text-xs font-bold text-[#2BA8A2]">85% Lengkap</span>
+                <span className="text-xs font-bold text-[#0D9488]">85% Lengkap</span>
               </div>
               <div className="w-full bg-[#E2E8F0] h-2 rounded-full overflow-hidden">
-                <div className="bg-[#2BA8A2] h-full w-[85%] rounded-full" />
+                <div className="bg-[#0D9488] h-full w-[85%] rounded-full" />
               </div>
               <p className="text-xs text-[#64748B]">
                 Tambahkan riwayat pengalaman kerja dan akun sosial media agar teman seangkatan mudah menghubungi Anda.
               </p>
+              <div className="pt-2 flex flex-wrap items-center gap-2.5">
+                <Link
+                  href="/profile"
+                  className="inline-flex items-center justify-center px-4 py-2 text-xs font-bold text-white bg-[#0D9488] hover:bg-[#0f766e] rounded-full transition-colors gap-1.5"
+                >
+                  <span>Edit Profil Saya</span>
+                  <span>&rarr;</span>
+                </Link>
+                <Link
+                  href="/alumni"
+                  className="inline-flex items-center justify-center px-4 py-2 text-xs font-semibold text-[#0F172A] bg-slate-100 hover:bg-slate-200 rounded-full transition-colors"
+                >
+                  Lihat Profil di Direktori
+                </Link>
+              </div>
             </div>
 
             {/* Latest Discussions */}
-            <div className="bg-white p-6 rounded-lg border border-[#E2E8F0] space-y-4">
+            <div className="bg-white p-6 rounded-2xl border border-[#E2E8F0] shadow-2xs space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-base font-bold text-[#0F172A]">Diskusi Forum Terbaru</h2>
                 <Link href="/forum" className="text-xs font-semibold text-[#2BA8A2] hover:underline">
