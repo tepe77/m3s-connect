@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\AlumniController;
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\DirectMessageController;
 use App\Http\Controllers\Api\V1\ForumController;
 use App\Http\Controllers\Api\V1\NewsController;
 use App\Http\Controllers\Api\V1\ProfileController;
@@ -21,10 +22,21 @@ Route::prefix('v1')->group(function () {
         });
     });
 
-    // Public & Member Profile Routes
+    // Member Profile Routes
     Route::middleware('auth:sanctum')->prefix('profile')->group(function () {
         Route::get('/', [ProfileController::class, 'show']);
         Route::patch('/', [ProfileController::class, 'update']);
+        Route::post('/avatar', [ProfileController::class, 'uploadAvatar']);
+    });
+
+    // In-App Direct Message Routes (Private Peer-to-Peer)
+    Route::middleware('auth:sanctum')->prefix('messages')->group(function () {
+        Route::get('/threads', [DirectMessageController::class, 'threads']);
+        Route::get('/threads/{id}', [DirectMessageController::class, 'showThread']);
+        Route::post('/', [DirectMessageController::class, 'sendMessage']);
+        Route::post('/threads/{id}/reply', [DirectMessageController::class, 'replyThread']);
+        Route::post('/threads/{id}/read', [DirectMessageController::class, 'markAsRead']);
+        Route::get('/unread-count', [DirectMessageController::class, 'unreadCount']);
     });
 
     // Alumni Directory Routes

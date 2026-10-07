@@ -118,6 +118,57 @@ export default function ProfileUpdatePage() {
           }
         }
       }
+
+      // Fetch latest profile state from Laravel backend
+      fetch("http://localhost:8000/api/v1/profile", {
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((json) => {
+          if (json?.data?.profile) {
+            const p = json.data.profile;
+            const u = json.data.user;
+            const socialMap: Record<string, string> = {
+              linkedin: "",
+              github: "",
+              instagram: "",
+              twitter: "",
+              website: "",
+            };
+            if (Array.isArray(p.social_links)) {
+              p.social_links.forEach((l: { platform: string; url: string }) => {
+                if (l.platform && l.url) socialMap[l.platform] = l.url;
+              });
+            }
+            setFormData((prev) => ({
+              ...prev,
+              name: u?.name || prev.name,
+              avatar: u?.avatar || prev.avatar,
+              graduationYear: p.graduation_year || prev.graduationYear,
+              graduationClass: p.graduation_class || prev.graduationClass,
+              alumniIdentifier: p.alumni_identifier || prev.alumniIdentifier,
+              gender: p.gender || prev.gender,
+              birthDate: p.birth_date ? p.birth_date.split("T")[0] : prev.birthDate,
+              bio: p.bio || prev.bio,
+              currentCity: p.current_city || prev.currentCity,
+              currentCountry: p.current_country || prev.currentCountry,
+              occupation: p.occupation || prev.occupation,
+              company: p.company || prev.company,
+              visibility: p.visibility || prev.visibility,
+              skills: Array.isArray(p.skills) && p.skills.length > 0 ? p.skills.map((s: string | { name: string }) => typeof s === "string" ? s : s.name) : prev.skills,
+              socialLinks: {
+                ...prev.socialLinks,
+                ...socialMap,
+              },
+            }));
+          }
+        })
+        .catch(() => {
+          // Graceful fallback to cached state
+        });
     } catch {
       setIsAuthenticated(false);
     }
@@ -161,11 +212,11 @@ export default function ProfileUpdatePage() {
       // LocalStorage error handled
     }
 
-    // Try sending to Laravel backend if token exists
+    // Send update to Laravel backend
     const token = typeof window !== "undefined" ? localStorage.getItem("m3s_token") : null;
     if (token) {
       try {
-        await fetch("http://localhost:8000/api/v1/profile", {
+        const res = await fetch("http://localhost:8000/api/v1/profile", {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
@@ -174,6 +225,7 @@ export default function ProfileUpdatePage() {
           },
           body: JSON.stringify({
             name: formData.name,
+            avatar: formData.avatar,
             graduation_year: formData.graduationYear,
             graduation_class: formData.graduationClass,
             alumni_identifier: formData.alumniIdentifier,
@@ -195,6 +247,20 @@ export default function ProfileUpdatePage() {
             ].filter((l) => Boolean(l.url)),
           }),
         });
+
+        if (res.ok) {
+          const json = await res.json();
+          if (json?.data?.user?.avatar) {
+            const updatedAvatar = json.data.user.avatar;
+            setFormData((prev) => ({ ...prev, avatar: updatedAvatar }));
+            const userStr = localStorage.getItem("m3s_user");
+            if (userStr) {
+              const userObj = JSON.parse(userStr);
+              userObj.avatar = updatedAvatar;
+              localStorage.setItem("m3s_user", JSON.stringify(userObj));
+            }
+          }
+        }
       } catch {
         // Backend request handled gracefully
       }

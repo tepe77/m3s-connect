@@ -227,6 +227,29 @@ export function sendNewDirectMessage(
 
   threads.unshift(newThread);
   saveThreads(threads);
+
+  // Synchronize with Laravel backend API
+  if (typeof window !== "undefined") {
+    const token = localStorage.getItem("m3s_token");
+    if (token && recipient.id) {
+      fetch("http://localhost:8000/api/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          recipient_id: recipient.id,
+          subject: subject.trim() || "Pesan Alumni",
+          content: body.trim(),
+        }),
+      }).catch(() => {
+        // Fallback handled locally
+      });
+    }
+  }
+
   return newThread;
 }
 
@@ -285,6 +308,28 @@ export function replyDirectMessage(
   threads.unshift(thread);
   saveThreads(threads);
 
+  // Synchronize reply with Laravel backend API
+  if (typeof window !== "undefined") {
+    const isUuid = (val: string) =>
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val);
+    const token = localStorage.getItem("m3s_token");
+    if (token && isUuid(threadId)) {
+      fetch(`http://localhost:8000/api/v1/messages/threads/${threadId}/reply`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          content: body.trim(),
+        }),
+      }).catch(() => {
+        // Fallback handled locally
+      });
+    }
+  }
+
   return newMessage;
 }
 
@@ -295,9 +340,77 @@ export function markThreadAsRead(threadId: string): void {
     thread.unreadCount = 0;
     saveThreads(threads);
   }
+
+  if (typeof window !== "undefined") {
+    const isUuid = (val: string) =>
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val);
+    const token = localStorage.getItem("m3s_token");
+    if (token && isUuid(threadId)) {
+      fetch(`http://localhost:8000/api/v1/messages/threads/${threadId}/read`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }).catch(() => {
+        // Fallback handled
+      });
+    }
+  }
 }
 
 export function getTotalUnreadCount(): number {
   const threads = getStoredThreads();
   return threads.reduce((acc, t) => acc + (t.unreadCount || 0), 0);
+}
+
+export async function syncThreadsWithBackend(): Promise<void> {
+  if (typeof window === "undefined") return;
+  const token = localStorage.getItem("m3s_token");
+  if (!token) return;
+
+  try {
+    const res = await fetch("http://localhost:8000/api/v1/messages/threads", {
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!res.ok) return;
+    const json = await res.json();
+    if (Array.isArray(json?.data) && json.data.length > 0) {
+      const userStr = localStorage.getItem("m3s_user");
+      const currentUser = userStr ? JSON.parse(userStr) : null;
+      const currentParticipant: DirectMessageParticipant = {
+        id: currentUser?.id || "user-current",
+        name: currentUser?.name || "Saya",
+        avatar: currentUser?.avatar || "/images/avatar-ahmad.jpg",
+      };
+
+      const backendThreads: DirectMessageThread[] = json.data.map((item: any) => ({
+        id: item.id,
+        participant1: currentParticipant,
+        participant2: {
+          id: item.participant?.id || "user-partner",
+          name: item.participant?.name || "Alumni M3S",
+          avatar: item.participant?.avatar || "/images/avatar-siti.jpg",
+          graduationYear: item.participant?.graduation_year,
+          occupation: item.participant?.occupation ? `${item.participant.occupation} at ${item.participant.company || ""}` : undefined,
+        },
+        subject: item.subject || "Pesan Alumni",
+        lastMessage: item.last_message || "",
+        lastActivityAt: item.last_message_at || new Date().toISOString(),
+        unreadCount: item.unread_count || 0,
+        messages: [],
+      }));
+
+      // Merge backend threads with existing local threads (avoiding duplicates)
+      const existing = getStoredThreads();
+      const existingIds = new Set(backendThreads.map((bt) => bt.id));
+      const combined = [...backendThreads, ...existing.filter((et) => !existingIds.has(et.id))];
+      saveThreads(combined);
+    }
+  } catch {
+    // Ignore network error in fallback mode
+  }
 }

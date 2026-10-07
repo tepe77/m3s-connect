@@ -9,6 +9,7 @@ import {
   getStoredThreads,
   replyDirectMessage,
   markThreadAsRead,
+  syncThreadsWithBackend,
 } from "@/data/messageData";
 
 export default function MessagesInboxPage() {
@@ -40,6 +41,7 @@ export default function MessagesInboxPage() {
     }
 
     loadData();
+    syncThreadsWithBackend();
     setLoading(false);
 
     window.addEventListener("m3s_messages_change", loadData);

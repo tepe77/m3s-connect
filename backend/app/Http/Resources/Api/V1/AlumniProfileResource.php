@@ -29,6 +29,8 @@ class AlumniProfileResource extends JsonResource
             'visibility' => $this->visibility?->value ?? $this->visibility,
             'verified_at' => $this->verified_at?->toISOString(),
             'skills' => $this->whenLoaded('skills', fn () => $this->skills->pluck('name')),
+            'social_links' => $this->whenLoaded('socialLinks'),
+            'contacts_locked' => $this->contacts_locked ?? false,
         ];
     }
 }

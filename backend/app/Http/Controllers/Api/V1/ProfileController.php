@@ -9,6 +9,7 @@ use App\Models\AlumniSocialLink;
 use App\Models\Skill;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class ProfileController extends Controller
@@ -43,6 +44,7 @@ class ProfileController extends Controller
 
         $validated = $request->validate([
             'name' => 'sometimes|string|max:100',
+            'avatar' => 'nullable|string',
             'graduation_year' => 'nullable|integer|min:1970|max:2030',
             'graduation_class' => 'nullable|string|max:50',
             'alumni_identifier' => 'nullable|string|max:50',
@@ -62,8 +64,32 @@ class ProfileController extends Controller
         ]);
 
         if (isset($validated['name'])) {
-            $user->update(['name' => $validated['name']]);
+            $user->name = $validated['name'];
         }
+
+        // Process avatar if present (URL string, preset path, or base64 data URI)
+        if (isset($validated['avatar'])) {
+            $avatarVal = $validated['avatar'];
+            if (str_starts_with($avatarVal, 'data:image/')) {
+                $parts = explode(',', $avatarVal, 2);
+                if (count($parts) === 2) {
+                    $imageData = base64_decode($parts[1]);
+                    $extension = 'png';
+                    if (str_contains($parts[0], 'jpeg') || str_contains($parts[0], 'jpg')) {
+                        $extension = 'jpg';
+                    } elseif (str_contains($parts[0], 'webp')) {
+                        $extension = 'webp';
+                    }
+                    $filename = 'avatars/avatar_' . $user->id . '_' . time() . '.' . $extension;
+                    Storage::disk('public')->put($filename, $imageData);
+                    $user->avatar = '/storage/' . $filename;
+                }
+            } else {
+                $user->avatar = $avatarVal;
+            }
+        }
+
+        $user->save();
 
         $profile = AlumniProfile::firstOrCreate(
             ['user_id' => $user->id],
@@ -124,6 +150,28 @@ class ProfileController extends Controller
                     'profile.skills',
                     'profile.socialLinks',
                 ]),
+            ],
+        ]);
+    }
+
+    /**
+     * Upload avatar image directly.
+     */
+    public function uploadAvatar(Request $request): JsonResponse
+    {
+        $request->validate([
+            'avatar' => 'required|image|mimes:jpeg,png,jpg,webp,gif|max:5120',
+        ]);
+
+        $user = $request->user();
+        $path = $request->file('avatar')->store('avatars', 'public');
+        $user->update(['avatar' => '/storage/' . $path]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Foto profil berhasil diunggah.',
+            'data' => [
+                'avatar' => $user->avatar,
             ],
         ]);
     }

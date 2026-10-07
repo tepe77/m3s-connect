@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AlumniProfile;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class AlumniController extends Controller
 {
@@ -20,8 +21,8 @@ class AlumniController extends Controller
             });
 
         // Filter based on privacy
-        $user = $request->user();
-        if (!$user) {
+        $viewer = $request->user('sanctum');
+        if (!$viewer) {
             $query->where('visibility', 'public');
         } else {
             $query->whereIn('visibility', ['public', 'members']);
@@ -59,14 +60,60 @@ class AlumniController extends Controller
     }
 
     /**
-     * Show single alumni profile.
+     * Show single alumni profile with PostgreSQL UUID safe query and privacy enforcement.
      */
     public function show(string $id, Request $request): JsonResponse
     {
-        $profile = AlumniProfile::with(['user', 'skills', 'socialLinks', 'educations', 'experiences'])
-            ->where('id', $id)
-            ->orWhere('user_id', $id)
-            ->firstOrFail();
+        $viewer = $request->user('sanctum');
+
+        $query = AlumniProfile::with(['user', 'skills', 'socialLinks', 'educations', 'experiences']);
+
+        if (Str::isUuid($id)) {
+            $query->where(function ($q) use ($id) {
+                $q->where('id', $id)->orWhere('user_id', $id);
+            });
+            $profile = $query->first();
+        } elseif (preg_match('/^alumni-(\d+)$/', $id, $matches)) {
+            // Support dummy/sample slug format gracefully
+            $offset = max(0, ((int) $matches[1]) - 1);
+            $profile = $query->orderBy('created_at', 'asc')->skip($offset)->first();
+        } else {
+            $profile = $query->where('alumni_identifier', $id)->first();
+        }
+
+        if (!$profile) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Profil alumni tidak ditemukan.',
+            ], 404);
+        }
+
+        $visibilityValue = is_object($profile->visibility) ? $profile->visibility->value : $profile->visibility;
+
+        // If private: only owner or admin can view
+        if ($visibilityValue === 'private') {
+            $isOwner = $viewer && ($viewer->id === $profile->user_id);
+            $isAdmin = $viewer && method_exists($viewer, 'isAdmin') && $viewer->isAdmin();
+
+            if (!$isOwner && !$isAdmin) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Profil ini dikonfigurasi sebagai privat.',
+                ], 403);
+            }
+        }
+
+        // If members-only and viewer is unauthenticated guest:
+        // Mask contact links and email
+        if ($visibilityValue === 'members' && !$viewer) {
+            $profile->setRelation('socialLinks', collect([]));
+            if ($profile->user) {
+                $profile->user->makeHidden(['email']);
+            }
+            $profile->contacts_locked = true;
+        } else {
+            $profile->contacts_locked = false;
+        }
 
         return response()->json([
             'status' => 'success',
