@@ -358,6 +358,16 @@ export default function AdminModerationPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">
+            <a
+              href="http://localhost:8000/admin"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center justify-center min-h-[36px] px-3.5 py-1.5 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-full transition-colors gap-1.5 shadow-xs"
+              title="Buka Panel Filament di Backend Laravel"
+            >
+              <span>Panel Backend Filament ↗</span>
+            </a>
+
             <Button asChild variant="outline" size="sm" className="rounded-full gap-1.5 text-xs font-semibold h-9">
               <Link href="/forum">
                 <ArrowLeft className="w-3.5 h-3.5" />

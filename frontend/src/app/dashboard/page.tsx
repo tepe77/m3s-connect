@@ -76,14 +76,14 @@ export default function MemberDashboardPage() {
               <span>Tur Panduan (Walkthrough)</span>
             </Link>
 
-            {user?.role === "admin" && (
+            {(user?.role === "admin" || user?.role === "moderator") && (
               <a
                 href="http://localhost:8000/admin"
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center justify-center min-h-[40px] px-4 py-2 text-xs font-semibold text-white bg-[#0F172A] hover:bg-[#1E293B] rounded-full transition-colors"
               >
-                Panel Filament Admin ↗
+                Panel Filament Backend ↗
               </a>
             )}
 
