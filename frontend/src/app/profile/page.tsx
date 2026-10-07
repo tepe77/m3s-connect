@@ -4,6 +4,18 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Container } from "@/components/ui/Container";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { DatePicker } from "@/components/ui/date-picker";
 
 interface ProfileFormData {
   name: string;
@@ -507,27 +519,44 @@ export default function ProfileUpdatePage() {
                   <label htmlFor="name" className="block text-xs font-bold text-[#0F172A] uppercase tracking-wider mb-1.5">
                     Nama Lengkap & Gelar <span className="text-rose-500">*</span>
                   </label>
-                  <input
+                  <Input
                     id="name"
                     type="text"
                     required
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-4 py-2.5 text-sm rounded-xl border border-[#CBD5E1] bg-white focus:outline-none focus:ring-2 focus:ring-[#0D9488] text-[#0F172A]"
+                    placeholder="Masukkan nama lengkap beserta gelar"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="alumniIdentifier" className="block text-xs font-bold text-[#0F172A] uppercase tracking-wider mb-1.5">
-                    Nomor Anggota Alumni / NISN
+                  <label htmlFor="alumniIdentifier" className="block text-xs font-bold text-[#0F172A] uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                    <span>Nomor Anggota Alumni</span>
+                    <span className="text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full font-semibold flex items-center gap-1">
+                      <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                      </svg>
+                      Otomatis Sistem (Permanen)
+                    </span>
                   </label>
-                  <input
-                    id="alumniIdentifier"
-                    type="text"
-                    value={formData.alumniIdentifier}
-                    onChange={(e) => setFormData({ ...formData, alumniIdentifier: e.target.value })}
-                    className="w-full px-4 py-2.5 text-sm rounded-xl border border-[#CBD5E1] bg-white focus:outline-none focus:ring-2 focus:ring-[#0D9488] text-[#0F172A]"
-                  />
+                  <div className="relative">
+                    <Input
+                      id="alumniIdentifier"
+                      type="text"
+                      readOnly
+                      disabled
+                      value={formData.alumniIdentifier || `M3S-${formData.graduationYear || 2020}-0001`}
+                      className="bg-slate-50 font-mono text-slate-700 font-semibold cursor-not-allowed border-slate-200"
+                    />
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                      </svg>
+                    </div>
+                  </div>
+                  <p className="text-[11px] text-[#64748B] mt-1">
+                    Nomor anggota diterbitkan otomatis oleh sistem saat mendaftar dan tidak dapat diubah.
+                  </p>
                 </div>
 
                 <div>
@@ -535,53 +564,63 @@ export default function ProfileUpdatePage() {
                     <span>Tahun Kelulusan (Angkatan) <span className="text-rose-500">*</span></span>
                     <span className="text-[10px] text-[#0D9488] font-semibold lowercase">30+ angkatan</span>
                   </label>
-                  <div className="relative">
-                    <select
-                      id="graduationYear"
-                      value={formData.graduationYear}
-                      onChange={(e) => setFormData({ ...formData, graduationYear: parseInt(e.target.value) })}
-                      className="w-full appearance-none pl-4 pr-10 py-2.5 text-xs sm:text-sm font-medium rounded-xl border border-[#CBD5E1] hover:border-[#94A3B8] bg-white focus:outline-none focus:border-[#0D9488] focus:ring-4 focus:ring-[#0D9488]/10 text-[#0F172A] shadow-2xs transition-all"
-                    >
-                      <optgroup label="Dekade 2020-an">
+                  <Select
+                    value={String(formData.graduationYear)}
+                    onValueChange={(val) => setFormData({ ...formData, graduationYear: parseInt(val, 10) })}
+                  >
+                    <SelectTrigger id="graduationYear" className="w-full">
+                      <SelectValue placeholder="Pilih tahun kelulusan" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>Dekade 2020-an</SelectLabel>
                         {[2026, 2025, 2024, 2023, 2022, 2021, 2020].map((yr) => (
-                          <option key={yr} value={yr}>Angkatan {yr}</option>
+                          <SelectItem key={yr} value={String(yr)}>
+                            Angkatan {yr}
+                          </SelectItem>
                         ))}
-                      </optgroup>
-                      <optgroup label="Dekade 2010-an">
+                      </SelectGroup>
+                      <SelectSeparator />
+                      <SelectGroup>
+                        <SelectLabel>Dekade 2010-an</SelectLabel>
                         {[2019, 2018, 2017, 2016, 2015, 2014, 2013, 2012, 2011, 2010].map((yr) => (
-                          <option key={yr} value={yr}>Angkatan {yr}</option>
+                          <SelectItem key={yr} value={String(yr)}>
+                            Angkatan {yr}
+                          </SelectItem>
                         ))}
-                      </optgroup>
-                      <optgroup label="Dekade 2000-an">
+                      </SelectGroup>
+                      <SelectSeparator />
+                      <SelectGroup>
+                        <SelectLabel>Dekade 2000-an</SelectLabel>
                         {[2009, 2008, 2007, 2006, 2005, 2004, 2003, 2002, 2001, 2000].map((yr) => (
-                          <option key={yr} value={yr}>Angkatan {yr}</option>
+                          <SelectItem key={yr} value={String(yr)}>
+                            Angkatan {yr}
+                          </SelectItem>
                         ))}
-                      </optgroup>
-                      <optgroup label="Dekade 1990-an">
+                      </SelectGroup>
+                      <SelectSeparator />
+                      <SelectGroup>
+                        <SelectLabel>Dekade 1990-an</SelectLabel>
                         {[1999, 1998, 1997, 1996, 1995, 1994, 1993, 1992, 1991, 1990].map((yr) => (
-                          <option key={yr} value={yr}>Angkatan {yr}</option>
+                          <SelectItem key={yr} value={String(yr)}>
+                            Angkatan {yr}
+                          </SelectItem>
                         ))}
-                      </optgroup>
-                    </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-[#94A3B8]">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </div>
-                  </div>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div>
                   <label htmlFor="graduationClass" className="block text-xs font-bold text-[#0F172A] uppercase tracking-wider mb-1.5">
                     Jurusan / Kelas Terakhir
                   </label>
-                  <input
+                  <Input
                     id="graduationClass"
                     type="text"
                     placeholder="Contoh: IPA 1, IPA 2, IPS 1, Keagamaan"
                     value={formData.graduationClass}
                     onChange={(e) => setFormData({ ...formData, graduationClass: e.target.value })}
-                    className="w-full px-4 py-2.5 text-sm rounded-xl border border-[#CBD5E1] bg-white focus:outline-none focus:ring-2 focus:ring-[#0D9488] text-[#0F172A]"
                   />
                 </div>
 
@@ -589,34 +628,28 @@ export default function ProfileUpdatePage() {
                   <label htmlFor="gender" className="block text-xs font-bold text-[#0F172A] uppercase tracking-wider mb-1.5">
                     Jenis Kelamin
                   </label>
-                  <div className="relative">
-                    <select
-                      id="gender"
-                      value={formData.gender}
-                      onChange={(e) => setFormData({ ...formData, gender: e.target.value as "male" | "female" })}
-                      className="w-full appearance-none pl-4 pr-10 py-2.5 text-xs sm:text-sm font-medium rounded-xl border border-[#CBD5E1] hover:border-[#94A3B8] bg-white focus:outline-none focus:border-[#0D9488] focus:ring-4 focus:ring-[#0D9488]/10 text-[#0F172A] shadow-2xs transition-all"
-                    >
-                      <option value="male">Laki-laki</option>
-                      <option value="female">Perempuan</option>
-                    </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-[#94A3B8]">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </div>
-                  </div>
+                  <Select
+                    value={formData.gender || "male"}
+                    onValueChange={(val) => setFormData({ ...formData, gender: val as "male" | "female" })}
+                  >
+                    <SelectTrigger id="gender" className="w-full">
+                      <SelectValue placeholder="Pilih jenis kelamin" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="male">Laki-laki</SelectItem>
+                      <SelectItem value="female">Perempuan</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div>
                   <label htmlFor="birthDate" className="block text-xs font-bold text-[#0F172A] uppercase tracking-wider mb-1.5">
                     Tanggal Lahir
                   </label>
-                  <input
-                    id="birthDate"
-                    type="date"
+                  <DatePicker
                     value={formData.birthDate}
-                    onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
-                    className="w-full px-4 py-2.5 text-sm rounded-xl border border-[#CBD5E1] bg-white focus:outline-none focus:ring-2 focus:ring-[#0D9488] text-[#0F172A]"
+                    onChange={(val) => setFormData({ ...formData, birthDate: val })}
+                    placeholder="Pilih tanggal lahir..."
                   />
                 </div>
               </div>
@@ -635,13 +668,12 @@ export default function ProfileUpdatePage() {
                   <label htmlFor="occupation" className="block text-xs font-bold text-[#0F172A] uppercase tracking-wider mb-1.5">
                     Pekerjaan / Jabatan Saat Ini
                   </label>
-                  <input
+                  <Input
                     id="occupation"
                     type="text"
                     placeholder="Contoh: Senior Backend Engineer"
                     value={formData.occupation}
                     onChange={(e) => setFormData({ ...formData, occupation: e.target.value })}
-                    className="w-full px-4 py-2.5 text-sm rounded-xl border border-[#CBD5E1] bg-white focus:outline-none focus:ring-2 focus:ring-[#0D9488] text-[#0F172A]"
                   />
                 </div>
 
@@ -649,13 +681,12 @@ export default function ProfileUpdatePage() {
                   <label htmlFor="company" className="block text-xs font-bold text-[#0F172A] uppercase tracking-wider mb-1.5">
                     Perusahaan / Instansi / Usaha
                   </label>
-                  <input
+                  <Input
                     id="company"
                     type="text"
                     placeholder="Contoh: Tech Nusantara"
                     value={formData.company}
                     onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                    className="w-full px-4 py-2.5 text-sm rounded-xl border border-[#CBD5E1] bg-white focus:outline-none focus:ring-2 focus:ring-[#0D9488] text-[#0F172A]"
                   />
                 </div>
 
@@ -663,13 +694,12 @@ export default function ProfileUpdatePage() {
                   <label htmlFor="currentCity" className="block text-xs font-bold text-[#0F172A] uppercase tracking-wider mb-1.5">
                     Kota Domisili Saat Ini
                   </label>
-                  <input
+                  <Input
                     id="currentCity"
                     type="text"
                     placeholder="Contoh: Yogyakarta"
                     value={formData.currentCity}
                     onChange={(e) => setFormData({ ...formData, currentCity: e.target.value })}
-                    className="w-full px-4 py-2.5 text-sm rounded-xl border border-[#CBD5E1] bg-white focus:outline-none focus:ring-2 focus:ring-[#0D9488] text-[#0F172A]"
                   />
                 </div>
 
@@ -677,13 +707,12 @@ export default function ProfileUpdatePage() {
                   <label htmlFor="currentCountry" className="block text-xs font-bold text-[#0F172A] uppercase tracking-wider mb-1.5">
                     Negara
                   </label>
-                  <input
+                  <Input
                     id="currentCountry"
                     type="text"
                     placeholder="Indonesia"
                     value={formData.currentCountry}
                     onChange={(e) => setFormData({ ...formData, currentCountry: e.target.value })}
-                    className="w-full px-4 py-2.5 text-sm rounded-xl border border-[#CBD5E1] bg-white focus:outline-none focus:ring-2 focus:ring-[#0D9488] text-[#0F172A]"
                   />
                 </div>
               </div>
@@ -763,7 +792,7 @@ export default function ProfileUpdatePage() {
                   <label htmlFor="linkedin" className="block text-xs font-bold text-[#0F172A] uppercase tracking-wider mb-1.5">
                     LinkedIn URL
                   </label>
-                  <input
+                  <Input
                     id="linkedin"
                     type="url"
                     value={formData.socialLinks.linkedin}
@@ -774,7 +803,6 @@ export default function ProfileUpdatePage() {
                       })
                     }
                     placeholder="https://linkedin.com/in/username"
-                    className="w-full px-4 py-2.5 text-sm rounded-xl border border-[#CBD5E1] bg-white focus:outline-none focus:ring-2 focus:ring-[#0D9488] text-[#0F172A]"
                   />
                 </div>
 
@@ -782,7 +810,7 @@ export default function ProfileUpdatePage() {
                   <label htmlFor="github" className="block text-xs font-bold text-[#0F172A] uppercase tracking-wider mb-1.5">
                     GitHub URL
                   </label>
-                  <input
+                  <Input
                     id="github"
                     type="url"
                     value={formData.socialLinks.github}
@@ -793,7 +821,6 @@ export default function ProfileUpdatePage() {
                       })
                     }
                     placeholder="https://github.com/username"
-                    className="w-full px-4 py-2.5 text-sm rounded-xl border border-[#CBD5E1] bg-white focus:outline-none focus:ring-2 focus:ring-[#0D9488] text-[#0F172A]"
                   />
                 </div>
 
@@ -801,7 +828,7 @@ export default function ProfileUpdatePage() {
                   <label htmlFor="instagram" className="block text-xs font-bold text-[#0F172A] uppercase tracking-wider mb-1.5">
                     Instagram URL
                   </label>
-                  <input
+                  <Input
                     id="instagram"
                     type="url"
                     value={formData.socialLinks.instagram}
@@ -812,7 +839,6 @@ export default function ProfileUpdatePage() {
                       })
                     }
                     placeholder="https://instagram.com/username"
-                    className="w-full px-4 py-2.5 text-sm rounded-xl border border-[#CBD5E1] bg-white focus:outline-none focus:ring-2 focus:ring-[#0D9488] text-[#0F172A]"
                   />
                 </div>
 
@@ -820,7 +846,7 @@ export default function ProfileUpdatePage() {
                   <label htmlFor="twitter" className="block text-xs font-bold text-[#0F172A] uppercase tracking-wider mb-1.5">
                     X / Twitter URL
                   </label>
-                  <input
+                  <Input
                     id="twitter"
                     type="url"
                     value={formData.socialLinks.twitter}
@@ -831,7 +857,6 @@ export default function ProfileUpdatePage() {
                       })
                     }
                     placeholder="https://x.com/username"
-                    className="w-full px-4 py-2.5 text-sm rounded-xl border border-[#CBD5E1] bg-white focus:outline-none focus:ring-2 focus:ring-[#0D9488] text-[#0F172A]"
                   />
                 </div>
 
@@ -839,7 +864,7 @@ export default function ProfileUpdatePage() {
                   <label htmlFor="website" className="block text-xs font-bold text-[#0F172A] uppercase tracking-wider mb-1.5">
                     Website Personal / Portofolio
                   </label>
-                  <input
+                  <Input
                     id="website"
                     type="url"
                     value={formData.socialLinks.website}
@@ -850,7 +875,6 @@ export default function ProfileUpdatePage() {
                       })
                     }
                     placeholder="https://portofolio-anda.com"
-                    className="w-full px-4 py-2.5 text-sm rounded-xl border border-[#CBD5E1] bg-white focus:outline-none focus:ring-2 focus:ring-[#0D9488] text-[#0F172A]"
                   />
                 </div>
               </div>

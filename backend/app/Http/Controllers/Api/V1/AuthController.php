@@ -36,9 +36,12 @@ class AuthController extends Controller
             'status' => UserStatus::ACTIVE,
         ]);
 
+        $year = isset($validated['graduation_year']) ? (int) $validated['graduation_year'] : (int) date('Y');
+
         AlumniProfile::create([
             'user_id' => $user->id,
-            'graduation_year' => (int) date('Y'),
+            'graduation_year' => $year,
+            'alumni_identifier' => AlumniProfile::generateIdentifier($year),
             'visibility' => ProfileVisibility::PUBLIC,
         ]);
 

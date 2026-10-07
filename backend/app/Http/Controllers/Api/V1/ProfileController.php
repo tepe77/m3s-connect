@@ -100,10 +100,15 @@ class ProfileController extends Controller
             ]
         );
 
+        if (empty($profile->alumni_identifier)) {
+            $year = $profile->graduation_year ?? 2020;
+            $profile->alumni_identifier = AlumniProfile::generateIdentifier($year);
+            $profile->save();
+        }
+
         $profileData = array_intersect_key($validated, array_flip([
             'graduation_year',
             'graduation_class',
-            'alumni_identifier',
             'gender',
             'birth_date',
             'bio',

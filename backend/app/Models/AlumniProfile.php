@@ -40,6 +40,35 @@ class AlumniProfile extends Model
         ];
     }
 
+    /**
+     * Generate unique alumni identifier in format M3S-{YEAR}-{SEQUENCE_4_DIGIT}
+     */
+    public static function generateIdentifier(int $graduationYear): string
+    {
+        $prefix = "M3S-{$graduationYear}-";
+        $count = static::where('alumni_identifier', 'like', "{$prefix}%")->count();
+        $seq = str_pad($count + 1, 4, '0', STR_PAD_LEFT);
+        $candidate = "{$prefix}{$seq}";
+
+        while (static::where('alumni_identifier', $candidate)->exists()) {
+            $count++;
+            $seq = str_pad($count + 1, 4, '0', STR_PAD_LEFT);
+            $candidate = "{$prefix}{$seq}";
+        }
+
+        return $candidate;
+    }
+
+    protected static function booted(): void
+    {
+        static::creating(function (AlumniProfile $profile) {
+            if (empty($profile->alumni_identifier)) {
+                $year = $profile->graduation_year ?? (int) date('Y');
+                $profile->alumni_identifier = static::generateIdentifier($year);
+            }
+        });
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

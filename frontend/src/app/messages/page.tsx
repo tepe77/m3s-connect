@@ -334,31 +334,31 @@ export default function MessagesInboxPage() {
                   })}
                 </div>
 
-                {/* Reply Composer Bar */}
+                {/* Reply Composer Bar - Strictly Inline Layout */}
                 <form
                   onSubmit={handleSendReply}
-                  className="p-4 border-t border-[#E2E8F0] bg-slate-50/50 flex items-end gap-3"
+                  className="p-3 sm:p-4 border-t border-[#E2E8F0] bg-white"
                 >
-                  <div className="flex-1">
-                    <textarea
-                      rows={2}
+                  <div className="flex items-center gap-2 bg-[#F8FAFC] border border-[#CBD5E1] rounded-2xl p-1.5 pl-3.5 focus-within:border-[#0D9488] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#0D9488]/20 transition-all">
+                    <input
+                      type="text"
                       value={replyText}
                       onChange={(e) => setReplyText(e.target.value)}
                       placeholder="Ketik balasan pesan Anda di sini..."
-                      className="w-full p-3 text-xs rounded-xl border border-[#CBD5E1] bg-white focus:outline-none focus:ring-2 focus:ring-[#0D9488] text-[#0F172A] resize-none"
+                      className="w-full py-2 bg-transparent text-xs text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none"
                     />
-                  </div>
 
-                  <button
-                    type="submit"
-                    disabled={!replyText.trim()}
-                    className="inline-flex items-center justify-center min-h-[42px] px-5 py-2.5 text-xs font-bold text-white bg-[#0D9488] hover:bg-[#0f766e] disabled:opacity-50 disabled:cursor-not-allowed rounded-xl shadow-xs transition-colors gap-1.5 shrink-0"
-                  >
-                    <span>Kirim</span>
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                    </svg>
-                  </button>
+                    <button
+                      type="submit"
+                      disabled={!replyText.trim()}
+                      className="inline-flex items-center justify-center h-9 px-4 text-xs font-bold text-white bg-[#0D9488] hover:bg-[#0f766e] disabled:opacity-40 disabled:cursor-not-allowed rounded-xl shadow-xs transition-colors gap-1.5 shrink-0"
+                    >
+                      <span>Kirim</span>
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                      </svg>
+                    </button>
+                  </div>
                 </form>
               </>
             ) : (

@@ -18,6 +18,7 @@ class RegisterRequest extends FormRequest
             'name' => ['required', 'string', 'min:2', 'max:100'],
             'email' => ['required', 'string', 'email:rfc', 'max:255', 'unique:users,email'],
             'password' => ['required', 'confirmed', Password::min(8)->letters()->numbers()],
+            'graduation_year' => ['nullable', 'integer', 'min:1970', 'max:2030'],
         ];
     }
 }
