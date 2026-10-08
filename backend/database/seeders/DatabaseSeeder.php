@@ -8,6 +8,7 @@ use App\Enums\ForumThreadStatus;
 use App\Enums\NewsStatus;
 use App\Enums\ProfileVisibility;
 use App\Enums\ReportStatus;
+use App\Enums\TestimonialStatus;
 use App\Enums\UserRole;
 use App\Enums\UserStatus;
 use App\Models\AlumniEducation;
@@ -25,6 +26,7 @@ use App\Models\NewsCategory;
 use App\Models\NewsComment;
 use App\Models\Report;
 use App\Models\Skill;
+use App\Models\Testimonial;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -1256,6 +1258,130 @@ class DatabaseSeeder extends Seeder
                 'is_featured' => true,
                 'status' => 'published',
                 'published_at' => '2024-06-15 08:30:00',
+            ]
+        );
+        // ---------------------------------------------------------------------
+        // 9. Inspiring Alumni Testimonials (Synced with Frontend Marquee)
+        // ---------------------------------------------------------------------
+        Testimonial::updateOrCreate(
+            ['content' => 'Belajar di MAN 3 Sleman memberikan pondasi nalar ilmiah dan adab yang sangat kokoh. Suasana madrasah yang mendukung riset teknologi membimbing saya hingga dipercaya memimpin tim kecerdasan buatan saat ini.'],
+            [
+                'user_id' => $alumni1->id,
+                'position' => 'Lead AI Engineer',
+                'company' => 'GoTo Financial',
+                'graduation_year' => '2018',
+                'rating' => 5,
+                'is_featured' => true,
+                'status' => TestimonialStatus::APPROVED,
+                'published_at' => now()->subDays(10),
+            ]
+        );
+
+        Testimonial::updateOrCreate(
+            ['content' => 'Laboratorium dan bimbingan olimpiade sains di Mayoga adalah pintu pertama saya mengenal dunia robotika global. Nilai ukhuwah alumni selalu terasa hangat di manapun kami berada.'],
+            [
+                'user_id' => $alumni2->id,
+                'position' => 'Robotics Specialist',
+                'company' => 'Tokyo Tech Research',
+                'graduation_year' => '2019',
+                'rating' => 5,
+                'is_featured' => true,
+                'status' => TestimonialStatus::APPROVED,
+                'published_at' => now()->subDays(8),
+            ]
+        );
+
+        Testimonial::updateOrCreate(
+            ['content' => 'Tradisi integrasi sains dan agama di MAN 3 Sleman membentuk integritas kami sebagai saintis. Mayoga bukan sekadar madrasah, tapi rumah pembentukan karakter masa depan yang sesungguhnya.'],
+            [
+                'user_id' => $alumni3->id,
+                'position' => 'Research Scientist',
+                'company' => 'Bio Farma',
+                'graduation_year' => '2020',
+                'rating' => 5,
+                'is_featured' => true,
+                'status' => TestimonialStatus::APPROVED,
+                'published_at' => now()->subDays(6),
+            ]
+        );
+
+        Testimonial::updateOrCreate(
+            ['content' => 'Jaringan alumni Mayoga sangat solid dan suportif. Ketika saya merintis startup edutech, mentor dan rekan diskusi pertama saya adalah senior dan sesama alumni dari madrasah tercinta ini.'],
+            [
+                'user_id' => null,
+                'author_name' => 'Hendra Prasetyo, S.Kom.',
+                'author_avatar' => '/images/avatar-ahmad.jpg',
+                'position' => 'Founder & CEO',
+                'company' => 'EduTech Nusantara',
+                'graduation_year' => '2015',
+                'rating' => 5,
+                'is_featured' => true,
+                'status' => TestimonialStatus::APPROVED,
+                'published_at' => now()->subDays(5),
+            ]
+        );
+
+        Testimonial::updateOrCreate(
+            ['content' => 'Disiplin tahfiz dan keteladanan guru-guru Mayoga menemani perjuangan saya menyelesaikan pendidikan dokter spesialis. Kebanggaan mendalam selalu melekat sebagai alumnus madrasah berprestasi.'],
+            [
+                'user_id' => null,
+                'author_name' => 'Dr. dr. Nurul Hidayati, Sp.A.',
+                'author_avatar' => '/images/avatar-rina.jpg',
+                'position' => 'Dokter Spesialis Anak',
+                'company' => 'RSUP Dr. Sardjito',
+                'graduation_year' => '2012',
+                'rating' => 5,
+                'is_featured' => true,
+                'status' => TestimonialStatus::APPROVED,
+                'published_at' => now()->subDays(4),
+            ]
+        );
+
+        Testimonial::updateOrCreate(
+            ['content' => 'Portal M3S Connect memudahkan kami para lulusan muda untuk terhubung langsung dengan para profesional senior. Peluang bimbingan karir dan referensi industri jadi jauh lebih terbuka lebar!'],
+            [
+                'user_id' => null,
+                'author_name' => 'Fajar Ramadhan, S.T.',
+                'author_avatar' => '/images/avatar-ahmad.jpg',
+                'position' => 'Software Engineer',
+                'company' => 'Shopee Indonesia',
+                'graduation_year' => '2021',
+                'rating' => 5,
+                'is_featured' => true,
+                'status' => TestimonialStatus::APPROVED,
+                'published_at' => now()->subDays(3),
+            ]
+        );
+
+        Testimonial::updateOrCreate(
+            ['content' => 'Kemampuan wawasan internasional dan literasi diplomasi yang diasah sejak di madrasah menjadi modal berharga saat saya bertugas mewakili delegasi Indonesia di forum multilateral.'],
+            [
+                'user_id' => null,
+                'author_name' => 'Diana Puspitasari, S.Hub.Int.',
+                'author_avatar' => '/images/avatar-siti.jpg',
+                'position' => 'Diplomat Muda',
+                'company' => 'Kementerian Luar Negeri RI',
+                'graduation_year' => '2016',
+                'rating' => 5,
+                'is_featured' => true,
+                'status' => TestimonialStatus::APPROVED,
+                'published_at' => now()->subDays(2),
+            ]
+        );
+
+        Testimonial::updateOrCreate(
+            ['content' => 'Keluarga besar alumni yang aktif berbagi beasiswa dan pendampingan kampus membuat mimpi anak madrasah menembus universitas terbaik dunia terasa sangat mungkin dicapai.'],
+            [
+                'user_id' => null,
+                'author_name' => 'Budi Santoso, M.Sc.',
+                'author_avatar' => '/images/avatar-ahmad.jpg',
+                'position' => 'Data Analyst Specialist',
+                'company' => 'Bank Indonesia',
+                'graduation_year' => '2017',
+                'rating' => 5,
+                'is_featured' => true,
+                'status' => TestimonialStatus::APPROVED,
+                'published_at' => now()->subDay(),
             ]
         );
     }

@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { HomeForumThreads } from "@/components/home/HomeForumThreads";
 import { HomeDocumentationSection } from "@/components/home/HomeDocumentationSection";
+import { HomeTestimonialsMarquee } from "@/components/home/HomeTestimonialsMarquee";
 
 export default function HomePage() {
   return (
@@ -521,7 +522,10 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 5. Call To Action Banner */}
+      {/* 5. Testimonial Marquee (Velora UI Component) */}
+      <HomeTestimonialsMarquee />
+
+      {/* 6. Call To Action Banner */}
       <section className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="relative rounded-2xl overflow-hidden bg-gradient-to-r from-[#D7F1EC] via-[#E6F7F3] to-[#F1F9F6] border border-[#BCE4DB] p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xs">
           {/* Subtle Organic Background Wave (Left) */}

@@ -40,3 +40,26 @@ body {
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
 }
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-100% - var(--gap, 1.25rem)));
+  }
+}
+
+.animate-marquee {
+  animation: marquee var(--duration, 50s) linear infinite;
+}
+
+.animate-marquee-reverse {
+  animation: marquee var(--duration, 50s) linear infinite reverse;
+}
+
+.group-hover-pause:hover .animate-marquee,
+.group-hover-pause:hover .animate-marquee-reverse {
+  animation-play-state: paused;
+}
+

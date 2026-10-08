@@ -87,6 +87,12 @@ Route::prefix('v1')->group(function () {
         Route::get('/{slug}', [\App\Http\Controllers\Api\V1\DocumentationController::class, 'show']);
     });
 
+    // Public Alumni Testimonials Routes (Marquee Showcase & Submission)
+    Route::prefix('testimonials')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\V1\TestimonialController::class, 'index']);
+        Route::post('/', [\App\Http\Controllers\Api\V1\TestimonialController::class, 'store']);
+    });
+
     // Content Report Submission (Authenticated members)
     Route::middleware('auth:sanctum')->post('/reports', [AdminController::class, 'submitReport']);
 
