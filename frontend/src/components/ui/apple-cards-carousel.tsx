@@ -268,49 +268,25 @@ export function CarouselCard({
           className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/30 pointer-events-none"
         />
 
-        {/* Card Top Category & Badges */}
-        <div className="relative z-10 w-full flex items-center justify-between gap-2">
-          <span className="inline-block px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider text-white bg-emerald-700/80 backdrop-blur-xs">
-            {category}
-          </span>
-          {count && (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold text-white/90 bg-black/50 backdrop-blur-xs">
-              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-              </svg>
-              <span>{count}</span>
-            </span>
-          )}
-        </div>
-
-        {/* Card Bottom: Title & Meta */}
-        <div className="relative z-10 w-full mt-auto">
-          {date && (
-            <p className="text-[10px] font-medium text-slate-300 mb-1">
-              {date}
-            </p>
-          )}
-          <h3 className="font-bold leading-snug text-white text-sm sm:text-base line-clamp-2 drop-shadow-sm group-hover/carousel-card:text-emerald-200 transition-colors">
-            {title}
-          </h3>
-
-          {/* Plus Icon Trigger Button */}
-          <div className="mt-3 flex items-center justify-between pt-2 border-t border-white/15">
-            <span className="text-[10px] font-semibold text-white/70 group-hover/carousel-card:text-white transition-colors">
-              Lihat Detail
-            </span>
-            <span
-              aria-hidden
-              className="flex size-7 items-center justify-center rounded-full bg-white/90 text-slate-900 shadow-md transition-transform group-hover/carousel-card:scale-110 group-hover/carousel-card:bg-emerald-400 group-hover/carousel-card:text-emerald-950"
-            >
-              <Plus className="size-4 stroke-[2.5]" />
-            </span>
+        {/* Card Bottom: Date, Title & Bottom-Right Plus Icon */}
+        <div className="relative z-10 w-full mt-auto flex items-end justify-between gap-3">
+          <div className="min-w-0 pr-1">
+            {date && (
+              <p className="text-[11px] font-medium text-slate-300 mb-1">
+                {date}
+              </p>
+            )}
+            <h3 className="font-bold leading-snug text-white text-sm sm:text-base line-clamp-2 drop-shadow-sm group-hover/carousel-card:text-emerald-200 transition-colors">
+              {title}
+            </h3>
           </div>
+
+          <span
+            aria-hidden
+            className="shrink-0 flex size-8 items-center justify-center rounded-full bg-white/90 text-slate-900 shadow-md transition-transform group-hover/carousel-card:scale-110 group-hover/carousel-card:bg-emerald-400 group-hover/carousel-card:text-emerald-950"
+          >
+            <Plus className="size-4 stroke-[2.5]" />
+          </span>
         </div>
       </button>
 
