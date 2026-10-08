@@ -510,14 +510,8 @@ export default function HomePage() {
               </Link>
             </div>
 
-            {/* 3 Dynamic Gallery Cards */}
+            {/* Velora UI Apple Cards Carousel */}
             <HomeDocumentationSection />
-
-            {/* Slider Dots Indicator */}
-            <div className="flex items-center justify-center gap-1.5 pt-4">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#0D9488]" />
-              <span className="w-2 h-2 rounded-full bg-[#CBD5E1]" />
-            </div>
           </div>
         </div>
       </section>
