@@ -30,8 +30,8 @@ export function HeroAurora() {
             className="inline-flex items-center gap-2 rounded-full border border-emerald-200/80 bg-white/80 px-4 py-1.5 text-xs sm:text-sm font-medium text-emerald-900 shadow-xs backdrop-blur-xs transition-colors hover:bg-white hover:border-emerald-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0D9488]"
           >
             <Sparkles className="size-4 text-[#0D9488]" />
-            <span>Komunitas Resmi Alumni MAN 3 Sleman (Mayoga)</span>
-            <ArrowRight className="size-3.5 text-emerald-700" />
+            <span>Komunitas Resmi Alumni MAN 3 Sleman (MAYOGA)</span>
+            
           </Link>
         </div>
 
