@@ -291,7 +291,7 @@ export function Navbar() {
 
               <Link
                 href="/dashboard"
-                className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold text-[#0D9488] bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-full transition-colors"
+                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold text-[#0D9488] bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-full transition-colors"
                 title="Ruang Anggota"
               >
                 <span className="size-1.5 rounded-full bg-[#0D9488]" />
@@ -303,7 +303,7 @@ export function Navbar() {
               <button
                 type="button"
                 onClick={handleLogout}
-                className="size-8 rounded-full flex items-center justify-center text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                className="hidden sm:flex size-8 rounded-full items-center justify-center text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
                 title="Keluar"
                 aria-label="Keluar"
               >
@@ -311,8 +311,8 @@ export function Navbar() {
               </button>
             </div>
           ) : (
-            /* Guest Controls: Velora Pill Sign-In & Sign-Up */
-            <div className="flex items-center gap-1.5 sm:gap-2">
+            /* Guest Controls: Velora Pill Sign-In & Sign-Up (Visible only on desktop/tablet, folded into hamburger menu on mobile) */
+            <div className="hidden sm:flex items-center gap-1.5 sm:gap-2">
               <Link
                 href="/login"
                 className="px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:text-[#0D9488] rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0D9488]"
@@ -333,7 +333,7 @@ export function Navbar() {
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden size-9 rounded-full flex items-center justify-center text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+            className="lg:hidden size-9 rounded-full flex items-center justify-center text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0D9488]"
             aria-label={mobileMenuOpen ? "Tutup menu" : "Buka menu"}
             aria-expanded={mobileMenuOpen}
           >
@@ -421,20 +421,21 @@ export function Navbar() {
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-2.5 pt-1">
                 <Link
                   href="/login"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="text-center py-2 text-xs font-semibold text-slate-700 bg-slate-100 rounded-xl"
+                  className="flex items-center justify-center py-2.5 px-4 text-xs font-semibold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200/80 rounded-xl transition-colors"
                 >
                   Masuk
                 </Link>
                 <Link
                   href="/register"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="text-center py-2 text-xs font-bold text-white bg-[#0D9488] rounded-xl"
+                  className="flex items-center justify-center gap-1.5 py-2.5 px-4 text-xs font-bold text-white bg-[#0D9488] hover:bg-[#0f766e] rounded-xl shadow-xs transition-colors"
                 >
-                  Daftar
+                  <span>Daftar</span>
+                  <ArrowRight className="size-3.5" />
                 </Link>
               </div>
             )}
