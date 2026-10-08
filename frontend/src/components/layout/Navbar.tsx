@@ -112,14 +112,30 @@ export function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full pt-2.5 sm:pt-3.5 px-3 sm:px-6 pointer-events-none transition-all duration-300">
+    <header
+      className={cn(
+        "sticky top-0 z-50 w-full transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]",
+        compact
+          ? "pt-2.5 sm:pt-3 px-3 sm:px-6 bg-transparent pointer-events-none"
+          : "pt-0 px-0 bg-white/70 backdrop-blur-md"
+      )}
+    >
+      {/* Delicate 1px bottom border line when full-width at top; smoothly fades out on scroll */}
+      <div
+        aria-hidden
+        className={cn(
+          "absolute bottom-0 inset-x-0 h-px bg-slate-200/60 pointer-events-none transition-opacity duration-300",
+          compact ? "opacity-0" : "opacity-100"
+        )}
+      />
+
       <nav
         aria-label="Navigasi Utama"
         className={cn(
-          "pointer-events-auto mx-auto flex items-center justify-between rounded-full border backdrop-blur-md transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]",
+          "mx-auto flex items-center justify-between transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]",
           compact
-            ? "max-w-4xl sm:max-w-5xl h-14 px-4 sm:px-6 border-slate-200/90 bg-white/90 shadow-md shadow-emerald-950/[0.04]"
-            : "max-w-6xl sm:max-w-7xl h-16 sm:h-18 px-5 sm:px-7 border-slate-200/60 bg-white/80 shadow-xs"
+            ? "pointer-events-auto max-w-4xl sm:max-w-5xl h-14 px-4 sm:px-6 rounded-full border border-slate-200/90 bg-white/90 shadow-md shadow-emerald-950/[0.04] backdrop-blur-md"
+            : "w-full max-w-[1400px] h-20 px-4 sm:px-6 lg:px-8 rounded-none border border-transparent bg-transparent shadow-none"
         )}
       >
         {/* Brand Logo Left */}
@@ -243,7 +259,7 @@ export function Navbar() {
                 type="button"
                 onClick={() => setSearchOpen(true)}
                 aria-label="Buka pencarian"
-                className="size-8 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-slate-100/80 transition-colors"
+                className="size-8 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-slate-100/80 transition-colors cursor-pointer"
               >
                 <Search className="size-4" />
               </button>
@@ -328,7 +344,14 @@ export function Navbar() {
 
       {/* Mobile Drawer Dropdown */}
       {mobileMenuOpen && (
-        <div className="pointer-events-auto lg:hidden mx-auto max-w-lg mt-2 rounded-2xl border border-slate-200/90 bg-white/95 p-4 shadow-xl backdrop-blur-md animate-in fade-in slide-in-from-top-2 duration-200">
+        <div
+          className={cn(
+            "pointer-events-auto lg:hidden bg-white/95 shadow-xl backdrop-blur-md animate-in fade-in slide-in-from-top-2 duration-200",
+            compact
+              ? "mx-auto max-w-lg mt-2 rounded-2xl border border-slate-200/90 p-4"
+              : "w-full border-b border-slate-200/80 px-4 py-4"
+          )}
+        >
           {/* Mobile Search */}
           <form onSubmit={handleSearchSubmit} className="relative mb-3">
             <input

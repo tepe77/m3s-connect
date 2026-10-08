@@ -28,9 +28,8 @@ export interface ResizableNavbarProps extends React.HTMLAttributes<HTMLElement> 
 }
 
 /**
- * Sticky navbar that shrinks into a centered, blurred pill once the page is
- * scrolled. A highlight glides between links on hover and focus; below 48rem
- * the links fold into a disclosure menu.
+ * Full-width glass navbar at the top that smoothly shrinks into a centered,
+ * blurred floating pill once scrolled past the threshold.
  */
 export function ResizableNavbar({
   items,
@@ -38,7 +37,7 @@ export function ResizableNavbar({
   cta,
   threshold = 40,
   compactWidth = 960,
-  maxWidth = 1360,
+  maxWidth = 1400,
   activeHref,
   label = "Main",
   className,
@@ -142,20 +141,29 @@ export function ResizableNavbar({
         props.onKeyDown?.(event);
       }}
       className={cn(
-        "sticky top-0 z-50 w-full pt-2.5 sm:pt-3.5 px-3 sm:px-6 pointer-events-none transition-all duration-300",
+        "sticky top-0 z-50 w-full transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]",
+        compact
+          ? "pt-2.5 sm:pt-3 px-3 sm:px-6 bg-transparent pointer-events-none"
+          : "pt-0 px-0 bg-white/70 backdrop-blur-md",
         className
       )}
     >
+      {/* 1px bottom divider line when at top, fades out on scroll */}
+      <div
+        aria-hidden
+        className={cn(
+          "absolute bottom-0 inset-x-0 h-px bg-slate-200/60 pointer-events-none transition-opacity duration-300",
+          compact ? "opacity-0" : "opacity-100"
+        )}
+      />
+
       <nav
         aria-label={label}
-        style={{
-          maxWidth: compact ? `${compactWidth}px` : `${maxWidth}px`,
-        }}
         className={cn(
-          "pointer-events-auto relative mx-auto flex items-center justify-between gap-4 rounded-full border backdrop-blur-md transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]",
+          "mx-auto flex items-center justify-between transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]",
           compact
-            ? "h-14 px-4 sm:px-6 border-slate-200/90 bg-white/90 shadow-md shadow-emerald-950/[0.04]"
-            : "h-16 sm:h-18 px-5 sm:px-7 border-slate-200/60 bg-white/80 shadow-xs"
+            ? "pointer-events-auto max-w-4xl sm:max-w-5xl h-14 px-4 sm:px-6 rounded-full border border-slate-200/90 bg-white/90 shadow-md shadow-emerald-950/[0.04] backdrop-blur-md"
+            : "w-full max-w-[1400px] h-20 px-4 sm:px-6 lg:px-8 rounded-none border border-transparent bg-transparent shadow-none"
         )}
       >
         {/* Logo Left */}
@@ -224,7 +232,12 @@ export function ResizableNavbar({
         {menuOpen && (
           <div
             id={`${id}-menu`}
-            className="pointer-events-auto absolute inset-x-0 top-full mx-auto max-w-lg mt-2 rounded-2xl border border-slate-200/90 bg-white/95 p-3 text-slate-900 shadow-xl backdrop-blur-md animate-in fade-in slide-in-from-top-2 duration-200 lg:hidden"
+            className={cn(
+              "pointer-events-auto bg-white/95 shadow-xl backdrop-blur-md animate-in fade-in slide-in-from-top-2 duration-200 lg:hidden",
+              compact
+                ? "absolute inset-x-0 top-full mx-auto max-w-lg mt-2 rounded-2xl border border-slate-200/90 p-4"
+                : "w-full border-b border-slate-200/80 px-4 py-4"
+            )}
           >
             <ul className="space-y-1">
               {items.map((item, i) => (
