@@ -102,32 +102,35 @@ const FEATURES = [
 export function FeaturesIconGrid() {
   return (
     <section id="fitur" className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 relative z-20 w-full">
-      <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <ul className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
         {FEATURES.map(({ icon, title, description, href }) => (
           <li key={title} className="h-full">
             <Link
               href={href}
               className="block h-full group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0D9488] rounded-2xl"
             >
-              <div className="relative h-full rounded-2xl border border-slate-200/80 p-1.5 bg-slate-50/50 transition-all duration-300 hover:border-emerald-300/80 hover:shadow-md">
-                <GlowingEffect proximity={80} spread={70} />
-                <div className="relative flex h-full flex-col gap-4 overflow-hidden rounded-xl border border-slate-200/60 bg-white p-6 shadow-xs transition-all group-hover:bg-white/95">
+              <div className="relative h-full rounded-2xl border border-slate-200/80 p-1 bg-slate-50/50 transition-all duration-300 hover:border-emerald-300/80 hover:shadow-md">
+                <GlowingEffect proximity={70} spread={65} />
+                <div className="relative flex h-full flex-col justify-between overflow-hidden rounded-xl border border-slate-200/60 bg-white p-4 sm:p-5 shadow-xs transition-all group-hover:bg-white/95">
                   {/* Soft ambient orb in top-right */}
                   <div
                     aria-hidden
-                    className="absolute -top-16 -right-16 size-40 rounded-full bg-emerald-500/5 blur-2xl group-hover:bg-emerald-500/10 transition-colors"
+                    className="absolute -top-12 -right-12 size-28 rounded-full bg-emerald-500/5 blur-xl group-hover:bg-emerald-500/10 transition-colors"
                   />
-                  <div className="relative grid size-12 place-items-center rounded-xl border border-emerald-100 bg-gradient-to-br from-brand-from/15 to-brand-to/5 text-[#0D9488] shadow-xs group-hover:scale-105 transition-transform">
-                    {icon}
-                  </div>
-                  <div className="space-y-1.5">
-                    <h3 className="relative text-base sm:text-lg font-bold tracking-tight text-slate-900 group-hover:text-[#0D9488] transition-colors flex items-center justify-between">
-                      <span>{title}</span>
-                      <ArrowRight className="size-4 text-slate-400 group-hover:text-[#0D9488] group-hover:translate-x-0.5 transition-all" />
+                  <div>
+                    <div className="relative grid size-11 place-items-center rounded-xl border border-emerald-100 bg-gradient-to-br from-brand-from/15 to-brand-to/5 text-[#0D9488] shadow-xs group-hover:scale-105 transition-transform mb-3">
+                      {icon}
+                    </div>
+                    <h3 className="relative text-sm sm:text-base font-bold tracking-tight text-slate-900 group-hover:text-[#0D9488] transition-colors line-clamp-1">
+                      {title}
                     </h3>
-                    <p className="relative text-xs sm:text-sm leading-relaxed text-slate-600">
+                    <p className="relative text-[11px] sm:text-xs leading-relaxed text-slate-500 mt-1 line-clamp-2">
                       {description}
                     </p>
+                  </div>
+                  <div className="relative mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] font-semibold text-[#0D9488]">
+                    <span>Akses</span>
+                    <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
                   </div>
                 </div>
               </div>
@@ -138,3 +141,4 @@ export function FeaturesIconGrid() {
     </section>
   );
 }
+
