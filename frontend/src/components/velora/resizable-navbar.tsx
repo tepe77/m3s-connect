@@ -36,24 +36,36 @@ export function ResizableNavbar({
   items,
   logo,
   cta,
-  threshold = 60,
-  compactWidth = 860,
-  maxWidth = 1400,
+  threshold = 40,
+  compactWidth = 960,
+  maxWidth = 1360,
   activeHref,
   label = "Main",
   className,
   ...props
 }: ResizableNavbarProps) {
   const [compact, setCompact] = useState(false);
-  const [hover, setHover] = useState({ left: 0, width: 0, on: false, moved: false });
+  const [hover, setHover] = useState<{
+    left: number;
+    width: number;
+    on: boolean;
+    moved: boolean;
+  }>({ left: 0, width: 0, on: false, moved: false });
   const [menuOpen, setMenuOpen] = useState(false);
   const id = useId();
   const rootRef = useRef<HTMLElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
+    let ticking = false;
     const handleScroll = () => {
-      setCompact(window.scrollY > threshold);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setCompact(window.scrollY > threshold);
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
     handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -72,15 +84,21 @@ export function ResizableNavbar({
   }, [menuOpen]);
 
   const show = ({ currentTarget: t }: React.SyntheticEvent<HTMLElement>) => {
-    setHover((h) => ({
+    setHover((prev) => ({
       left: t.offsetLeft,
       width: t.offsetWidth,
       on: true,
-      moved: h.on,
+      moved: prev.on,
     }));
   };
 
-  const hide = () => setHover((h) => ({ ...h, on: false }));
+  const hide = () => {
+    setHover((prev) => ({
+      ...prev,
+      on: false,
+      moved: false,
+    }));
+  };
 
   const link = (item: NavItem, inMenu: boolean) => {
     const isActive =
@@ -96,14 +114,17 @@ export function ResizableNavbar({
         onFocus={inMenu ? undefined : show}
         onClick={() => setMenuOpen(false)}
         className={cn(
-          "relative block rounded-full px-3.5 py-1.5 text-xs sm:text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0D9488]",
+          "relative block rounded-full px-3.5 py-1.5 text-xs sm:text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0D9488]",
           isActive
             ? "text-[#0D9488] font-bold"
-            : "text-slate-600 hover:text-slate-900",
+            : "text-slate-600 hover:text-slate-900 font-medium",
           inMenu && "rounded-xl px-4 py-2.5 text-sm hover:bg-slate-100"
         )}
       >
         {item.label}
+        {!inMenu && isActive && (
+          <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 size-1 rounded-full bg-[#0D9488]" />
+        )}
       </a>
     );
   };
@@ -121,8 +142,7 @@ export function ResizableNavbar({
         props.onKeyDown?.(event);
       }}
       className={cn(
-        "sticky top-0 z-50 w-full px-3 sm:px-6 transition-all duration-300",
-        compact ? "pt-2 sm:pt-3" : "pt-0",
+        "sticky top-0 z-50 w-full pt-2.5 sm:pt-3.5 px-3 sm:px-6 pointer-events-none transition-all duration-300",
         className
       )}
     >
@@ -132,10 +152,10 @@ export function ResizableNavbar({
           maxWidth: compact ? `${compactWidth}px` : `${maxWidth}px`,
         }}
         className={cn(
-          "relative mx-auto flex items-center justify-between gap-4 border transition-all duration-300 ease-out",
+          "pointer-events-auto relative mx-auto flex items-center justify-between gap-4 rounded-full border backdrop-blur-md transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]",
           compact
-            ? "h-14 rounded-full border-slate-200/90 bg-white/85 px-4 shadow-lg shadow-slate-900/5 backdrop-blur-md"
-            : "h-18 sm:h-20 rounded-none border-b border-transparent bg-white/95 px-4 sm:px-6 shadow-xs backdrop-blur-sm"
+            ? "h-14 px-4 sm:px-6 border-slate-200/90 bg-white/90 shadow-md shadow-emerald-950/[0.04]"
+            : "h-16 sm:h-18 px-5 sm:px-7 border-slate-200/60 bg-white/80 shadow-xs"
         )}
       >
         {/* Logo Left */}
@@ -148,7 +168,7 @@ export function ResizableNavbar({
             onBlur={(event) => {
               if (!event.currentTarget.contains(event.relatedTarget)) hide();
             }}
-            className="relative"
+            className="relative py-1"
           >
             {/* Sliding Capsule Indicator */}
             <span
@@ -157,8 +177,11 @@ export function ResizableNavbar({
                 transform: `translateX(${hover.left}px)`,
                 width: `${hover.width}px`,
                 opacity: hover.on ? 1 : 0,
+                transition: hover.moved
+                  ? "transform 240ms cubic-bezier(0.16, 1, 0.3, 1), width 240ms cubic-bezier(0.16, 1, 0.3, 1), opacity 150ms ease"
+                  : "opacity 150ms ease",
               }}
-              className="absolute inset-y-0 left-0 rounded-full bg-slate-100/90 transition-all duration-150 pointer-events-none"
+              className="absolute inset-y-1 left-0 rounded-full bg-slate-100/90 pointer-events-none -z-0"
             />
             <ul className="flex items-center gap-1 relative z-10">
               {items.map((item, i) => (
@@ -201,7 +224,7 @@ export function ResizableNavbar({
         {menuOpen && (
           <div
             id={`${id}-menu`}
-            className="absolute inset-x-0 top-full mt-2 rounded-2xl border border-slate-200 bg-white/95 p-3 text-slate-900 shadow-xl backdrop-blur-md lg:hidden"
+            className="pointer-events-auto absolute inset-x-0 top-full mx-auto max-w-lg mt-2 rounded-2xl border border-slate-200/90 bg-white/95 p-3 text-slate-900 shadow-xl backdrop-blur-md animate-in fade-in slide-in-from-top-2 duration-200 lg:hidden"
           >
             <ul className="space-y-1">
               {items.map((item, i) => (

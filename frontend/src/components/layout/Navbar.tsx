@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import { Search, MessageSquare, Shield, LogOut, ArrowRight, Menu, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -23,19 +22,37 @@ export function Navbar() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentUser, setCurrentUser] = useState<{ name?: string; email?: string; role?: string } | null>(null);
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
+  // Smooth gliding pill state for nav items
+  const [hover, setHover] = useState<{
+    left: number;
+    width: number;
+    on: boolean;
+    moved: boolean;
+  }>({ left: 0, width: 0, on: false, moved: false });
+
+  const navListRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
+  // Smooth scroll listener with requestAnimationFrame
   useEffect(() => {
+    let ticking = false;
     const handleScroll = () => {
-      // Scrolled past 50px turns navbar into Velora floating pill
-      setCompact(window.scrollY > 50);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setCompact(window.scrollY > 40);
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
+
     handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Sync user state from localStorage
   useEffect(() => {
     const syncUser = () => {
       try {
@@ -76,20 +93,33 @@ export function Navbar() {
     }
   };
 
+  // Nav item hover gliding capsule handlers
+  const handleItemHover = ({ currentTarget: target }: React.SyntheticEvent<HTMLElement>) => {
+    setHover((prev) => ({
+      left: target.offsetLeft,
+      width: target.offsetWidth,
+      on: true,
+      moved: prev.on, // animate slide if already hovering an item
+    }));
+  };
+
+  const handleNavLeave = () => {
+    setHover((prev) => ({
+      ...prev,
+      on: false,
+      moved: false,
+    }));
+  };
+
   return (
-    <header
-      className={cn(
-        "sticky top-0 z-50 w-full transition-all duration-300",
-        compact ? "pt-2 sm:pt-3 px-3 sm:px-6" : "pt-0 px-0 bg-white/90 border-b border-slate-200/70 backdrop-blur-md"
-      )}
-    >
+    <header className="sticky top-0 z-50 w-full pt-2.5 sm:pt-3.5 px-3 sm:px-6 pointer-events-none transition-all duration-300">
       <nav
         aria-label="Navigasi Utama"
         className={cn(
-          "mx-auto flex items-center justify-between transition-all duration-300 ease-out",
+          "pointer-events-auto mx-auto flex items-center justify-between rounded-full border backdrop-blur-md transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]",
           compact
-            ? "max-w-5xl h-14 rounded-full border border-slate-200/90 bg-white/85 px-4 sm:px-6 shadow-lg shadow-slate-900/5 backdrop-blur-md"
-            : "max-w-[1400px] h-20 px-4 sm:px-6 lg:px-8 bg-transparent"
+            ? "max-w-4xl sm:max-w-5xl h-14 px-4 sm:px-6 border-slate-200/90 bg-white/90 shadow-md shadow-emerald-950/[0.04]"
+            : "max-w-6xl sm:max-w-7xl h-16 sm:h-18 px-5 sm:px-7 border-slate-200/60 bg-white/80 shadow-xs"
         )}
       >
         {/* Brand Logo Left */}
@@ -122,45 +152,66 @@ export function Navbar() {
             <span className="text-base sm:text-lg font-black tracking-tight text-[#0F172A] leading-tight flex items-center gap-1">
               M3S <span className="text-[#0D9488]">CONNECT</span>
             </span>
-            {!compact && (
-              <span className="hidden sm:inline-block text-[11px] text-slate-500 font-medium tracking-normal leading-tight transition-opacity duration-200">
-                Alumni Community Platform
-              </span>
-            )}
+            <span
+              className={cn(
+                "text-[10px] sm:text-[11px] text-slate-500 font-medium tracking-normal leading-tight transition-all duration-300",
+                compact ? "hidden md:inline-block" : "hidden sm:inline-block"
+              )}
+            >
+              Alumni Community Platform
+            </span>
           </div>
         </Link>
 
-        {/* Center Nav Links (Desktop) */}
-        <div className="hidden lg:flex items-center gap-1 relative">
-          {navItems.map((item, index) => {
-            const isActive =
-              item.href === "/"
-                ? pathname === "/"
-                : pathname.startsWith(item.href);
+        {/* Center Nav Links with Velora Gliding Capsule (Desktop) */}
+        <div
+          ref={navListRef}
+          onMouseLeave={handleNavLeave}
+          className="hidden lg:flex items-center relative py-1"
+        >
+          {/* Velora Smooth Gliding Capsule Highlight */}
+          <span
+            aria-hidden
+            style={{
+              transform: `translateX(${hover.left}px)`,
+              width: `${hover.width}px`,
+              opacity: hover.on ? 1 : 0,
+              transition: hover.moved
+                ? "transform 240ms cubic-bezier(0.16, 1, 0.3, 1), width 240ms cubic-bezier(0.16, 1, 0.3, 1), opacity 150ms ease"
+                : "opacity 150ms ease",
+            }}
+            className="absolute inset-y-1 left-0 rounded-full bg-slate-100/90 pointer-events-none -z-0"
+          />
 
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onMouseEnter={() => setHoveredIndex(index)}
-                onMouseLeave={() => setHoveredIndex(null)}
-                className={cn(
-                  "relative px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0D9488]",
-                  isActive
-                    ? "text-[#0D9488] bg-emerald-50/80 font-bold"
-                    : "text-slate-600 hover:text-slate-900"
-                )}
-              >
-                {hoveredIndex === index && !isActive && (
-                  <span
-                    aria-hidden
-                    className="absolute inset-0 rounded-full bg-slate-100 -z-10 transition-all duration-150"
-                  />
-                )}
-                {item.label}
-              </Link>
-            );
-          })}
+          <ul className="flex items-center gap-1 relative z-10">
+            {navItems.map((item) => {
+              const isActive =
+                item.href === "/"
+                  ? pathname === "/"
+                  : pathname.startsWith(item.href);
+
+              return (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    onMouseEnter={handleItemHover}
+                    onFocus={handleItemHover}
+                    className={cn(
+                      "relative block rounded-full px-3.5 py-1.5 text-xs sm:text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0D9488]",
+                      isActive
+                        ? "text-[#0D9488] font-bold"
+                        : "text-slate-600 hover:text-slate-900 font-medium"
+                    )}
+                  >
+                    {item.label}
+                    {isActive && (
+                      <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 size-1 rounded-full bg-[#0D9488]" />
+                    )}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
         </div>
 
         {/* Right Action / Auth Controls */}
@@ -177,7 +228,7 @@ export function Navbar() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onBlur={() => !searchQuery && setSearchOpen(false)}
                   autoFocus
-                  className="w-36 sm:w-48 pl-3 pr-8 py-1.5 text-xs rounded-full border border-slate-300 bg-white placeholder-slate-400 text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0D9488] transition-all"
+                  className="w-36 sm:w-48 pl-3 pr-8 py-1.5 text-xs rounded-full border border-slate-300 bg-white placeholder-slate-400 text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0D9488] transition-all shadow-xs"
                 />
                 <button
                   type="button"
@@ -192,7 +243,7 @@ export function Navbar() {
                 type="button"
                 onClick={() => setSearchOpen(true)}
                 aria-label="Buka pencarian"
-                className="size-8 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors"
+                className="size-8 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-slate-100/80 transition-colors"
               >
                 <Search className="size-4" />
               </button>
@@ -204,7 +255,7 @@ export function Navbar() {
             <div className="flex items-center gap-1.5 sm:gap-2">
               <Link
                 href="/messages"
-                className="relative size-8 rounded-full flex items-center justify-center text-slate-600 hover:text-[#0D9488] hover:bg-slate-100 transition-colors"
+                className="relative size-8 rounded-full flex items-center justify-center text-slate-600 hover:text-[#0D9488] hover:bg-slate-100/80 transition-colors"
                 title="Pesan Masuk"
               >
                 <MessageSquare className="size-4" />
@@ -236,7 +287,7 @@ export function Navbar() {
               <button
                 type="button"
                 onClick={handleLogout}
-                className="size-8 rounded-full flex items-center justify-center text-rose-600 hover:bg-rose-50 transition-colors"
+                className="size-8 rounded-full flex items-center justify-center text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
                 title="Keluar"
                 aria-label="Keluar"
               >
@@ -266,7 +317,7 @@ export function Navbar() {
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden size-9 rounded-full flex items-center justify-center text-slate-700 hover:bg-slate-100 transition-colors"
+            className="lg:hidden size-9 rounded-full flex items-center justify-center text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
             aria-label={mobileMenuOpen ? "Tutup menu" : "Buka menu"}
             aria-expanded={mobileMenuOpen}
           >
@@ -277,7 +328,7 @@ export function Navbar() {
 
       {/* Mobile Drawer Dropdown */}
       {mobileMenuOpen && (
-        <div className="lg:hidden mx-3 mt-2 rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-xl backdrop-blur-md">
+        <div className="pointer-events-auto lg:hidden mx-auto max-w-lg mt-2 rounded-2xl border border-slate-200/90 bg-white/95 p-4 shadow-xl backdrop-blur-md animate-in fade-in slide-in-from-top-2 duration-200">
           {/* Mobile Search */}
           <form onSubmit={handleSearchSubmit} className="relative mb-3">
             <input
