@@ -102,18 +102,6 @@ const FEATURES = [
 export function FeaturesIconGrid() {
   return (
     <section id="fitur" className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 relative z-20 w-full">
-      <div className="mx-auto max-w-2xl text-center mb-10 sm:mb-12">
-        <p className="text-xs sm:text-sm font-bold tracking-wide uppercase text-[#0D9488]">
-          Fitur Komunitas
-        </p>
-        <h2 className="mt-2 text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-slate-900">
-          Pusat Kolaborasi & Jejaring Alumni
-        </h2>
-        <p className="mt-3 text-sm sm:text-base text-slate-600 leading-relaxed">
-          Semua modul dirancang terpadu untuk memudahkan keluarga besar alumni Mayoga saling terhubung, berbagi inspirasi, dan bertukar peluang.
-        </p>
-      </div>
-
       <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {FEATURES.map(({ icon, title, description, href }) => (
           <li key={title} className="h-full">
