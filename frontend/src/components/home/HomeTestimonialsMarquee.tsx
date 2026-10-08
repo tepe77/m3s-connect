@@ -1,9 +1,27 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { createPortal } from "react-dom";
 import Image from "next/image";
 import { Marquee } from "@/components/ui/marquee";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export interface TestimonialItem {
   id: string;
@@ -150,7 +168,6 @@ function ReviewCard({ quote, name, role, avatar, rating }: TestimonialItem) {
 export function HomeTestimonialsMarquee() {
   const [testimonials, setTestimonials] = useState<TestimonialItem[]>(FALLBACK_TESTIMONIALS);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
@@ -165,7 +182,6 @@ export function HomeTestimonialsMarquee() {
   });
 
   useEffect(() => {
-    setMounted(true);
     let isMounted = true;
 
     async function fetchTestimonials() {
@@ -270,16 +286,16 @@ export function HomeTestimonialsMarquee() {
 
           {/* Action Button: Tulis Testimoni */}
           <div className="mt-5 flex items-center justify-center">
-            <button
+            <Button
               type="button"
               onClick={() => setIsModalOpen(true)}
-              className="cursor-pointer inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-[#0D9488] hover:bg-[#0F766E] shadow-sm hover:shadow-md transition-all active:scale-98 focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="cursor-pointer inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-[#0D9488] hover:bg-[#0F766E] shadow-sm hover:shadow-md transition-all active:scale-98"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
               </svg>
               <span>Bagikan Kesan & Testimoni Anda</span>
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -301,141 +317,125 @@ export function HomeTestimonialsMarquee() {
         </div>
       </div>
 
-      {/* Submission Modal Dialog (Rendered via Portal directly to body for 100% reliability) */}
-      {mounted && isModalOpen && createPortal(
-        <div
-          className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200"
-          onClick={() => setIsModalOpen(false)}
-        >
-          <div
-            className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden border border-slate-200"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/70">
-              <div>
-                <h3 className="text-sm sm:text-base font-bold text-slate-900">Kirim Kesan & Testimoni Alumni</h3>
-                <p className="text-xs text-slate-500">Kesan Anda akan diverifikasi admin sebelum tampil di beranda.</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsModalOpen(false)}
-                className="cursor-pointer p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
-                aria-label="Tutup"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+      {/* Submission Modal Dialog (Standard shadcn UI Dialog + Form primitives) */}
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="sm:max-w-lg p-6">
+          <DialogHeader>
+            <DialogTitle>Kirim Kesan & Testimoni Alumni</DialogTitle>
+            <DialogDescription>
+              Kesan Anda akan diverifikasi admin sebelum tampil di beranda.
+            </DialogDescription>
+          </DialogHeader>
+
+          {submitSuccess ? (
+            <div className="py-6 text-center space-y-3">
+              <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-              </button>
-            </div>
-
-            {submitSuccess ? (
-              <div className="p-8 text-center space-y-3">
-                <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-                <h4 className="text-sm font-bold text-slate-900">Terima Kasih atas Testimoni Anda!</h4>
-                <p className="text-xs text-slate-600 leading-relaxed max-w-sm mx-auto">
-                  Testimoni Anda telah tersimpan dan akan melalui proses verifikasi oleh tim moderasi sebelum diterbitkan di Marquee Beranda.
-                </p>
               </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="p-6 space-y-4 text-xs">
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block font-semibold text-slate-700 mb-1">Nama Lengkap & Gelar</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="Contoh: Budi Santoso, S.Kom."
-                      value={formData.author_name}
-                      onChange={(e) => setFormData({ ...formData, author_name: e.target.value })}
-                      className="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-semibold text-slate-700 mb-1">Tahun Lulus / Angkatan</label>
-                    <input
-                      type="text"
-                      placeholder="Contoh: 2018"
-                      value={formData.graduation_year}
-                      onChange={(e) => setFormData({ ...formData, graduation_year: e.target.value })}
-                      className="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block font-semibold text-slate-700 mb-1">Jabatan / Profesi</label>
-                    <input
-                      type="text"
-                      placeholder="Contoh: Software Engineer"
-                      value={formData.position}
-                      onChange={(e) => setFormData({ ...formData, position: e.target.value })}
-                      className="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-semibold text-slate-700 mb-1">Perusahaan / Kampus</label>
-                    <input
-                      type="text"
-                      placeholder="Contoh: Tokopedia / UGM"
-                      value={formData.company}
-                      onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                      className="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Rating Kepuasan</label>
-                  <select
-                    value={formData.rating}
-                    onChange={(e) => setFormData({ ...formData, rating: Number(e.target.value) })}
-                    className="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"
-                  >
-                    <option value={5}>⭐⭐⭐⭐⭐ (Sangat Puas - 5 Bintang)</option>
-                    <option value={4}>⭐⭐⭐⭐ (Puas - 4 Bintang)</option>
-                    <option value={3}>⭐⭐⭐ (Cukup - 3 Bintang)</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Kesan, Pesan & Pengalaman</label>
-                  <textarea
+              <h4 className="text-sm font-bold text-slate-900">Terima Kasih atas Testimoni Anda!</h4>
+              <p className="text-xs text-slate-600 leading-relaxed max-w-sm mx-auto">
+                Testimoni Anda telah tersimpan dan akan melalui proses verifikasi oleh tim moderasi sebelum diterbitkan di Marquee Beranda.
+              </p>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4 pt-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="author_name">Nama Lengkap & Gelar</Label>
+                  <Input
+                    id="author_name"
+                    type="text"
                     required
-                    rows={4}
-                    placeholder="Ceritakan bagaimana MAN 3 Sleman membantu perkembangan karir, studi, atau karakter Anda..."
-                    value={formData.content}
-                    onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                    className="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    placeholder="Contoh: Budi Santoso, S.Kom."
+                    value={formData.author_name}
+                    onChange={(e) => setFormData({ ...formData, author_name: e.target.value })}
                   />
                 </div>
-
-                <div className="pt-2 flex items-center justify-end gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setIsModalOpen(false)}
-                    className="cursor-pointer px-4 py-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 font-semibold transition-colors"
-                  >
-                    Batal
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={submitting}
-                    className="cursor-pointer px-5 py-2 rounded-lg bg-[#0D9488] hover:bg-[#0F766E] text-white font-bold transition-colors disabled:opacity-50"
-                  >
-                    {submitting ? "Mengirim..." : "Kirim Testimoni"}
-                  </button>
+                <div className="space-y-1.5">
+                  <Label htmlFor="graduation_year">Tahun Lulus / Angkatan</Label>
+                  <Input
+                    id="graduation_year"
+                    type="text"
+                    placeholder="Contoh: 2018"
+                    value={formData.graduation_year}
+                    onChange={(e) => setFormData({ ...formData, graduation_year: e.target.value })}
+                  />
                 </div>
-              </form>
-            )}
-          </div>
-        </div>,
-        document.body
-      )}
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="position">Jabatan / Profesi</Label>
+                  <Input
+                    id="position"
+                    type="text"
+                    placeholder="Contoh: Software Engineer"
+                    value={formData.position}
+                    onChange={(e) => setFormData({ ...formData, position: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="company">Perusahaan / Kampus</Label>
+                  <Input
+                    id="company"
+                    type="text"
+                    placeholder="Contoh: Tokopedia / UGM"
+                    value={formData.company}
+                    onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="rating-select">Rating Kepuasan</Label>
+                <Select
+                  value={String(formData.rating)}
+                  onValueChange={(val) => setFormData({ ...formData, rating: Number(val) })}
+                >
+                  <SelectTrigger id="rating-select">
+                    <SelectValue placeholder="Pilih rating kepuasan" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="5">⭐⭐⭐⭐⭐ (Sangat Puas - 5 Bintang)</SelectItem>
+                    <SelectItem value="4">⭐⭐⭐⭐ (Puas - 4 Bintang)</SelectItem>
+                    <SelectItem value="3">⭐⭐⭐ (Cukup - 3 Bintang)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="testimonial-content">Kesan, Pesan & Pengalaman</Label>
+                <Textarea
+                  id="testimonial-content"
+                  required
+                  rows={4}
+                  placeholder="Ceritakan bagaimana MAN 3 Sleman membantu perkembangan karir, studi, atau karakter Anda..."
+                  value={formData.content}
+                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                />
+              </div>
+
+              <DialogFooter className="pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsModalOpen(false)}
+                >
+                  Batal
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={submitting}
+                >
+                  {submitting ? "Mengirim..." : "Kirim Testimoni"}
+                </Button>
+              </DialogFooter>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }

@@ -37,6 +37,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Dialog,
@@ -1018,7 +1019,7 @@ export default function AdminModerationPage() {
 
             <form onSubmit={handleSaveCategory} className="space-y-4 py-2">
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">Nama Kategori</label>
+                <Label className="text-xs font-bold text-slate-700">Nama Kategori</Label>
                 <Input
                   type="text"
                   required
@@ -1030,7 +1031,7 @@ export default function AdminModerationPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">Deskripsi Singkat</label>
+                <Label className="text-xs font-bold text-slate-700">Deskripsi Singkat</Label>
                 <Textarea
                   rows={2}
                   value={categoryDescription}
@@ -1042,10 +1043,10 @@ export default function AdminModerationPage() {
 
               {/* Color Presets */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700 flex items-center justify-between">
+                <Label className="text-xs font-bold text-slate-700 flex items-center justify-between">
                   <span>Warna Identitas Kategori</span>
                   <span className="font-mono text-[11px] text-slate-500">{categoryColor}</span>
-                </label>
+                </Label>
                 <div className="flex flex-wrap items-center gap-2">
                   {PRESET_COLORS.map((c) => (
                     <button
@@ -1065,7 +1066,7 @@ export default function AdminModerationPage() {
 
               {/* Cover Image Presets */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">Gambar Cover Banner</label>
+                <Label className="text-xs font-bold text-slate-700">Gambar Cover Banner</Label>
                 <div className="grid grid-cols-3 gap-2">
                   {PRESET_COVERS.map((img) => (
                     <button
@@ -1086,7 +1087,7 @@ export default function AdminModerationPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">Urutan Tampil (Sort Order)</label>
+                <Label className="text-xs font-bold text-slate-700">Urutan Tampil (Sort Order)</Label>
                 <Input
                   type="number"
                   min={1}
@@ -1122,7 +1123,7 @@ export default function AdminModerationPage() {
             </DialogHeader>
 
             <div className="space-y-3 py-2">
-              <label className="text-xs font-bold text-slate-700">Alasan Penolakan</label>
+              <Label className="text-xs font-bold text-slate-700">Alasan Penolakan</Label>
               <Textarea
                 rows={3}
                 value={rejectReason}

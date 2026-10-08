@@ -6,6 +6,18 @@ import Link from "next/link";
 import { Container } from "@/components/ui/Container";
 import { AlumniItem } from "@/data/alumniData";
 import { sendNewDirectMessage } from "@/data/messageData";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 
 interface AlumniDetailClientProps {
   alumni: AlumniItem;
@@ -437,123 +449,106 @@ export function AlumniDetailClient({ alumni }: AlumniDetailClientProps) {
             </div>
           </div>
         </div>
-        {/* Direct Message Modal Dialog */}
-        {isMessageModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
-            <div className="bg-white w-full max-w-lg rounded-3xl border border-[#CBD5E1] shadow-2xl overflow-hidden">
-              {/* Modal Header */}
-              <div className="p-5 sm:p-6 bg-gradient-to-r from-[#072B24] to-[#0A3D33] text-white flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white/60 relative shrink-0">
-                    <Image
-                      src={alumni.avatar}
-                      alt={alumni.name}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-white">Kirim Pesan Privat</h3>
-                    <p className="text-xs text-slate-300">Kepada: {alumni.name}</p>
-                  </div>
+        {/* Direct Message Modal Dialog (shadcn UI Dialog + Form primitives) */}
+        <Dialog open={isMessageModalOpen} onOpenChange={setIsMessageModalOpen}>
+          <DialogContent className="sm:max-w-lg p-6">
+            <DialogHeader>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full overflow-hidden border border-emerald-300 relative shrink-0">
+                  <Image
+                    src={alumni.avatar}
+                    alt={alumni.name}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <div>
+                  <DialogTitle className="text-sm font-bold text-slate-900">Kirim Pesan Privat</DialogTitle>
+                  <DialogDescription className="text-xs text-slate-500">
+                    Kepada: {alumni.name} ({alumni.occupation})
+                  </DialogDescription>
+                </div>
+              </div>
+            </DialogHeader>
+
+            {sendSuccess ? (
+              <div className="text-center py-6 space-y-4">
+                <div className="w-14 h-14 rounded-full bg-emerald-100 text-[#0D9488] flex items-center justify-center mx-auto text-2xl font-bold">
+                  ✓
+                </div>
+                <div className="space-y-1">
+                  <h4 className="text-base font-bold text-[#0F172A]">Pesan Berhasil Terkirim!</h4>
+                  <p className="text-xs text-[#64748B] max-w-xs mx-auto">
+                    Pesan Anda telah masuk ke kotak pesan {alumni.name}. Anda dapat memantau percakapan di Kotak Masuk Anda.
+                  </p>
+                </div>
+                <div className="pt-2 flex items-center justify-center gap-3">
+                  <Link
+                    href="/messages"
+                    className="inline-flex items-center justify-center px-5 py-2 text-xs font-bold text-white bg-[#0D9488] hover:bg-[#0f766e] rounded-xl shadow-xs transition-colors"
+                  >
+                    Buka Kotak Masuk Pesan &rarr;
+                  </Link>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsMessageModalOpen(false)}
+                  >
+                    Tutup
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleSendMessage} className="space-y-4 pt-1">
+                <div className="space-y-1.5">
+                  <Label htmlFor="dm-subject">Perihal / Subjek Diskusi</Label>
+                  <Input
+                    id="dm-subject"
+                    type="text"
+                    value={messageSubject}
+                    onChange={(e) => setMessageSubject(e.target.value)}
+                    placeholder="Contoh: Diskusi Karir / Silaturahmi Lintas Angkatan"
+                  />
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => setIsMessageModalOpen(false)}
-                  className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-sm transition-colors"
-                >
-                  ✕
-                </button>
-              </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="dm-body">
+                    Isi Pesan <span className="text-rose-500">*</span>
+                  </Label>
+                  <Textarea
+                    id="dm-body"
+                    required
+                    rows={4}
+                    value={messageBody}
+                    onChange={(e) => setMessageBody(e.target.value)}
+                    placeholder="Tuliskan pesan Anda secara sopan dan jelas..."
+                  />
+                </div>
 
-              {/* Modal Body */}
-              <div className="p-6 space-y-4">
-                {sendSuccess ? (
-                  <div className="text-center py-6 space-y-4">
-                    <div className="w-14 h-14 rounded-full bg-emerald-100 text-[#0D9488] flex items-center justify-center mx-auto text-2xl font-bold">
-                      ✓
-                    </div>
-                    <div className="space-y-1">
-                      <h4 className="text-base font-bold text-[#0F172A]">Pesan Berhasil Terkirim!</h4>
-                      <p className="text-xs text-[#64748B] max-w-xs mx-auto">
-                        Pesan Anda telah masuk ke kotak pesan {alumni.name}. Anda dapat memantau percakapan di Kotak Masuk Anda.
-                      </p>
-                    </div>
-                    <div className="pt-2 flex items-center justify-center gap-3">
-                      <Link
-                        href="/messages"
-                        className="inline-flex items-center justify-center px-5 py-2 text-xs font-bold text-white bg-[#0D9488] hover:bg-[#0f766e] rounded-full shadow-xs transition-colors"
-                      >
-                        Buka Kotak Masuk Pesan &rarr;
-                      </Link>
-                      <button
-                        type="button"
-                        onClick={() => setIsMessageModalOpen(false)}
-                        className="px-4 py-2 text-xs font-semibold text-[#475569] hover:bg-slate-100 rounded-full transition-colors"
-                      >
-                        Tutup
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <form onSubmit={handleSendMessage} className="space-y-4">
-                    <div>
-                      <label htmlFor="dm-subject" className="block text-xs font-bold text-[#0F172A] uppercase tracking-wider mb-1.5">
-                        Perihal / Subjek Diskusi
-                      </label>
-                      <input
-                        id="dm-subject"
-                        type="text"
-                        value={messageSubject}
-                        onChange={(e) => setMessageSubject(e.target.value)}
-                        placeholder={`Contoh: Diskusi Karir / Silaturahmi Lintas Angkatan`}
-                        className="w-full px-3.5 py-2 text-xs rounded-xl border border-[#CBD5E1] bg-white focus:outline-none focus:ring-2 focus:ring-[#0D9488] text-[#0F172A]"
-                      />
-                    </div>
+                <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-[11px] text-[#64748B] flex items-center gap-2">
+                  <span>🛡️</span>
+                  <span>Pesan ini bersifat asinkron dan terlindungi dalam ekosistem M3S Connect.</span>
+                </div>
 
-                    <div>
-                      <label htmlFor="dm-body" className="block text-xs font-bold text-[#0F172A] uppercase tracking-wider mb-1.5">
-                        Isi Pesan <span className="text-rose-500">*</span>
-                      </label>
-                      <textarea
-                        id="dm-body"
-                        required
-                        rows={4}
-                        value={messageBody}
-                        onChange={(e) => setMessageBody(e.target.value)}
-                        placeholder="Tuliskan pesan Anda secara sopan dan jelas..."
-                        className="w-full p-3 text-xs rounded-xl border border-[#CBD5E1] bg-white focus:outline-none focus:ring-2 focus:ring-[#0D9488] text-[#0F172A]"
-                      />
-                    </div>
-
-                    <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-[11px] text-[#64748B] flex items-center gap-2">
-                      <span>🛡️</span>
-                      <span>Pesan ini bersifat asinkron dan terlindungi dalam ekosistem M3S Connect.</span>
-                    </div>
-
-                    <div className="pt-2 flex items-center justify-end gap-2.5">
-                      <button
-                        type="button"
-                        onClick={() => setIsMessageModalOpen(false)}
-                        className="px-4 py-2 text-xs font-semibold text-[#475569] hover:bg-slate-100 rounded-full transition-colors"
-                      >
-                        Batal
-                      </button>
-                      <button
-                        type="submit"
-                        disabled={isSending || !messageBody.trim()}
-                        className="inline-flex items-center justify-center min-h-[38px] px-5 py-2 text-xs font-bold text-white bg-[#0D9488] hover:bg-[#0f766e] disabled:opacity-50 disabled:cursor-not-allowed rounded-full shadow-xs transition-colors gap-1.5"
-                      >
-                        {isSending ? "Mengirim..." : "Kirim Pesan"}
-                      </button>
-                    </div>
-                  </form>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
+                <DialogFooter className="pt-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsMessageModalOpen(false)}
+                  >
+                    Batal
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={isSending || !messageBody.trim()}
+                  >
+                    {isSending ? "Mengirim..." : "Kirim Pesan"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            )}
+          </DialogContent>
+        </Dialog>
       </Container>
     </div>
   );

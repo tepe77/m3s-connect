@@ -28,6 +28,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Dialog,
@@ -490,7 +491,7 @@ export function ReplyComposer({
 
           <form onSubmit={handleInsertLink} className="space-y-3 pt-2">
             <div className="space-y-1">
-              <label className="text-xs font-bold text-[#0F172A]">Teks Tautan (Opsional)</label>
+              <Label className="text-xs font-bold text-[#0F172A]">Teks Tautan (Opsional)</Label>
               <Input
                 type="text"
                 value={linkText}
@@ -500,7 +501,7 @@ export function ReplyComposer({
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-bold text-[#0F172A]">URL Tujuan</label>
+              <Label className="text-xs font-bold text-[#0F172A]">URL Tujuan</Label>
               <Input
                 type="url"
                 required
@@ -599,7 +600,7 @@ export function ReplyComposer({
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-bold text-[#0F172A]">Keterangan Foto (Caption)</label>
+              <Label className="text-xs font-bold text-[#0F172A]">Keterangan Foto (Caption)</Label>
               <Input
                 type="text"
                 value={imageCaption}
@@ -609,7 +610,7 @@ export function ReplyComposer({
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-bold text-[#0F172A]">URL Foto</label>
+              <Label className="text-xs font-bold text-[#0F172A]">URL Foto</Label>
               <Input
                 type="text"
                 required
@@ -648,7 +649,7 @@ export function ReplyComposer({
 
           <form onSubmit={handleInsertVideo} className="space-y-3 pt-2">
             <div className="space-y-1">
-              <label className="text-xs font-bold text-[#0F172A]">URL Video</label>
+              <Label className="text-xs font-bold text-[#0F172A]">URL Video</Label>
               <Input
                 type="url"
                 required
