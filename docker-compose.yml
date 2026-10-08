@@ -8,7 +8,7 @@ services:
       POSTGRES_USER: ${DB_USERNAME:-m3s_user}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-m3s_password}
     ports:
-      - "${FORWARD_DB_PORT:-5432}:5432"
+      - "127.0.0.1:${FORWARD_DB_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -24,7 +24,7 @@ services:
     container_name: m3s-redis
     restart: unless-stopped
     ports:
-      - "${FORWARD_REDIS_PORT:-6379}:6379"
+      - "127.0.0.1:${FORWARD_REDIS_PORT:-6380}:6379"
     volumes:
       - redis_data:/data
     healthcheck:
@@ -57,7 +57,7 @@ services:
     container_name: m3s-nginx
     restart: unless-stopped
     ports:
-      - "${FORWARD_NGINX_PORT:-8000}:80"
+      - "127.0.0.1:${FORWARD_NGINX_PORT:-8000}:80"
     volumes:
       - ./backend:/var/www/backend:ro
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
