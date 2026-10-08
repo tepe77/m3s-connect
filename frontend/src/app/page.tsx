@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { HeroAurora } from "@/components/velora/hero-aurora";
 import { HomeForumThreads } from "@/components/home/HomeForumThreads";
 import { HomeDocumentationSection } from "@/components/home/HomeDocumentationSection";
 import { HomeTestimonialsMarquee } from "@/components/home/HomeTestimonialsMarquee";
@@ -7,84 +8,11 @@ import { HomeTestimonialsMarquee } from "@/components/home/HomeTestimonialsMarqu
 export default function HomePage() {
   return (
     <div className="flex flex-col gap-12 sm:gap-16 pb-16 bg-[#F8FAFC]">
-      {/* 1. Hero Section */}
-      <section className="relative w-full overflow-hidden bg-[#072B24]">
-        {/* Background Campus Image */}
-        <div className="absolute inset-0 z-0">
-          <Image
-            src="/images/hero-building.jpg"
-            alt="Kampus MAN 3 Sleman"
-            fill
-            priority
-            className="object-cover object-center"
-          />
-          {/* Dark Green Gradient Mask (deep on left, translucent on right) */}
-          <div className="absolute inset-0 bg-gradient-to-r from-[#062A24] via-[#07362E]/90 to-[#07362E]/40" />
-        </div>
-
-        <div className="relative z-10 max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 lg:py-28">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            {/* Left Hero Content */}
-            <div className="lg:col-span-7 space-y-6 text-white">
-              {/* Pill Badge */}
-              <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-[#11473E]/90 border border-[#2DD4BF]/40 text-[#2DD4BF] text-xs font-semibold backdrop-blur-xs">
-                <span>Selamat Datang di</span>
-              </div>
-
-              {/* Main Heading */}
-              <div className="space-y-1">
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight">
-                  M3S <span className="text-[#2DD4BF]">CONNECT</span>
-                </h1>
-                <p className="text-2xl sm:text-3xl font-bold tracking-tight text-white/95">
-                  Alumni Community Platform
-                </p>
-              </div>
-
-              {/* Description */}
-              <p className="text-sm sm:text-base text-white/80 max-w-xl leading-relaxed">
-                Jalin kembali silaturahmi, berbagi cerita, dan tumbuh bersama keluarga besar alumni MAN 3 Sleman dalam satu platform.
-              </p>
-
-              {/* CTAs */}
-              <div className="flex flex-wrap items-center gap-4 pt-2">
-                <Link
-                  href="/register"
-                  className="inline-flex items-center justify-center min-h-[46px] px-6 text-sm font-bold text-white bg-[#0D9488] hover:bg-[#0f766e] rounded-lg transition-all shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2DD4BF]"
-                >
-                  <span>Gabung Sekarang</span>
-                  <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                  </svg>
-                </Link>
-
-                <a
-                  href="#fitur"
-                  className="inline-flex items-center justify-center min-h-[46px] px-6 text-sm font-semibold text-white bg-black/25 hover:bg-white/15 border border-white/30 rounded-lg transition-colors backdrop-blur-xs"
-                >
-                  Jelajahi Fitur
-                </a>
-              </div>
-            </div>
-
-            {/* Right Slanted Cursive Calligraphy */}
-            <div className="lg:col-span-5 flex justify-end lg:pr-8">
-              <div className="relative text-right transform -rotate-6 select-none pointer-events-none">
-                <p className="text-3xl sm:text-4xl lg:text-5xl font-serif italic font-light text-white/90 drop-shadow-[0_4px_8px_rgba(0,0,0,0.6)] leading-tight tracking-wide">
-                  Satu Alumni,
-                  <br />
-                  Seribu Cerita,
-                  <br />
-                  Satu Tujuan
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* 1. Velora Aurora Hero Section */}
+      <HeroAurora />
 
       {/* 2. Feature Quick Links Cards (6 Cards Grid) */}
-      <section id="fitur" className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 -mt-6 sm:-mt-10 relative z-20 w-full">
+      <section id="fitur" className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 relative z-20 w-full">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5 sm:gap-4">
           {/* Card 1: Berita */}
           <Link

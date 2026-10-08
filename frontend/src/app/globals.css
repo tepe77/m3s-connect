@@ -13,6 +13,13 @@
   --warning: #F59E0B;
   --danger: #EF4444;
   --info: #3B82F6;
+
+  /* Velora Brand Tokens - Aligned to M3S Emerald/Teal/Sky palette */
+  --brand: #0D9488;
+  --brand-from: #10B981;
+  --brand-via: #0D9488;
+  --brand-to: #0284C7;
+  --brand-foreground: #FFFFFF;
 }
 
 @theme inline {
@@ -29,6 +36,12 @@
   --color-danger: var(--danger);
   --color-info: var(--info);
 
+  --color-brand: var(--brand);
+  --color-brand-from: var(--brand-from);
+  --color-brand-via: var(--brand-via);
+  --color-brand-to: var(--brand-to);
+  --color-brand-foreground: var(--brand-foreground);
+
   --font-sans: var(--font-geist-sans), Inter, sans-serif;
   --font-mono: var(--font-geist-mono), monospace;
 }
@@ -39,6 +52,55 @@ body {
   font-family: var(--font-sans);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Velora Aurora Keyframes */
+@keyframes aurora-1 {
+  0% { transform: translate(-10%, -12%) scale(1); }
+  50% { transform: translate(12%, 8%) scale(1.25); }
+  100% { transform: translate(-6%, 14%) scale(0.95); }
+}
+
+@keyframes aurora-2 {
+  0% { transform: translate(12%, 10%) scale(1.1); }
+  50% { transform: translate(-14%, -6%) scale(0.9); }
+  100% { transform: translate(8%, -12%) scale(1.2); }
+}
+
+@keyframes aurora-3 {
+  0% { transform: translateY(16%) scale(0.95); }
+  50% { transform: translate(10%, -10%) scale(1.15); }
+  100% { transform: translate(-12%, 4%) scale(1); }
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes gradient {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.animate-aurora-1 {
+  animation: 14s ease-in-out infinite alternate aurora-1;
+}
+
+.animate-aurora-2 {
+  animation: 18s ease-in-out infinite alternate aurora-2;
+}
+
+.animate-aurora-3 {
+  animation: 16s ease-in-out infinite alternate aurora-3;
+}
+
+.animate-shimmer {
+  animation: shimmer 8s infinite linear;
+}
+
+.animate-gradient {
+  animation: gradient 8s linear infinite;
 }
 
 @keyframes marquee {
@@ -62,4 +124,5 @@ body {
 .group-hover-pause:hover .animate-marquee-reverse {
   animation-play-state: paused;
 }
+
 
