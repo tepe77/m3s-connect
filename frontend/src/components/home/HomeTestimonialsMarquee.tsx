@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import { Marquee } from "@/components/ui/marquee";
 
@@ -100,14 +101,14 @@ function ReviewCard({ quote, name, role, avatar, rating }: TestimonialItem) {
     .join("");
 
   return (
-    <figure className="flex w-80 shrink-0 flex-col justify-between gap-5 rounded-2xl border border-slate-200/90 bg-white p-5 text-slate-800 shadow-xs transition-all hover:border-teal-400 hover:shadow-md sm:w-96 select-none">
+    <figure className="flex w-72 shrink-0 flex-col justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-5 text-slate-800 shadow-xs transition-all hover:border-teal-400 hover:shadow-md sm:w-88 select-none">
       <div>
         {/* Star Ratings */}
         <div className="flex gap-1 text-amber-400" role="img" aria-label={`Rating ${rating} dari 5 bintang`}>
           {Array.from({ length: 5 }).map((_, i) => (
             <svg
               key={i}
-              className={`w-4 h-4 ${i < rating ? "fill-amber-400" : "fill-slate-200 text-slate-200"}`}
+              className={`w-3.5 h-3.5 ${i < rating ? "fill-amber-400 text-amber-400" : "fill-slate-200 text-slate-200"}`}
               viewBox="0 0 20 20"
               fill="currentColor"
             >
@@ -117,29 +118,29 @@ function ReviewCard({ quote, name, role, avatar, rating }: TestimonialItem) {
         </div>
 
         {/* Quote text */}
-        <blockquote className="mt-3.5 text-xs sm:text-sm leading-relaxed text-slate-600 line-clamp-4">
+        <blockquote className="mt-3 text-xs leading-relaxed text-slate-600 line-clamp-4">
           &ldquo;{quote}&rdquo;
         </blockquote>
       </div>
 
       {/* Author Caption */}
       <figcaption className="flex items-center gap-3 pt-3 border-t border-slate-100">
-        <div className="relative w-10 h-10 rounded-full overflow-hidden bg-teal-50 border border-teal-200/60 shrink-0 flex items-center justify-center font-bold text-xs text-teal-700">
+        <div className="relative w-9 h-9 rounded-full overflow-hidden bg-teal-50 border border-teal-200 shrink-0 flex items-center justify-center font-bold text-xs text-teal-700">
           {avatar ? (
             <Image
               src={avatar}
               alt={name}
               fill
               className="object-cover"
-              sizes="40px"
+              sizes="36px"
             />
           ) : (
             <span>{initials}</span>
           )}
         </div>
         <div className="min-w-0 text-left">
-          <div className="truncate text-xs sm:text-sm font-bold text-slate-900">{name}</div>
-          <div className="truncate text-[11px] font-medium text-slate-500">{role}</div>
+          <div className="truncate text-xs font-bold text-slate-900">{name}</div>
+          <div className="truncate text-[11px] text-slate-500">{role}</div>
         </div>
       </figcaption>
     </figure>
@@ -149,6 +150,7 @@ function ReviewCard({ quote, name, role, avatar, rating }: TestimonialItem) {
 export function HomeTestimonialsMarquee() {
   const [testimonials, setTestimonials] = useState<TestimonialItem[]>(FALLBACK_TESTIMONIALS);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
@@ -163,6 +165,7 @@ export function HomeTestimonialsMarquee() {
   });
 
   useEffect(() => {
+    setMounted(true);
     let isMounted = true;
 
     async function fetchTestimonials() {
@@ -229,10 +232,10 @@ export function HomeTestimonialsMarquee() {
         setTimeout(() => {
           setIsModalOpen(false);
           setSubmitSuccess(false);
-        }, 2500);
+        }, 2200);
       }
     } catch {
-      alert("Gagal mengirim testimoni. Silakan coba lagi.");
+      alert("Gagal mengirim testimoni. Silakan periksa koneksi backend Anda.");
     } finally {
       setSubmitting(false);
     }
@@ -244,73 +247,79 @@ export function HomeTestimonialsMarquee() {
   const bottomRow = testimonials.slice(half);
 
   return (
-    <section className="relative isolate overflow-hidden py-16 sm:py-20 bg-slate-50 border-y border-slate-200/80">
-      {/* Background Soft Glow */}
-      <div
-        aria-hidden
-        className="absolute inset-x-0 top-1/2 -z-10 mx-auto h-72 max-w-4xl -translate-y-1/2 rounded-full bg-teal-500/10 blur-3xl"
-      />
+    <section className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 w-full">
+      {/* Boxed Rounded Card Container (Aligned with grid above and CTA below) */}
+      <div className="relative rounded-3xl bg-gradient-to-b from-slate-50/90 via-white to-slate-50/60 border border-[#E2E8F0] py-10 sm:py-14 px-3 sm:px-6 shadow-xs overflow-hidden">
+        {/* Subtle Background Radial Glow */}
+        <div
+          aria-hidden
+          className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-teal-500/8 via-transparent to-transparent pointer-events-none"
+        />
 
-      {/* Section Header */}
-      <div className="mx-auto max-w-3xl text-center px-4 sm:px-6 lg:px-8 mb-12">
-        <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-emerald-50 text-[#0D9488] border border-emerald-200">
-          Kesan & Cerita Alumni
-        </span>
-        <h2 className="mt-3 text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#0F172A] tracking-tight">
-          Inspirasi & Jejak Langkah Alumni Mayoga
-        </h2>
-        <p className="mt-3 text-xs sm:text-sm text-slate-600 max-w-2xl mx-auto leading-relaxed">
-          Simak pengalaman rekan-rekan alumni MAN 3 Sleman dalam meniti karir, studi lanjut, dan kontribusi nyata untuk masyarakat.
-        </p>
+        {/* Section Header */}
+        <div className="mx-auto max-w-2xl text-center px-4 mb-10">
+          <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-emerald-50 text-[#0D9488] border border-emerald-200">
+            Kesan & Cerita Alumni
+          </span>
+          <h2 className="mt-3 text-2xl sm:text-3xl font-extrabold text-[#0F172A] tracking-tight">
+            Inspirasi & Jejak Langkah Alumni Mayoga
+          </h2>
+          <p className="mt-2 text-xs sm:text-sm text-slate-600 max-w-xl mx-auto leading-relaxed">
+            Simak pengalaman rekan-rekan alumni MAN 3 Sleman dalam meniti karir, studi lanjut, dan kontribusi nyata untuk masyarakat.
+          </p>
 
-        {/* Action Button: Tulis Testimoni */}
-        <div className="mt-5 flex items-center justify-center gap-3">
-          <button
-            type="button"
-            onClick={() => setIsModalOpen(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-[#0D9488] hover:bg-[#0F766E] shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-teal-500"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-            </svg>
-            <span>Bagikan Kesan & Testimoni Anda</span>
-          </button>
+          {/* Action Button: Tulis Testimoni */}
+          <div className="mt-5 flex items-center justify-center">
+            <button
+              type="button"
+              onClick={() => setIsModalOpen(true)}
+              className="cursor-pointer inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-[#0D9488] hover:bg-[#0F766E] shadow-sm hover:shadow-md transition-all active:scale-98 focus:outline-none focus:ring-2 focus:ring-teal-500"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+              <span>Bagikan Kesan & Testimoni Anda</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Two Scrolling Marquee Rows (Contained within frame) */}
+        <div className="flex flex-col gap-4 overflow-hidden rounded-2xl">
+          {/* Row 1: Drifting Left */}
+          <Marquee repeat={3} className="[--duration:55s]">
+            {topRow.map((item) => (
+              <ReviewCard key={item.id} {...item} />
+            ))}
+          </Marquee>
+
+          {/* Row 2: Drifting Right (Reverse) */}
+          <Marquee reverse repeat={3} className="[--duration:60s]">
+            {bottomRow.map((item) => (
+              <ReviewCard key={item.id} {...item} />
+            ))}
+          </Marquee>
         </div>
       </div>
 
-      {/* Two Scrolling Marquee Rows (Velora UI Pattern) */}
-      <div className="flex flex-col gap-5 overflow-hidden">
-        {/* Row 1: Drifting Left */}
-        <Marquee repeat={3} className="[--duration:55s]">
-          {topRow.map((item) => (
-            <ReviewCard key={item.id} {...item} />
-          ))}
-        </Marquee>
-
-        {/* Row 2: Drifting Right (Reverse) */}
-        <Marquee reverse repeat={3} className="[--duration:60s]">
-          {bottomRow.map((item) => (
-            <ReviewCard key={item.id} {...item} />
-          ))}
-        </Marquee>
-      </div>
-
-      {/* Submission Modal Dialog */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+      {/* Submission Modal Dialog (Rendered via Portal directly to body for 100% reliability) */}
+      {mounted && isModalOpen && createPortal(
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200"
+          onClick={() => setIsModalOpen(false)}
+        >
           <div
-            className="relative w-full max-w-lg bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200"
+            className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden border border-slate-200"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/70">
               <div>
-                <h3 className="text-base font-bold text-slate-900">Kirim Kesan & Testimoni Alumni</h3>
-                <p className="text-xs text-slate-500">Cerita Anda akan diverifikasi oleh admin sebelum tampil di beranda.</p>
+                <h3 className="text-sm sm:text-base font-bold text-slate-900">Kirim Kesan & Testimoni Alumni</h3>
+                <p className="text-xs text-slate-500">Kesan Anda akan diverifikasi admin sebelum tampil di beranda.</p>
               </div>
               <button
                 type="button"
                 onClick={() => setIsModalOpen(false)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                className="cursor-pointer p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
                 aria-label="Tutup"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -328,7 +337,7 @@ export function HomeTestimonialsMarquee() {
                 </div>
                 <h4 className="text-sm font-bold text-slate-900">Terima Kasih atas Testimoni Anda!</h4>
                 <p className="text-xs text-slate-600 leading-relaxed max-w-sm mx-auto">
-                  Testimoni Anda telah kami terima dan akan melalui proses verifikasi oleh tim moderasi sebelum diterbitkan di Marquee Beranda.
+                  Testimoni Anda telah tersimpan dan akan melalui proses verifikasi oleh tim moderasi sebelum diterbitkan di Marquee Beranda.
                 </p>
               </div>
             ) : (
@@ -409,14 +418,14 @@ export function HomeTestimonialsMarquee() {
                   <button
                     type="button"
                     onClick={() => setIsModalOpen(false)}
-                    className="px-4 py-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 font-semibold transition-colors"
+                    className="cursor-pointer px-4 py-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 font-semibold transition-colors"
                   >
                     Batal
                   </button>
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="px-5 py-2 rounded-lg bg-[#0D9488] hover:bg-[#0F766E] text-white font-bold transition-colors disabled:opacity-50"
+                    className="cursor-pointer px-5 py-2 rounded-lg bg-[#0D9488] hover:bg-[#0F766E] text-white font-bold transition-colors disabled:opacity-50"
                   >
                     {submitting ? "Mengirim..." : "Kirim Testimoni"}
                   </button>
@@ -424,7 +433,8 @@ export function HomeTestimonialsMarquee() {
               </form>
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </section>
   );
