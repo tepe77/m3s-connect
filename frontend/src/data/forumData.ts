@@ -1,3 +1,5 @@
+import { API_BASE_URL } from "@/lib/api";
+
 export interface ForumCategoryData {
   id: string;
   name: string;
@@ -663,7 +665,7 @@ export function addTopic(newTopic: Omit<ForumTopic, "id" | "viewsCount" | "repli
   try {
     const token = typeof window !== "undefined" ? localStorage.getItem("m3s_token") : null;
     if (token) {
-      fetch("http://localhost:8000/api/v1/forum/threads", {
+      fetch(`${API_BASE_URL}/forum/threads`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -720,7 +722,7 @@ export function addReply(threadSlug: string, replyData: { body: string; author: 
   try {
     const token = typeof window !== "undefined" ? localStorage.getItem("m3s_token") : null;
     if (token) {
-      fetch(`http://localhost:8000/api/v1/forum/threads/${threadSlug}/posts`, {
+      fetch(`${API_BASE_URL}/forum/threads/${threadSlug}/posts`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -754,7 +756,7 @@ export function toggleTopicLike(threadSlug: string): boolean {
   try {
     const token = typeof window !== "undefined" ? localStorage.getItem("m3s_token") : null;
     if (token) {
-      fetch(`http://localhost:8000/api/v1/forum/threads/${threadSlug}/like`, {
+      fetch(`${API_BASE_URL}/forum/threads/${threadSlug}/like`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

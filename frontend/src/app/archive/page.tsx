@@ -1,5 +1,6 @@
 import { Container } from "@/components/ui/Container";
 import { ArchiveGalleryView, AlbumItem } from "@/components/archive/ArchiveGalleryView";
+import { API_BASE_URL, getAssetUrl } from "@/lib/api";
 
 export const metadata = {
   title: "Dokumentasi & Galeri Kegiatan | M3S Connect",
@@ -59,15 +60,12 @@ function resolveImageUrl(url: string | undefined | null, fallbackUrl: string): s
   if (match) {
     return `/images/${match[0]}`;
   }
-  if (url.startsWith("/storage/")) {
-    return `http://localhost:8000${url}`;
-  }
-  return url;
+  return getAssetUrl(url);
 }
 
 async function getDocumentations(): Promise<AlbumItem[]> {
   try {
-    const res = await fetch("http://localhost:8000/api/v1/documentations", {
+    const res = await fetch(`${API_BASE_URL}/documentations`, {
       cache: "no-store",
     });
     if (res.ok) {

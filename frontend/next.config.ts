@@ -16,6 +16,16 @@ const nextConfig: NextConfig = {
         port: "8000",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "api-alumni.mayoga.sch.id",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "*.mayoga.sch.id",
+        pathname: "/**",
+      },
     ],
   },
   async redirects() {

@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Container } from "@/components/ui/Container";
 import { ALUMNI_ITEMS, AlumniItem } from "@/data/alumniData";
+import { API_BASE_URL } from "@/lib/api";
 
 export default function AlumniDirectoryPage() {
   const [alumniList, setAlumniList] = useState<AlumniItem[]>(ALUMNI_ITEMS);
@@ -13,7 +14,7 @@ export default function AlumniDirectoryPage() {
   const [selectedCity, setSelectedCity] = useState("");
 
   useEffect(() => {
-    fetch("http://localhost:8000/api/v1/alumni")
+    fetch(`${API_BASE_URL}/alumni`)
       .then((res) => res.json())
       .then((json) => {
         if (json?.data?.data && Array.isArray(json.data.data) && json.data.data.length > 0) {

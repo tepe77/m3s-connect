@@ -1,6 +1,7 @@
 "use client";
 
 import { FORUM_CATEGORIES, ForumCategoryData } from "./forumData";
+import { API_BASE_URL } from "@/lib/api";
 
 export interface ModerationReport {
   id: string;
@@ -205,8 +206,8 @@ export function saveAdminCategory(category: ForumCategoryData): ForumCategoryDat
     const token = typeof window !== "undefined" ? localStorage.getItem("m3s_token") : null;
     if (token) {
       const endpoint = index >= 0
-        ? `http://localhost:8000/api/v1/admin/forum/categories/${category.id}`
-        : "http://localhost:8000/api/v1/admin/forum/categories";
+        ? `${API_BASE_URL}/admin/forum/categories/${category.id}`
+        : `${API_BASE_URL}/admin/forum/categories`;
       const method = index >= 0 ? "PUT" : "POST";
 
       fetch(endpoint, {
@@ -245,7 +246,7 @@ export function deleteAdminCategory(id: string): ForumCategoryData[] {
   try {
     const token = typeof window !== "undefined" ? localStorage.getItem("m3s_token") : null;
     if (token) {
-      fetch(`http://localhost:8000/api/v1/admin/forum/categories/${id}`, {
+      fetch(`${API_BASE_URL}/admin/forum/categories/${id}`, {
         method: "DELETE",
         headers: {
           Accept: "application/json",
@@ -303,7 +304,7 @@ export function resolveAdminReport(
   try {
     const token = typeof window !== "undefined" ? localStorage.getItem("m3s_token") : null;
     if (token) {
-      fetch(`http://localhost:8000/api/v1/admin/reports/${id}`, {
+      fetch(`${API_BASE_URL}/admin/reports/${id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -363,7 +364,7 @@ export function approveAlumniVerification(id: string): AlumniVerificationItem[] 
     const token = typeof window !== "undefined" ? localStorage.getItem("m3s_token") : null;
     const target = current.find((i) => i.id === id);
     if (token && target) {
-      fetch(`http://localhost:8000/api/v1/admin/alumni/${target.userId}/verify`, {
+      fetch(`${API_BASE_URL}/admin/alumni/${target.userId}/verify`, {
         method: "POST",
         headers: {
           Accept: "application/json",
@@ -400,7 +401,7 @@ export function rejectAlumniVerification(id: string, reason: string): AlumniVeri
     const token = typeof window !== "undefined" ? localStorage.getItem("m3s_token") : null;
     const target = current.find((i) => i.id === id);
     if (token && target) {
-      fetch(`http://localhost:8000/api/v1/admin/alumni/${target.userId}/reject`, {
+      fetch(`${API_BASE_URL}/admin/alumni/${target.userId}/reject`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

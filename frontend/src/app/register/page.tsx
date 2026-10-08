@@ -22,8 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { GridPattern } from "@/components/ui/grid-pattern";
 import { cn } from "@/lib/utils";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+import { API_BASE_URL } from "@/lib/api";
 
 const RULES = [
   { label: "Minimal 8 karakter", test: (v: string) => v.length >= 8 },

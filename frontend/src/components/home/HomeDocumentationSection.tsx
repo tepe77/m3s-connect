@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { CardsCarousel, CarouselCard } from "@/components/ui/apple-cards-carousel";
+import { API_BASE_URL, getAssetUrl } from "@/lib/api";
 
 interface DocItem {
   id: string;
@@ -91,10 +92,7 @@ function resolveImageUrl(url: string | undefined | null, fallbackUrl: string): s
   if (match) {
     return `/images/${match[0]}`;
   }
-  if (url.startsWith("/storage/")) {
-    return `http://localhost:8000${url}`;
-  }
-  return url;
+  return getAssetUrl(url);
 }
 
 export function HomeDocumentationSection() {
@@ -105,7 +103,7 @@ export function HomeDocumentationSection() {
 
     async function fetchDocs() {
       try {
-        const res = await fetch("http://localhost:8000/api/v1/documentations?limit=8", {
+        const res = await fetch(`${API_BASE_URL}/documentations?limit=8`, {
           cache: "no-store",
         });
         if (res.ok) {

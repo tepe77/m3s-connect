@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { API_BASE_URL, getAssetUrl } from "@/lib/api";
 import {
   Select,
   SelectContent,
@@ -105,10 +106,7 @@ function resolveImageUrl(url: string | undefined | null, fallbackUrl: string): s
   if (match) {
     return `/images/${match[0]}`;
   }
-  if (url.startsWith("/storage/")) {
-    return `http://localhost:8000${url}`;
-  }
-  return url;
+  return getAssetUrl(url);
 }
 
 function ReviewCard({ quote, name, role, avatar, rating }: TestimonialItem) {
@@ -186,7 +184,7 @@ export function HomeTestimonialsMarquee() {
 
     async function fetchTestimonials() {
       try {
-        const res = await fetch("http://localhost:8000/api/v1/testimonials?limit=16", {
+        const res = await fetch(`${API_BASE_URL}/testimonials?limit=16`, {
           cache: "no-store",
         });
         if (res.ok) {
@@ -226,7 +224,7 @@ export function HomeTestimonialsMarquee() {
 
     setSubmitting(true);
     try {
-      const res = await fetch("http://localhost:8000/api/v1/testimonials", {
+      const res = await fetch(`${API_BASE_URL}/testimonials`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

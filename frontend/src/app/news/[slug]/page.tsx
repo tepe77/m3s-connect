@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { NEWS_ITEMS, NewsItem, NewsComment } from "@/data/newsData";
 import { NewsDetailClient } from "./NewsDetailClient";
+import { API_BASE_URL, getAssetUrl } from "@/lib/api";
 
 interface PageProps {
   params: Promise<{
@@ -15,14 +16,14 @@ function resolveNewsImage(url: string | undefined | null, fallbackUrl: string): 
   if (match) {
     return `/images/${match[0]}`;
   }
-  return url;
+  return getAssetUrl(url);
 }
 
 async function getNewsBySlug(slug: string): Promise<NewsItem | null> {
   const fallback = NEWS_ITEMS.find((n) => n.slug === slug) || null;
 
   try {
-    const res = await fetch(`http://localhost:8000/api/v1/news/${slug}`, {
+    const res = await fetch(`${API_BASE_URL}/news/${slug}`, {
       cache: "no-store",
     });
 

@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { ALUMNI_ITEMS, AlumniItem } from "@/data/alumniData";
 import { AlumniDetailClient } from "./AlumniDetailClient";
+import { API_BASE_URL } from "@/lib/api";
 
 interface PageProps {
   params: Promise<{
@@ -13,7 +14,7 @@ async function getAlumni(id: string): Promise<AlumniItem | null> {
   const fallback = ALUMNI_ITEMS.find((a) => a.id === id);
 
   try {
-    const res = await fetch(`http://localhost:8000/api/v1/alumni/${id}`, {
+    const res = await fetch(`${API_BASE_URL}/alumni/${id}`, {
       cache: "no-store",
     });
     if (res.ok) {

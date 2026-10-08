@@ -1,3 +1,5 @@
+import { API_BASE_URL } from "@/lib/api";
+
 export interface DirectMessageItem {
   id: string;
   senderId: string;
@@ -232,7 +234,7 @@ export function sendNewDirectMessage(
   if (typeof window !== "undefined") {
     const token = localStorage.getItem("m3s_token");
     if (token && recipient.id) {
-      fetch("http://localhost:8000/api/v1/messages", {
+      fetch(`${API_BASE_URL}/messages`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -314,7 +316,7 @@ export function replyDirectMessage(
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val);
     const token = localStorage.getItem("m3s_token");
     if (token && isUuid(threadId)) {
-      fetch(`http://localhost:8000/api/v1/messages/threads/${threadId}/reply`, {
+      fetch(`${API_BASE_URL}/messages/threads/${threadId}/reply`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -346,7 +348,7 @@ export function markThreadAsRead(threadId: string): void {
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val);
     const token = localStorage.getItem("m3s_token");
     if (token && isUuid(threadId)) {
-      fetch(`http://localhost:8000/api/v1/messages/threads/${threadId}/read`, {
+      fetch(`${API_BASE_URL}/messages/threads/${threadId}/read`, {
         method: "POST",
         headers: {
           Accept: "application/json",
@@ -370,7 +372,7 @@ export async function syncThreadsWithBackend(): Promise<void> {
   if (!token) return;
 
   try {
-    const res = await fetch("http://localhost:8000/api/v1/messages/threads", {
+    const res = await fetch(`${API_BASE_URL}/messages/threads`, {
       headers: {
         Accept: "application/json",
         Authorization: `Bearer ${token}`,

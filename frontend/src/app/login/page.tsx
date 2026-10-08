@@ -9,8 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { GridPattern } from "@/components/ui/grid-pattern";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+import { API_BASE_URL, BACKEND_URL } from "@/lib/api";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -275,12 +274,12 @@ export default function LoginPage() {
         <p className="mt-6 text-center text-[11px] text-slate-400">
           Dashboard Administrasi Filament:{" "}
           <a
-            href="http://localhost:8000/admin"
+            href={`${BACKEND_URL}/admin`}
             target="_blank"
             rel="noreferrer"
             className="text-slate-500 hover:text-[#0D9488] font-medium underline"
           >
-            http://localhost:8000/admin
+            {`${BACKEND_URL}/admin`}
           </a>
         </p>
       </div>

@@ -1,6 +1,7 @@
 import { Container } from "@/components/ui/Container";
 import Link from "next/link";
 import Image from "next/image";
+import { API_BASE_URL } from "@/lib/api";
 
 interface EventItem {
   id: string;
@@ -53,7 +54,7 @@ const FALLBACK_EVENTS: EventItem[] = [
 
 async function getEvents(): Promise<EventItem[]> {
   try {
-    const res = await fetch("http://localhost:8000/api/v1/events", {
+    const res = await fetch(`${API_BASE_URL}/events`, {
       cache: "no-store",
     });
     if (res.ok) {

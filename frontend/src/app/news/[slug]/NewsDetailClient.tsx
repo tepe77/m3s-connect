@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Container } from "@/components/ui/Container";
 import { NEWS_ITEMS, NewsItem, NewsComment } from "@/data/newsData";
+import { API_BASE_URL } from "@/lib/api";
 
 interface NewsDetailClientProps {
   initialNews: NewsItem;
@@ -30,7 +31,7 @@ export function NewsDetailClient({ initialNews }: NewsDetailClientProps) {
   // Fetch real-time live comments from backend API
   const fetchLiveComments = async () => {
     try {
-      const res = await fetch(`http://localhost:8000/api/v1/news/${initialNews.slug}`, {
+      const res = await fetch(`${API_BASE_URL}/news/${initialNews.slug}`, {
         cache: "no-store",
       });
       if (res.ok) {
@@ -103,7 +104,7 @@ export function NewsDetailClient({ initialNews }: NewsDetailClientProps) {
     setIsSubmitting(true);
 
     try {
-      const res = await fetch(`http://localhost:8000/api/v1/news/${news.slug}/comments`, {
+      const res = await fetch(`${API_BASE_URL}/news/${news.slug}/comments`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

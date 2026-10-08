@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { BACKEND_URL } from "@/lib/api";
 import {
   Shield,
   ShieldCheck,
@@ -360,7 +361,7 @@ export default function AdminModerationPage() {
 
           <div className="flex flex-wrap items-center gap-2.5">
             <a
-              href="http://localhost:8000/admin"
+              href={`${BACKEND_URL}/admin`}
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center justify-center min-h-[36px] px-3.5 py-1.5 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-full transition-colors gap-1.5 shadow-xs"

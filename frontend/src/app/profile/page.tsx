@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
+import { API_BASE_URL } from "@/lib/api";
 
 interface ProfileFormData {
   name: string;
@@ -132,7 +133,7 @@ export default function ProfileUpdatePage() {
       }
 
       // Fetch latest profile state from Laravel backend
-      fetch("http://localhost:8000/api/v1/profile", {
+      fetch(`${API_BASE_URL}/profile`, {
         headers: {
           Accept: "application/json",
           Authorization: `Bearer ${token}`,
@@ -228,7 +229,7 @@ export default function ProfileUpdatePage() {
     const token = typeof window !== "undefined" ? localStorage.getItem("m3s_token") : null;
     if (token) {
       try {
-        const res = await fetch("http://localhost:8000/api/v1/profile", {
+        const res = await fetch(`${API_BASE_URL}/profile`, {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",

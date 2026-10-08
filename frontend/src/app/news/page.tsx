@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Container } from "@/components/ui/Container";
 import { NEWS_ITEMS, NewsItem } from "@/data/newsData";
+import { API_BASE_URL, getAssetUrl } from "@/lib/api";
 
 function resolveImageUrl(url: string | undefined | null, fallbackUrl: string): string {
   if (!url) return fallbackUrl;
@@ -9,12 +10,12 @@ function resolveImageUrl(url: string | undefined | null, fallbackUrl: string): s
   if (match) {
     return `/images/${match[0]}`;
   }
-  return url;
+  return getAssetUrl(url);
 }
 
 async function getNewsList(): Promise<NewsItem[]> {
   try {
-    const res = await fetch("http://localhost:8000/api/v1/news", {
+    const res = await fetch(`${API_BASE_URL}/news`, {
       cache: "no-store",
     });
     if (res.ok) {
