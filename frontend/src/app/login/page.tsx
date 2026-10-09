@@ -56,6 +56,10 @@ export default function LoginPage() {
         localStorage.setItem("m3s_token", data.data.token);
         localStorage.setItem("m3s_user", JSON.stringify(data.data.user));
 
+        // Immediately notify Navbar and any active components in the current window
+        window.dispatchEvent(new Event("storage"));
+        window.dispatchEvent(new CustomEvent("m3s_auth_change", { detail: data.data.user }));
+
         const user = data.data.user;
         const isOnboarded = localStorage.getItem(`m3s_onboarded_${user?.id}`);
 

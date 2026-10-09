@@ -140,17 +140,17 @@ export function Footer() {
             <h3 className="text-sm font-bold text-white tracking-wide">Bantuan</h3>
             <ul className="space-y-2 text-xs text-white/70">
               <li>
-                <Link href="/tentang" className="hover:text-[#2DD4BF] transition-colors">
+                <Link href="/faq" className="hover:text-[#2DD4BF] transition-colors">
                   FAQ
                 </Link>
               </li>
               <li>
-                <Link href="/tentang" className="hover:text-[#2DD4BF] transition-colors">
+                <Link href="/panduan" className="hover:text-[#2DD4BF] transition-colors">
                   Panduan Pengguna
                 </Link>
               </li>
               <li>
-                <Link href="/tentang" className="hover:text-[#2DD4BF] transition-colors">
+                <Link href="/kontak" className="hover:text-[#2DD4BF] transition-colors">
                   Kontak
                 </Link>
               </li>
@@ -165,20 +165,16 @@ export function Footer() {
             <p className="text-xs text-white/70 leading-relaxed">
               IKAMAYOGA adalah jembatan untuk terus terhubung, berbagi, dan berkontribusi bagi almamater tercinta.
             </p>
-            <div className="pt-2 flex items-center gap-2 text-xs font-semibold text-[#2DD4BF]">
-              <span>❤️</span>
-              <span>MAN 3 Sleman Alumni Community</span>
-            </div>
           </div>
         </div>
 
         {/* Bottom Bar */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/50">
-          <div>© 2025 IKAMAYOGA. All rights reserved.</div>
+          <div>© 2026 IKAMAYOGA. All rights reserved.</div>
           <div className="flex items-center gap-1">
             <span>Made with</span>
             <span className="text-rose-400">❤️</span>
-            <span>for MAN 3 Sleman Alumni</span>
+            <span>for MAN 3 Sleman Yogyakarta</span>
           </div>
         </div>
       </div>

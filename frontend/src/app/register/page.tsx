@@ -107,6 +107,11 @@ export default function RegisterPage() {
       if (data.data?.token) {
         localStorage.setItem("m3s_token", data.data.token);
         localStorage.setItem("m3s_user", JSON.stringify(data.data.user));
+
+        // Immediately notify Navbar and any active components in the current window
+        window.dispatchEvent(new Event("storage"));
+        window.dispatchEvent(new CustomEvent("m3s_auth_change", { detail: data.data.user }));
+
         setSuccessMessage("Pendaftaran berhasil! Mengalihkan ke halaman orientasi alumni...");
         setTimeout(() => {
           router.push("/onboarding");

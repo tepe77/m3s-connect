@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\V1\AdminController;
 use App\Http\Controllers\Api\V1\AlumniController;
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\ContactController;
 use App\Http\Controllers\Api\V1\DirectMessageController;
 use App\Http\Controllers\Api\V1\ForumController;
 use App\Http\Controllers\Api\V1\NewsController;
@@ -93,6 +94,9 @@ Route::prefix('v1')->group(function () {
         Route::post('/', [\App\Http\Controllers\Api\V1\TestimonialController::class, 'store']);
     });
 
+    // Public Contact Message Submission
+    Route::post('/contact', [ContactController::class, 'store']);
+
     // Content Report Submission (Authenticated members)
     Route::middleware('auth:sanctum')->post('/reports', [AdminController::class, 'submitReport']);
 
@@ -109,6 +113,9 @@ Route::prefix('v1')->group(function () {
         // Moderation & Spam Reports
         Route::get('/reports', [AdminController::class, 'listReports']);
         Route::patch('/reports/{id}', [AdminController::class, 'handleReport']);
+
+        // Contact Messages from Public
+        Route::get('/contacts', [ContactController::class, 'index']);
 
         // Alumni Registration Verifications
         Route::get('/alumni/verifications', [AdminController::class, 'listAlumniVerifications']);

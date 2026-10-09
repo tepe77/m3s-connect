@@ -5,12 +5,16 @@ export interface ShimmerButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
   href?: string;
+  duration?: string;
+  shimmerColor?: string;
 }
 
 export function ShimmerButton({
   children,
   className,
   href,
+  duration = "4.5s",
+  shimmerColor = "rgba(255, 255, 255, 0.28)",
   ...props
 }: ShimmerButtonProps) {
   const content = (
@@ -20,19 +24,23 @@ export function ShimmerButton({
       </span>
       <span
         aria-hidden
-        className="motion-safe:animate-shimmer pointer-events-none absolute inset-0 bg-[linear-gradient(110deg,transparent_30%,rgba(255,255,255,0.35)_50%,transparent_70%)] bg-[length:250%_100%]"
+        className="pointer-events-none absolute inset-0 bg-[length:200%_100%] animate-shimmer"
+        style={{
+          backgroundImage: `linear-gradient(110deg, transparent 25%, ${shimmerColor} 50%, transparent 75%)`,
+          animation: `shimmer ${duration} linear infinite`,
+        }}
       />
     </>
   );
 
   const sharedClasses = cn(
-    "group relative inline-flex items-center justify-center overflow-hidden rounded-full bg-[#0D9488] px-6 py-3 text-sm font-semibold text-white shadow-md shadow-emerald-900/10 transition-all hover:bg-[#0f766e] hover:shadow-lg hover:shadow-emerald-900/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0D9488] active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 cursor-pointer",
+    "group/shimmer relative inline-flex h-12 cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-full bg-[#0D9488] px-8 text-sm font-semibold text-white shadow-lg shadow-emerald-900/20 transition-[transform,box-shadow] duration-300 hover:scale-[1.03] hover:shadow-xl hover:shadow-emerald-900/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0D9488] active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50",
     className
   );
 
   if (href) {
     return (
-      <Link href={href} className={sharedClasses}>
+      <Link href={href} data-slot="shimmer-button" className={sharedClasses}>
         {content}
       </Link>
     );
@@ -44,3 +52,4 @@ export function ShimmerButton({
     </button>
   );
 }
+

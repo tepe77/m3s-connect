@@ -44,6 +44,8 @@
 
   --font-sans: var(--font-geist-sans), Inter, sans-serif;
   --font-mono: var(--font-geist-mono), monospace;
+
+  --animate-shimmer: shimmer 4.5s linear infinite;
 }
 
 body {
@@ -96,7 +98,7 @@ body {
 }
 
 .animate-shimmer {
-  animation: shimmer 8s infinite linear;
+  animation: shimmer 4.5s linear infinite;
 }
 
 .animate-gradient {

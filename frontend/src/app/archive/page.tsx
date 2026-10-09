@@ -52,6 +52,48 @@ const FALLBACK_ALBUMS: AlbumItem[] = [
       "/images/news-internasional.jpg",
     ],
   },
+  {
+    id: "album-4",
+    slug: "peluncuran-portal-ikamayoga",
+    title: "Peluncuran Resmi Portal Digital IKAMAYOGA",
+    date: "10 Januari 2026",
+    count: "62 Foto",
+    category: "Inovasi Digital",
+    image: "/images/news-peluncuran.jpg",
+    description: "Peresmian platform integrasi karir, direktori alumni, dan jejaring komunitas madrasah modern yang menghubungkan alumni seluruh Indonesia dan mancanegara.",
+    photos: [
+      "/images/news-peluncuran.jpg",
+      "/images/hero-building.jpg",
+    ],
+  },
+  {
+    id: "album-5",
+    slug: "simposium-riset-inovasi-internasional",
+    title: "Simposium Riset & Inovasi Sains",
+    date: "05 Maret 2025",
+    count: "76 Foto",
+    category: "Riset & Prestasi",
+    image: "/images/news-internasional.jpg",
+    description: "Dokumentasi keikutsertaan delegasi riset ilmiah remaja Mayoga dalam ajang sains dan teknologi internasional dengan pameran karya inovasi terapan.",
+    photos: [
+      "/images/news-internasional.jpg",
+      "/images/doc-wisuda.jpg",
+    ],
+  },
+  {
+    id: "album-6",
+    slug: "sosialisasi-program-beasiswa-alumni",
+    title: "Pemberian Beasiswa Prestasi Alumni",
+    date: "18 Februari 2025",
+    count: "38 Foto",
+    category: "Beasiswa & Bantuan",
+    image: "/images/news-beasiswa.jpg",
+    description: "Pemberian dana beasiswa pendidikan dan bimbingan masuk perguruan tinggi oleh Paguyuban Alumni untuk adik-adik kelas berprestasi.",
+    photos: [
+      "/images/news-beasiswa.jpg",
+      "/images/doc-baksos.jpg",
+    ],
+  },
 ];
 
 function resolveImageUrl(url: string | undefined | null, fallbackUrl: string): string {
@@ -72,8 +114,8 @@ async function getDocumentations(): Promise<AlbumItem[]> {
       const json = await res.json();
       const list = json?.data?.data || json?.data;
       if (Array.isArray(list) && list.length > 0) {
-        return list.map((item: any, idx: number) => {
-          const fallback = FALLBACK_ALBUMS[idx] || FALLBACK_ALBUMS[0];
+        const mapped = list.map((item: any, idx: number) => {
+          const fallback = FALLBACK_ALBUMS[idx % FALLBACK_ALBUMS.length];
           const dateFormatted = item.event_date
             ? new Date(item.event_date).toLocaleDateString("id-ID", {
                 day: "numeric",
@@ -108,6 +150,11 @@ async function getDocumentations(): Promise<AlbumItem[]> {
             photos: resolvedPhotos,
           };
         });
+
+        if (mapped.length < 6) {
+          return [...mapped, ...FALLBACK_ALBUMS.slice(mapped.length)];
+        }
+        return mapped;
       }
     }
   } catch {}
