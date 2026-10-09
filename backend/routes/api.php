@@ -94,8 +94,8 @@ Route::prefix('v1')->group(function () {
         Route::post('/', [\App\Http\Controllers\Api\V1\TestimonialController::class, 'store']);
     });
 
-    // Public Contact Message Submission
-    Route::post('/contact', [ContactController::class, 'store']);
+    // Public Contact Message Submission (Rate-limited to 5 per minute per IP)
+    Route::post('/contact', [ContactController::class, 'store'])->middleware('throttle:5,1');
 
     // Content Report Submission (Authenticated members)
     Route::middleware('auth:sanctum')->post('/reports', [AdminController::class, 'submitReport']);

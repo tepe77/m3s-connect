@@ -27,29 +27,53 @@ class UserResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('email')
-                    ->email()
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\DateTimePicker::make('email_verified_at'),
-                Forms\Components\TextInput::make('password')
-                    ->password()
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('role')
-                    ->required()
-                    ->maxLength(255)
-                    ->default('alumni'),
-                Forms\Components\TextInput::make('status')
-                    ->required()
-                    ->maxLength(255)
-                    ->default('active'),
-                Forms\Components\TextInput::make('avatar')
-                    ->maxLength(255),
-                Forms\Components\DateTimePicker::make('last_login_at'),
+                Forms\Components\Section::make('Informasi Akun Pengguna')
+                    ->schema([
+                        Forms\Components\TextInput::make('name')
+                            ->label('Nama Lengkap')
+                            ->required()
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('email')
+                            ->label('Alamat Email')
+                            ->email()
+                            ->required()
+                            ->maxLength(255),
+                        Forms\Components\Select::make('role')
+                            ->label('Peran (Role)')
+                            ->options([
+                                'alumni' => 'Alumni',
+                                'moderator' => 'Moderator',
+                                'admin' => 'Administrator',
+                                'guest' => 'Tamu (Guest)',
+                            ])
+                            ->required()
+                            ->default('alumni')
+                            ->native(false),
+                        Forms\Components\Select::make('status')
+                            ->label('Status Akun')
+                            ->options([
+                                'active' => 'Aktif (Active)',
+                                'pending' => 'Menunggu Verifikasi (Pending)',
+                                'suspended' => 'Ditangguhkan (Suspended)',
+                                'inactive' => 'Tidak Aktif (Inactive)',
+                            ])
+                            ->required()
+                            ->default('active')
+                            ->native(false),
+                        Forms\Components\TextInput::make('password')
+                            ->label('Kata Sandi')
+                            ->password()
+                            ->dehydrateStateUsing(fn ($state) => \Illuminate\Support\Facades\Hash::make($state))
+                            ->dehydrated(fn ($state) => filled($state))
+                            ->required(fn (string $operation): bool => $operation === 'create')
+                            ->maxLength(255)
+                            ->helperText('Kosongkan jika tidak ingin mengubah kata sandi.'),
+                        Forms\Components\DateTimePicker::make('email_verified_at')
+                            ->label('Waktu Verifikasi Email'),
+                        Forms\Components\DateTimePicker::make('last_login_at')
+                            ->label('Login Terakhir')
+                            ->disabled(),
+                    ])->columns(2),
             ]);
     }
 
@@ -98,7 +122,22 @@ class UserResource extends Resource
                     ->sortable(),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('role')
+                    ->label('Filter Peran')
+                    ->options([
+                        'admin' => 'Administrator',
+                        'moderator' => 'Moderator',
+                        'alumni' => 'Alumni',
+                        'guest' => 'Tamu (Guest)',
+                    ]),
+                Tables\Filters\SelectFilter::make('status')
+                    ->label('Filter Status')
+                    ->options([
+                        'active' => 'Aktif',
+                        'pending' => 'Menunggu Verifikasi',
+                        'suspended' => 'Ditangguhkan',
+                        'inactive' => 'Tidak Aktif',
+                    ]),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

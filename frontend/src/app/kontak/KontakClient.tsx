@@ -44,10 +44,16 @@ export function KontakClient() {
     message: "",
   });
 
+  const [honeypot, setHoneypot] = React.useState("");
+  const [formMountedAt, setFormMountedAt] = React.useState(0);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [submitStatus, setSubmitStatus] = React.useState<"idle" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = React.useState("");
   const [charCount, setCharCount] = React.useState(0);
+
+  React.useEffect(() => {
+    setFormMountedAt(Date.now());
+  }, []);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -97,11 +103,16 @@ export function KontakClient() {
           category: formData.category,
           subject: formData.subject,
           message: formData.message,
+          _hp_website: honeypot,
+          _form_time: formMountedAt,
         }),
       });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => null);
+        if (response.status === 429) {
+          throw new Error("Terlalu banyak permintaan pengiriman pesan. Silakan tunggu sejenak sebelum mencoba lagi.");
+        }
         throw new Error(
           errorData?.message || `Gagal mengirim pesan (Kode status: ${response.status})`
         );
@@ -368,6 +379,24 @@ export function KontakClient() {
                     )}
 
                     <form onSubmit={handleSubmit} className="mt-6 space-y-5">
+                      {/* Anti-Spam Decoy Trap (Invisible to humans, triggers for bots) */}
+                      <div
+                        className="opacity-0 absolute -z-50 pointer-events-none size-0 overflow-hidden"
+                        aria-hidden="true"
+                        tabIndex={-1}
+                      >
+                        <label htmlFor="hp_website">Website</label>
+                        <input
+                          id="hp_website"
+                          type="text"
+                          name="_hp_website"
+                          value={honeypot}
+                          onChange={(e) => setHoneypot(e.target.value)}
+                          tabIndex={-1}
+                          autoComplete="off"
+                        />
+                      </div>
+
                       {/* Grid 2 Column for Name & Email */}
                       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                         <div>
