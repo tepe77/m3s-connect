@@ -94,6 +94,13 @@ Route::prefix('v1')->group(function () {
         Route::post('/', [\App\Http\Controllers\Api\V1\TestimonialController::class, 'store']);
     });
 
+    // Public Alumni Stories & Experiences Routes (Showcase & Submission)
+    Route::prefix('stories')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\V1\StoryController::class, 'index']);
+        Route::get('/{slug}', [\App\Http\Controllers\Api\V1\StoryController::class, 'show']);
+        Route::post('/', [\App\Http\Controllers\Api\V1\StoryController::class, 'store'])->middleware('throttle:3,1');
+    });
+
     // Public Contact Message Submission (Rate-limited to 5 per minute per IP)
     Route::post('/contact', [ContactController::class, 'store'])->middleware('throttle:5,1');
 
