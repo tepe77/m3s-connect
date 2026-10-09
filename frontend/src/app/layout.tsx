@@ -16,9 +16,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "M3S Connect | Komunitas Alumni MAN 3 Sleman",
+  title: "IKAMAYOGA | Ikatan Alumni MAN 3 Sleman",
   description:
-    "Platform resmi komunitas alumni MAN 3 Sleman (Mayoga). Terhubung antar angkatan, bertukar peluang karir, dan merawat rekam jejak madrasah.",
+    "Platform resmi Ikatan Alumni MAN 3 Sleman (IKAMAYOGA). Terhubung antar angkatan, bertukar peluang karir, dan merawat rekam jejak madrasah.",
 };
 
 export default function RootLayout({

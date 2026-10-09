@@ -6,7 +6,7 @@ import { AnimatedGradientText } from "@/components/velora/animated-gradient-text
 import { ShimmerButton } from "@/components/velora/shimmer-button";
 
 /**
- * Velora Aurora Hero Section for M3S Connect.
+ * Velora Aurora Hero Section for IKAMAYOGA.
  * Centered hero with drifting aurora, dotted backdrop, announcement pill,
  * gradient text, and primary shimmer CTA.
  */
@@ -29,17 +29,15 @@ export function HeroAurora() {
             href="/tentang"
             className="inline-flex items-center gap-2 rounded-full border border-emerald-200/80 bg-white/80 px-4 py-1.5 text-xs sm:text-sm font-medium text-emerald-900 shadow-xs backdrop-blur-xs transition-colors hover:bg-white hover:border-emerald-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0D9488]"
           >
-            <Sparkles className="size-4 text-[#0D9488]" />
-            <span>Komunitas Resmi Alumni MAN 3 Sleman (MAYOGA)</span>
-            
+            <span>Portal Resmi Ikatan Alumni MAN 3 Sleman Yogyakarta</span> 
           </Link>
         </div>
 
         {/* Main Heading */}
         <h1 className="mt-6 text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-900">
-          M3S <AnimatedGradientText>CONNECT</AnimatedGradientText>
+          IKA<AnimatedGradientText>MAYOGA</AnimatedGradientText>
           <span className="block mt-2 text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-700 tracking-tight">
-            Alumni Community Platform
+            Ikatan Alumni MAN 3 Sleman Yogyakarta
           </span>
         </h1>
 

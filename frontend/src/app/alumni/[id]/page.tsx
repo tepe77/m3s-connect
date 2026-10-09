@@ -76,7 +76,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (!alumni) {
     return {
-      title: "Profil Alumni Tidak Ditemukan | M3S Connect",
+      title: "Profil Alumni Tidak Ditemukan | IKAMAYOGA",
     };
   }
 
@@ -84,7 +84,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title: `${alumni.name} | Direktori Alumni MAN 3 Sleman`,
     description: `${alumni.name} (Alumni ${alumni.graduationYear}) - ${alumni.occupation} di ${alumni.company}. ${alumni.bio}`,
     openGraph: {
-      title: `${alumni.name} | M3S Connect`,
+      title: `${alumni.name} | IKAMAYOGA`,
       description: alumni.bio,
       images: [alumni.avatar],
     },

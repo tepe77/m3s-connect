@@ -517,7 +517,7 @@ export default function AdminModerationPage() {
             </TabsList>
 
             <span className="text-[11px] text-slate-400 font-medium px-3 hidden md:inline">
-              M3S Connect v2.4 Moderation Suite
+              IKAMAYOGA v2.4 Moderation Suite
             </span>
           </div>
 

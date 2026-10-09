@@ -206,7 +206,7 @@ export function ForumSidebar({
           <span className="text-xs font-bold">Tata Tertib Komunitas</span>
         </div>
         <p className="text-[11px] text-[#065F46] leading-relaxed">
-          Forum M3S Connect menjunjung tinggi sopan santun dan persaudaraan madrasah. Pastikan topik sesuai kategori.
+          Forum IKAMAYOGA menjunjung tinggi sopan santun dan persaudaraan madrasah. Pastikan topik sesuai kategori.
         </p>
         <Link
           href="/forum/pedoman-etika-tata-tertib-berdiskusi-forum-m3s-connect"

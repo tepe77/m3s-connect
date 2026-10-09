@@ -78,7 +78,7 @@ const FALLBACK_TESTIMONIALS: TestimonialItem[] = [
     id: "t6",
     name: "Fajar Ramadhan, S.T.",
     role: "Software Engineer, Shopee Indonesia",
-    quote: "Portal M3S Connect memudahkan kami para lulusan muda untuk terhubung langsung dengan para profesional senior. Peluang bimbingan karir dan referensi industri jadi jauh lebih terbuka lebar!",
+    quote: "Portal IKAMAYOGA memudahkan kami para lulusan muda untuk terhubung langsung dengan para profesional senior. Peluang bimbingan karir dan referensi industri jadi jauh lebih terbuka lebar!",
     avatar: "/images/avatar-ahmad.jpg",
     rating: 5,
   },

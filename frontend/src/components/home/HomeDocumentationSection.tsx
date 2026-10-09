@@ -54,7 +54,7 @@ const FALLBACK_DOCS: DocItem[] = [
   {
     id: "album-4",
     slug: "peluncuran-portal-m3s-connect",
-    title: "Peluncuran Resmi Portal M3S Connect",
+    title: "Peluncuran Resmi Portal IKAMAYOGA",
     date: "10 Januari 2026",
     count: "62 Foto",
     category: "Inovasi Digital",

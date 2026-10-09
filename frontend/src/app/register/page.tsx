@@ -68,7 +68,7 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      const payload: Record<string, any> = {
+      const payload: Record<string, unknown> = {
         name,
         email,
         password,
@@ -156,10 +156,10 @@ export default function RegisterPage() {
             className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white border border-emerald-200 shadow-2xs text-[#0D9488] text-xs font-semibold hover:border-emerald-300 transition-colors"
           >
             <Sparkles className="size-3.5 text-emerald-600" />
-            <span>M3S Connect • Komunitas Alumni Mayoga</span>
+            <span>IKAMAYOGA • Komunitas Alumni Mayoga</span>
           </Link>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#0F172A]">
-            Bergabung ke M3S Connect
+            Bergabung ke IKAMAYOGA
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 max-w-md mx-auto leading-relaxed">
             Daftarkan diri Anda untuk terhubung dengan sesama alumni, berbagi peluang karir, dan berkontribusi untuk madrasah.

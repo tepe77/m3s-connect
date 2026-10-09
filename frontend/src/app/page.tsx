@@ -125,14 +125,14 @@ export default function HomePage() {
                   <div className="relative w-16 h-16 rounded-xl overflow-hidden bg-slate-100 shrink-0">
                     <Image
                       src="/images/news-peluncuran.jpg"
-                      alt="Peluncuran Platform M3S Connect"
+                      alt="Peluncuran Platform IKAMAYOGA"
                       fill
                       className="object-cover"
                     />
                   </div>
                   <div className="flex-1 min-w-0 space-y-1">
                     <h4 className="text-xs font-bold text-[#0F172A] leading-snug line-clamp-2 group-hover:text-[#0D9488] transition-colors">
-                      Peluncuran Platform M3S Connect Resmi Dimulai
+                      Peluncuran Platform IKAMAYOGA Resmi Dimulai
                     </h4>
                     <div className="flex items-center gap-1 text-[10px] text-[#64748B]">
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">

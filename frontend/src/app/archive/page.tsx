@@ -3,7 +3,7 @@ import { ArchiveGalleryView, AlbumItem } from "@/components/archive/ArchiveGalle
 import { API_BASE_URL, getAssetUrl } from "@/lib/api";
 
 export const metadata = {
-  title: "Dokumentasi & Galeri Kegiatan | M3S Connect",
+  title: "Dokumentasi & Galeri Kegiatan | IKAMAYOGA",
   description: "Koleksi foto kegiatan, kenangan masa sekolah, dan buku tahunan digital dari berbagai generasi kelulusan MAN 3 Sleman.",
 };
 

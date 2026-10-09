@@ -95,7 +95,7 @@ export default function OnboardingPage() {
     return (
       <div className="py-24 text-center text-xs text-[#64748B]">
         <div className="w-8 h-8 rounded-full border-2 border-[#0D9488] border-t-transparent animate-spin mx-auto mb-3" />
-        <p>Memuat pengalaman orientasi M3S Connect...</p>
+        <p>Memuat pengalaman orientasi IKAMAYOGA...</p>
       </div>
     );
   }
@@ -124,7 +124,7 @@ export default function OnboardingPage() {
 
             <div className="space-y-1.5">
               <h1 className="text-xl sm:text-2xl font-black tracking-tight">
-                Selamat Datang di M3S Connect, {user?.name}!
+                Selamat Datang di IKAMAYOGA, {user?.name}!
               </h1>
               <p className="text-xs sm:text-sm text-slate-300">
                 Langkah {currentStep} dari 4: {
@@ -263,7 +263,7 @@ export default function OnboardingPage() {
               <div className="space-y-6">
                 <div className="space-y-1">
                   <h3 className="text-base font-bold text-[#0F172A]">
-                    4 Pilar Utama di Ekosistem M3S Connect
+                    4 Pilar Utama di Ekosistem IKAMAYOGA
                   </h3>
                   <p className="text-xs text-[#64748B]">
                     Kenali fitur-fitur yang dirancang untuk mendukung interaksi alumni dan almamater.
@@ -475,7 +475,7 @@ export default function OnboardingPage() {
                     Alhamdulillah, Akun Anda Siap Digunakan!
                   </h3>
                   <p className="text-xs text-[#64748B] leading-relaxed">
-                    Terima kasih telah bergabung di M3S Connect. Silakan pilih ruang yang ingin Anda kunjungi pertama kali:
+                    Terima kasih telah bergabung di IKAMAYOGA. Silakan pilih ruang yang ingin Anda kunjungi pertama kali:
                   </p>
                 </div>
 

@@ -86,7 +86,7 @@ export const NEWS_ITEMS: NewsItem[] = [
       "Acara dibuka secara resmi oleh Kepala Madrasah didampingi jajaran pengurus ikatan alumni. Dalam sambutannya, beliau menyampaikan apresiasi mendalam atas kontribusi nyata yang terus diberikan oleh para alumni di berbagai sektor, baik di dunia profesional, akademis, wirausaha, maupun pengabdian sosial kemasyarakatan.",
       "Tidak hanya sekadar temu kangen mengenang masa-masa putih abu-abu di madrasah, Reuni Akbar 2025 juga diisi dengan peluncuran program Dana Abadi Pendidikan Beasiswa Mayoga serta inisiasi jejaring mentoring karir lintas angkatan.",
       "Para peserta reuni disuguhi berbagai stan kilas balik foto lawas, bincang santai inspiratif, serta panggung seni kolaborasi antar angkatan yang disambut antusias oleh seluruh hadirin.",
-      "Ketua Panitia Pelaksana, Ahmad Fauzi, M.Pd. (Alumni 2010), menegaskan bahwa momentum reuni ini menjadi pijakan awal dari integrasi digital komunitas alumni melalui peluncuran platform M3S Connect, yang mempermudah koordinasi kegiatan dan pendataan anggota ke depannya.",
+      "Ketua Panitia Pelaksana, Ahmad Fauzi, M.Pd. (Alumni 2010), menegaskan bahwa momentum reuni ini menjadi pijakan awal dari integrasi digital komunitas alumni melalui peluncuran platform IKAMAYOGA, yang mempermudah koordinasi kegiatan dan pendataan anggota ke depannya.",
     ],
     comments: [
       {
@@ -153,7 +153,7 @@ export const NEWS_ITEMS: NewsItem[] = [
       "Sebagai wujud kepedulian antargenerasi, Ikatan Alumni MAN 3 Sleman membuka pendaftaran Beasiswa Alumni Berprestasi gelombang perdana tahun akademik 2025/2026. Program ini didanai melalui skema donasi teratur dan infak pendidikan para alumni.",
       "Beasiswa ini mencakup tunjangan biaya operasional perkuliahan, bimbingan akademik dari alumni mentor senior, serta fasilitas jejaring magang kerja di berbagai perusahaan mitra komunitas.",
       "Kriteria penerima difokuskan pada mahasiswa aktif yang memiliki rekam jejak akademik cemerlang, aktif berorganisasi, serta memerlukan dukungan finansial tambahan.",
-      "Pendaftaran dapat diakses secara daring melalui platform M3S Connect hingga tanggal 30 Mei 2025.",
+      "Pendaftaran dapat diakses secara daring melalui platform IKAMAYOGA hingga tanggal 30 Mei 2025.",
     ],
     comments: [
       {
@@ -189,7 +189,7 @@ export const NEWS_ITEMS: NewsItem[] = [
     publishedAt: "5 Mei 2025",
     readTime: "5 menit baca",
     author: {
-      name: "Redaksi M3S Connect",
+      name: "Redaksi IKAMAYOGA",
       role: "Editor Berita Karir",
       avatar: "/images/avatar-rina.jpg",
     },
@@ -216,7 +216,7 @@ export const NEWS_ITEMS: NewsItem[] = [
   {
     id: "news-4",
     slug: "peluncuran-platform-m3s-connect-resmi-dimulai",
-    title: "Peluncuran Platform M3S Connect Resmi Dimulai",
+    title: "Peluncuran Platform IKAMAYOGA Resmi Dimulai",
     excerpt: "Portal terpadu alumni MAN 3 Sleman kini hadir untuk memfasilitasi pendataan digital, forum komunikasi, direktori karir, dan arsip kenangan madrasah.",
     category: {
       name: "Informasi Komunitas",
@@ -227,7 +227,7 @@ export const NEWS_ITEMS: NewsItem[] = [
       slug: "portal-digital",
     },
     tags: [
-      "M3SConnect",
+      "IKAMAYOGA",
       "TransformasiDigital",
       "AlumniMayoga",
       "DatabaseAlumni",
@@ -236,7 +236,7 @@ export const NEWS_ITEMS: NewsItem[] = [
     publishedAt: "1 Mei 2025",
     readTime: "3 menit baca",
     author: {
-      name: "Tim Pengembang M3S Connect",
+      name: "Tim Pengembang IKAMAYOGA",
       role: "Divisi Teknologi Informasi Komunitas",
       avatar: "/images/avatar-ahmad.jpg",
     },
@@ -244,8 +244,8 @@ export const NEWS_ITEMS: NewsItem[] = [
     contentImages: [
       {
         url: "/images/news-peluncuran.jpg",
-        caption: "Peluncuran resmi platform digital M3S Connect dihadiri oleh perwakilan pengurus angkatan dan dewan pembina madrasah.",
-        alt: "Demonstrasi aplikasi M3S Connect pada tablet di ruang presentasi",
+        caption: "Peluncuran resmi platform digital IKAMAYOGA dihadiri oleh perwakilan pengurus angkatan dan dewan pembina madrasah.",
+        alt: "Demonstrasi aplikasi IKAMAYOGA pada tablet di ruang presentasi",
       },
       {
         url: "/images/doc-wisuda.jpg",
@@ -254,7 +254,7 @@ export const NEWS_ITEMS: NewsItem[] = [
       },
     ],
     contentHtml: [
-      "Era digital menuntut kemudahan konektivitas yang cepat, aman, dan berkesinambungan. Menjawab kebutuhan tersebut, Ikatan Alumni MAN 3 Sleman secara resmi merilis platform digital M3S Connect.",
+      "Era digital menuntut kemudahan konektivitas yang cepat, aman, dan berkesinambungan. Menjawab kebutuhan tersebut, Ikatan Alumni MAN 3 Sleman secara resmi merilis platform digital IKAMAYOGA.",
       "Platform ini dirancang khusus dengan berbagai fitur unggulan, antara lain direktori pencarian alumni terverifikasi, forum diskusi tematik, ruang kabar berita madrasah, serta dokumentasi galeri kegiatan.",
       "Seluruh alumni dihimbau untuk segera membuat akun, memutakhirkan riwayat karir dan domisili, agar jaringan silaturahmi semakin solid.",
     ],

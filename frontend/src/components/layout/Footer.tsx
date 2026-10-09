@@ -28,10 +28,10 @@ export function Footer() {
               </div>
               <div className="flex flex-col">
                 <span className="text-lg font-black tracking-tight text-white leading-tight font-sans">
-                  M3S <span className="text-[#2DD4BF]">CONNECT</span>
+                  IKA<span className="text-[#2DD4BF]">MAYOGA</span>
                 </span>
                 <span className="text-xs text-white/60 font-normal leading-tight">
-                  Alumni Community Platform
+                  Ikatan Alumni MAYOGA
                 </span>
               </div>
             </Link>
@@ -163,7 +163,7 @@ export function Footer() {
               Jaga Koneksi, Bangun Masa Depan
             </h3>
             <p className="text-xs text-white/70 leading-relaxed">
-              M3S Connect adalah jembatan untuk terus terhubung, berbagi, dan berkontribusi bagi almamater tercinta.
+              IKAMAYOGA adalah jembatan untuk terus terhubung, berbagi, dan berkontribusi bagi almamater tercinta.
             </p>
             <div className="pt-2 flex items-center gap-2 text-xs font-semibold text-[#2DD4BF]">
               <span>❤️</span>
@@ -174,7 +174,7 @@ export function Footer() {
 
         {/* Bottom Bar */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/50">
-          <div>© 2025 M3S Connect. All rights reserved.</div>
+          <div>© 2025 IKAMAYOGA. All rights reserved.</div>
           <div className="flex items-center gap-1">
             <span>Made with</span>
             <span className="text-rose-400">❤️</span>

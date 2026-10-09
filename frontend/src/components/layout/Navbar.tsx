@@ -142,7 +142,7 @@ export function Navbar() {
         <Link
           href="/"
           className="flex items-center gap-3 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0D9488] rounded-full group"
-          aria-label="M3S Connect Beranda"
+          aria-label="IKAMAYOGA Beranda"
         >
           {/* Dual Figures Emblem */}
           <div className="size-9 rounded-xl bg-emerald-50 text-[#0D9488] flex items-center justify-center border border-emerald-100/80 transition-transform group-hover:scale-105">
@@ -166,7 +166,7 @@ export function Navbar() {
 
           <div className="flex flex-col">
             <span className="text-base sm:text-lg font-black tracking-tight text-[#0F172A] leading-tight flex items-center gap-1">
-              M3S <span className="text-[#0D9488]">CONNECT</span>
+              IKA<span className="text-[#0D9488]">MAYOGA</span>
             </span>
             <span
               className={cn(
@@ -174,7 +174,7 @@ export function Navbar() {
                 compact ? "hidden md:inline-block" : "hidden sm:inline-block"
               )}
             >
-              Alumni Community Platform
+              Ikatan Alumni MAYOGA
             </span>
           </div>
         </Link>
@@ -213,16 +213,13 @@ export function Navbar() {
                     onMouseEnter={handleItemHover}
                     onFocus={handleItemHover}
                     className={cn(
-                      "relative block rounded-full px-3.5 py-1.5 text-xs sm:text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0D9488]",
+                      "relative block rounded-full px-3.5 py-1.5 text-xs sm:text-sm transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0D9488]",
                       isActive
-                        ? "text-[#0D9488] font-bold"
+                        ? "bg-emerald-50 text-[#0D9488] font-bold"
                         : "text-slate-600 hover:text-slate-900 font-medium"
                     )}
                   >
                     {item.label}
-                    {isActive && (
-                      <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 size-1 rounded-full bg-[#0D9488]" />
-                    )}
                   </Link>
                 </li>
               );

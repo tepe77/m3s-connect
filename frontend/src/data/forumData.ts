@@ -437,7 +437,7 @@ Kami bersama tim alumni awardee LPDP bersedia mengadakan sesi bedah esai (mock r
   },
   {
     id: "topic-4",
-    title: "Pedoman Etika & Tata Tertib Berdiskusi di Forum Komunitas Resmi M3S Connect",
+    title: "Pedoman Etika & Tata Tertib Berdiskusi di Forum Komunitas Resmi IKAMAYOGA",
     slug: "pedoman-etika-tata-tertib-berdiskusi-forum-m3s-connect",
     categoryId: "cat-1",
     categorySlug: "diskusi-umum",
@@ -445,11 +445,11 @@ Kami bersama tim alumni awardee LPDP bersedia mengadakan sesi bedah esai (mock r
     categoryColor: "#0D9488",
     author: {
       id: "user-admin",
-      name: "Administrator M3S",
+      name: "Administrator IKAMAYOGA",
       avatar: "/images/hero-man3-sleman.jpg",
       role: "admin",
     },
-    body: `Selamat datang di Forum Komunitas Resmi MAN 3 Sleman (M3S Connect).
+    body: `Selamat datang di Forum Komunitas Resmi MAN 3 Sleman (IKAMAYOGA).
 
 Untuk menjaga ruang diskusi yang santun, produktif, dan menjunjung nilai kekeluargaan madrasah, berikut beberapa pedoman umum:
 - **Saling Menghargai:** Hargai perbedaan pendapat dan dilarang menyebarkan ujaran kebencian, fitnah, maupun isu SARA.
@@ -469,7 +469,7 @@ Terima kasih atas peran aktif rekan-rekan semua dalam mewujudkan forum yang berm
     lastActivityAt: "2026-09-28T07:00:00Z",
     tags: ["AturanForum", "PanduanKomunitas", "Moderasi"],
     participants: [
-      { id: "p-admin", name: "Administrator M3S", avatar: "/images/hero-man3-sleman.jpg" },
+      { id: "p-admin", name: "Administrator IKAMAYOGA", avatar: "/images/hero-man3-sleman.jpg" },
     ],
     replies: [],
   },

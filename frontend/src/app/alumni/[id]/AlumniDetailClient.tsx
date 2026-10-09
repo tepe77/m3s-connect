@@ -527,7 +527,7 @@ export function AlumniDetailClient({ alumni }: AlumniDetailClientProps) {
 
                 <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-[11px] text-[#64748B] flex items-center gap-2">
                   <span>🛡️</span>
-                  <span>Pesan ini bersifat asinkron dan terlindungi dalam ekosistem M3S Connect.</span>
+                  <span>Pesan ini bersifat asinkron dan terlindungi dalam ekosistem IKAMAYOGA.</span>
                 </div>
 
                 <DialogFooter className="pt-2">

@@ -914,7 +914,7 @@ export default function ProfileUpdatePage() {
                       </span>
                     </div>
                     <span className="text-xs text-[#64748B] block leading-relaxed">
-                      Profil Anda beserta tautan media sosial dapat dicari dan dilihat oleh seluruh pengunjung direktori M3S Connect.
+                      Profil Anda beserta tautan media sosial dapat dicari dan dilihat oleh seluruh pengunjung direktori IKAMAYOGA.
                     </span>
                   </div>
                 </label>

@@ -41,7 +41,7 @@ async function getNewsList(): Promise<NewsItem[]> {
             publishedAt: fallback?.publishedAt || (item.published_at ? new Date(item.published_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }) : ""),
             readTime: fallback?.readTime || "4 menit baca",
             author: {
-              name: item.author?.name || fallback?.author?.name || "Redaksi M3S Connect",
+              name: item.author?.name || fallback?.author?.name || "Redaksi IKAMAYOGA",
               role: fallback?.author?.role || "Divisi Publikasi",
               avatar: resolveImageUrl(item.author?.avatar_url || item.author?.avatar, fallback?.author?.avatar || "/images/avatar-ahmad.jpg"),
             },

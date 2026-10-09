@@ -3,7 +3,7 @@ import Image from "next/image";
 import { Container } from "@/components/ui/Container";
 
 export const metadata = {
-  title: "Tentang M3S Connect | Platform Komunitas Alumni MAN 3 Sleman",
+  title: "Tentang IKAMAYOGA | Ikatan Alumni MAN 3 Sleman",
   description:
     "Mengenal visi, misi, dan nilai perjuangan platform jejaring digital alumni MAN 3 Sleman (Mayoga).",
 };
@@ -18,7 +18,7 @@ export default function TentangPage() {
             Profil & Visi Komunitas
           </span>
           <h1 className="text-3xl sm:text-4xl font-extrabold text-[#0F172A] tracking-tight">
-            Tentang M3S Connect
+            Tentang IKAMAYOGA
           </h1>
           <p className="text-base text-[#64748B] leading-relaxed">
             Menghubungkan ribuan langkah, menyatukan seribu cerita, dan mewujudkan satu tujuan mulia bagi almamater tercinta MAN 3 Sleman.
@@ -40,7 +40,7 @@ export default function TentangPage() {
           <div className="space-y-4">
             <h2 className="text-2xl font-bold text-[#0F172A]">Latar Belakang</h2>
             <p className="text-base leading-relaxed">
-              Madrasah Aliyah Negeri 3 Sleman (Mayoga) telah mencetak puluhan ribu lulusan berintegritas yang kini berkiprah di berbagai penjuru nusantara hingga mancanegara. Seiring perkembangan teknologi dan kebutuhan sinergi antar generasi, platform M3S Connect dihadirkan sebagai rumah digital bersama.
+              Madrasah Aliyah Negeri 3 Sleman (Mayoga) telah mencetak puluhan ribu lulusan berintegritas yang kini berkiprah di berbagai penjuru nusantara hingga mancanegara. Seiring perkembangan teknologi dan kebutuhan sinergi antar generasi, platform IKAMAYOGA dihadirkan sebagai rumah digital bersama.
             </p>
           </div>
 

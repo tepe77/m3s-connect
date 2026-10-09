@@ -68,7 +68,7 @@ async function getNewsBySlug(slug: string): Promise<NewsItem | null> {
           publishedAt: fallback?.publishedAt || (apiData.published_at ? new Date(apiData.published_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }) : ""),
           readTime: fallback?.readTime || "4 menit baca",
           author: {
-            name: apiData.author?.name || fallback?.author?.name || "Redaksi M3S Connect",
+            name: apiData.author?.name || fallback?.author?.name || "Redaksi IKAMAYOGA",
             role: fallback?.author?.role || "Divisi Publikasi",
             avatar: resolveNewsImage(apiData.author?.avatar_url || apiData.author?.avatar, fallback?.author?.avatar || "/images/avatar-ahmad.jpg"),
           },
@@ -92,12 +92,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (!item) {
     return {
-      title: "Berita Tidak Ditemukan | M3S Connect",
+      title: "Berita Tidak Ditemukan | IKAMAYOGA",
     };
   }
 
   return {
-    title: `${item.title} | M3S Connect`,
+    title: `${item.title} | IKAMAYOGA`,
     description: item.excerpt,
     openGraph: {
       title: item.title,

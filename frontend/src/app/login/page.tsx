@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { GridPattern } from "@/components/ui/grid-pattern";
-import { API_BASE_URL, BACKEND_URL } from "@/lib/api";
+import { API_BASE_URL } from "@/lib/api";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -72,12 +72,6 @@ export default function LoginPage() {
     }
   };
 
-  const fillCredentials = (userEmail: string) => {
-    setEmail(userEmail);
-    setPassword("Password123!");
-    setErrorMessage(null);
-  };
-
   return (
     <section className="relative isolate min-h-[calc(100vh-4rem)] overflow-hidden bg-slate-50/60 px-4 py-12 sm:py-16 lg:px-8 flex items-center justify-center">
       {/* Velora GridPattern Background */}
@@ -110,7 +104,7 @@ export default function LoginPage() {
             className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white border border-emerald-200 shadow-2xs text-[#0D9488] text-xs font-semibold hover:border-emerald-300 transition-colors"
           >
             <Sparkles className="size-3.5 text-emerald-600" />
-            <span>M3S Connect • Portal Alumni Mayoga</span>
+            <span>IKAMAYOGA • Portal Alumni Mayoga</span>
           </Link>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#0F172A]">
             Selamat Datang Kembali
@@ -122,53 +116,6 @@ export default function LoginPage() {
 
         {/* Card Body */}
         <div className="rounded-3xl border border-slate-200/90 bg-white/95 p-6 sm:p-8 shadow-xl shadow-slate-200/50 backdrop-blur-md">
-          {/* Quick Demo Seeders Pills */}
-          <div className="mb-6 p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2">
-            <div className="flex items-center justify-between text-[11px] font-bold text-slate-700 uppercase tracking-wider">
-              <span>Akun Demo Cepat:</span>
-              <span className="text-[10px] text-emerald-700 font-semibold lowercase">klik untuk isi otomatis</span>
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              <button
-                type="button"
-                onClick={() => fillCredentials("budi.santoso@alumni.m3s.id")}
-                className="cursor-pointer px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-white border border-slate-300 hover:border-[#0D9488] hover:text-[#0D9488] text-slate-700 transition-colors shadow-2xs"
-              >
-                Alumni (Budi)
-              </button>
-              <button
-                type="button"
-                onClick={() => fillCredentials("admin@m3s-connect.id")}
-                className="cursor-pointer px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-white border border-slate-300 hover:border-[#0D9488] hover:text-[#0D9488] text-slate-700 transition-colors shadow-2xs"
-              >
-                Admin
-              </button>
-              <button
-                type="button"
-                onClick={() => fillCredentials("moderator@m3s-connect.id")}
-                className="cursor-pointer px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-white border border-slate-300 hover:border-[#0D9488] hover:text-[#0D9488] text-slate-700 transition-colors shadow-2xs"
-              >
-                Moderator
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  try {
-                    Object.keys(localStorage).forEach((key) => {
-                      if (key.startsWith("m3s_onboarded_")) {
-                        localStorage.removeItem(key);
-                      }
-                    });
-                  } catch {}
-                  fillCredentials("budi.santoso@alumni.m3s.id");
-                }}
-                className="cursor-pointer px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-emerald-50 border border-emerald-300 text-[#0D9488] hover:bg-emerald-100 transition-colors shadow-2xs"
-                title="Mengosongkan orientasi untuk menguji alur Onboarding"
-              >
-                Uji Onboarding &rarr;
-              </button>
-            </div>
-          </div>
 
           {/* Error Message Alert */}
           {errorMessage && (
@@ -269,19 +216,6 @@ export default function LoginPage() {
             </Link>
           </div>
         </div>
-
-        {/* Admin Filament Reference */}
-        <p className="mt-6 text-center text-[11px] text-slate-400">
-          Dashboard Administrasi Filament:{" "}
-          <a
-            href={`${BACKEND_URL}/admin`}
-            target="_blank"
-            rel="noreferrer"
-            className="text-slate-500 hover:text-[#0D9488] font-medium underline"
-          >
-            {`${BACKEND_URL}/admin`}
-          </a>
-        </p>
       </div>
     </section>
   );
