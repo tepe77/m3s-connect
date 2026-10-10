@@ -11,6 +11,7 @@ export interface ForumCategoryData {
   sortOrder: number;
   topicCount: number;
   postCount: number;
+  isMembersOnly?: boolean;
 }
 
 export interface ForumAuthor {
@@ -58,6 +59,7 @@ export interface ForumTopic {
   likesCount: number;
   isLiked?: boolean;
   isBookmarked?: boolean;
+  isMembersOnly?: boolean;
   createdAt: string;
   lastActivityAt: string;
   tags: string[];
@@ -786,6 +788,22 @@ export function toggleReplyLike(threadSlug: string, replyId: string): boolean {
   topic.replies[replyIndex] = { ...reply, isLiked, likesCount };
   topics[topicIndex] = { ...topic };
   saveStoredTopics(topics);
+
+  // Background sync to backend API if authenticated
+  try {
+    const token = typeof window !== "undefined" ? localStorage.getItem("m3s_token") : null;
+    if (token) {
+      fetch(`${API_BASE_URL}/forum/posts/${replyId}/like`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }).catch(() => {});
+    }
+  } catch {}
+
   return isLiked;
 }
 
@@ -799,5 +817,70 @@ export function toggleTopicBookmark(threadSlug: string): boolean {
 
   topics[topicIndex] = { ...topic, isBookmarked };
   saveStoredTopics(topics);
+
+  // Background sync to backend API if authenticated
+  try {
+    const token = typeof window !== "undefined" ? localStorage.getItem("m3s_token") : null;
+    if (token) {
+      fetch(`${API_BASE_URL}/forum/threads/${threadSlug}/bookmark`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }).catch(() => {});
+    }
+  } catch {}
+
   return isBookmarked;
+}
+
+export function incrementTopicViews(threadSlug: string): number {
+  const topics = getStoredTopics();
+  const topicIndex = topics.findIndex((t) => t.slug === threadSlug);
+  if (topicIndex === -1) return 0;
+
+  const topic = topics[topicIndex];
+  const viewsCount = (topic.viewsCount || 0) + 1;
+  topics[topicIndex] = { ...topic, viewsCount };
+  saveStoredTopics(topics);
+
+  // Background sync to backend API
+  try {
+    const token = typeof window !== "undefined" ? localStorage.getItem("m3s_token") : null;
+    const headers: Record<string, string> = {
+      Accept: "application/json",
+    };
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    fetch(`${API_BASE_URL}/forum/threads/${threadSlug}/view`, {
+      method: "POST",
+      headers,
+    }).catch(() => {});
+  } catch {}
+
+  return viewsCount;
+}
+
+export function getForumCategories(topicsList?: ForumTopic[]): ForumCategoryData[] {
+  const topics = topicsList || getStoredTopics();
+  return FORUM_CATEGORIES.map((cat) => {
+    const catTopics = topics.filter(
+      (t) => t.categoryId === cat.id || t.categorySlug === cat.slug
+    );
+    const topicCount = catTopics.length;
+    const postCount = catTopics.reduce(
+      (acc, t) => acc + (t.replies ? t.replies.length : t.repliesCount || 0),
+      0
+    );
+    return {
+      ...cat,
+      topicCount,
+      postCount,
+      isMembersOnly: true,
+    };
+  });
 }

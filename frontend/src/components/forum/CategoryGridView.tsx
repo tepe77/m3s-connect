@@ -2,7 +2,10 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { ShieldCheck, Plus, ArrowRight, MessageSquare } from "lucide-react";
 import { ForumCategoryData, ForumTopic } from "@/data/forumData";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 interface CategoryGridViewProps {
   categories: ForumCategoryData[];
@@ -26,7 +29,7 @@ export function CategoryGridView({
         return (
           <div
             key={cat.id}
-            className="group bg-white rounded-3xl border border-[#E2E8F0] overflow-hidden shadow-xs hover:border-[#CBD5E1] hover:shadow-md transition-all flex flex-col justify-between"
+            className="group bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-2xs hover:border-slate-300 hover:shadow-md transition-all flex flex-col justify-between"
           >
             {/* 1. Category Header with Visual Cover Image Banner */}
             <div className="relative h-36 sm:h-40 w-full overflow-hidden bg-slate-900">
@@ -61,42 +64,46 @@ export function CategoryGridView({
                 <button
                   type="button"
                   onClick={() => onSelectCategory(cat.slug)}
-                  className="text-left w-full focus:outline-none"
+                  className="text-left w-full focus:outline-none flex items-center justify-between gap-2"
                 >
                   <h3 className="text-lg sm:text-xl font-extrabold text-white group-hover:text-emerald-300 transition-colors drop-shadow-xs">
                     {cat.name}
                   </h3>
+                  <Badge variant="outline" className="border-white/30 bg-white/10 backdrop-blur-xs text-white text-[10px] font-bold gap-1 px-2 py-0.5">
+                    <ShieldCheck className="w-3 h-3 text-emerald-400" />
+                    <span>Khusus Alumni</span>
+                  </Badge>
                 </button>
               </div>
             </div>
 
             {/* 2. Category Description */}
             <div className="p-5 border-b border-slate-100">
-              <p className="text-xs sm:text-sm text-[#475569] leading-relaxed line-clamp-2">
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed line-clamp-2">
                 {cat.description}
               </p>
             </div>
 
-            {/* 3. Recent Topics in this Category (Discourse Style) */}
+            {/* 3. Recent Topics in this Category */}
             <div className="p-4 bg-slate-50/70 space-y-2.5 flex-1">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-[#94A3B8]">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                 Diskusi Terbaru
               </p>
               {categoryTopics.length === 0 ? (
-                <p className="text-xs text-[#94A3B8] italic">Belum ada topik diskusi di kategori ini.</p>
+                <p className="text-xs text-slate-400 italic">Belum ada topik diskusi di kategori ini.</p>
               ) : (
                 <ul className="space-y-2">
                   {categoryTopics.map((topic) => (
                     <li key={topic.id} className="flex items-center justify-between gap-3 text-xs">
                       <Link
                         href={`/forum/${topic.slug}`}
-                        className="truncate text-[#1E293B] hover:text-[#0D9488] font-semibold transition-colors flex items-center gap-1.5"
+                        className="truncate text-slate-800 hover:text-emerald-700 font-semibold transition-colors flex items-center gap-1.5"
                       >
-                        <span className="text-[#0D9488] text-[10px] shrink-0">&#9656;</span>
+                        <span className="text-emerald-600 text-[10px] shrink-0">&#9656;</span>
                         <span className="truncate">{topic.title}</span>
                       </Link>
-                      <span className="font-mono text-[11px] text-[#0D9488] font-bold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100 shrink-0">
-                        {topic.repliesCount} balasan
+                      <span className="font-mono text-[11px] text-emerald-800 font-bold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100 shrink-0">
+                        {topic.replies?.length ?? topic.repliesCount} balasan
                       </span>
                     </li>
                   ))}
@@ -109,17 +116,17 @@ export function CategoryGridView({
               <button
                 type="button"
                 onClick={() => onSelectCategory(cat.slug)}
-                className="text-xs font-bold text-[#0D9488] hover:text-[#0f766e] flex items-center gap-1.5 transition-colors"
+                className="text-xs font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1.5 transition-colors"
               >
                 <span>Jelajahi Kategori</span>
-                <span>&rarr;</span>
+                <ArrowRight className="w-3.5 h-3.5" />
               </button>
-              <Link
-                href={`/forum/new?category=${cat.slug}`}
-                className="text-xs font-semibold text-[#475569] hover:text-[#0F172A] px-3 py-1 rounded-full bg-slate-100 hover:bg-slate-200 transition-colors"
-              >
-                + Buat Topik
-              </Link>
+              <Button asChild variant="outline" size="sm" className="rounded-full text-xs h-8 gap-1.5 border-slate-200">
+                <Link href={`/forum/new?category=${cat.slug}`}>
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Buat Topik</span>
+                </Link>
+              </Button>
             </div>
           </div>
         );

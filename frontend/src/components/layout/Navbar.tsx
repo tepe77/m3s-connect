@@ -19,15 +19,49 @@ import {
   Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getStoredThreads, markThreadAsRead } from "@/data/messageData";
+import { API_BASE_URL } from "@/lib/api";
 
-interface ForumNotification {
+export interface NotificationItem {
   id: string;
   title: string;
   description: string;
   time: string;
   unread: boolean;
   href: string;
+  type: "forum" | "direct_message";
+  avatar?: string;
 }
+
+const INITIAL_NOTIFICATIONS: NotificationItem[] = [
+  {
+    id: "fn-1",
+    title: "Balasan di Topik Reuni Akbar 2026",
+    description: "Ahmad Fauzi menanggapi usulan agenda sarasehan di forum.",
+    time: "10 mnt lalu",
+    unread: true,
+    href: "/forum/rencana-reuni-akbar-lintas-angkatan-2026#reply-r-101",
+    type: "forum",
+  },
+  {
+    id: "fn-2",
+    title: "Info Karir: Backend Engineer",
+    description: "Hendro Prasetyo membagikan lowongan baru di Tech Nusantara.",
+    time: "1 jam lalu",
+    unread: true,
+    href: "/forum/lowongan-backend-engineer-product-specialist-tech-nusantara#reply-r-201",
+    type: "forum",
+  },
+  {
+    id: "fn-3",
+    title: "Tips Beasiswa LPDP Alumni",
+    description: "dr. Sarah Amalia memperbarui panduan kurasi esai studi lanjut.",
+    time: "3 jam lalu",
+    unread: false,
+    href: "/forum/panduan-tips-lolos-beasiswa-lpdp-aas-alumni-mayoga",
+    type: "forum",
+  },
+];
 
 const navItems = [
   { label: "Beranda", href: "/" },
@@ -54,24 +88,7 @@ export function Navbar() {
   } | null>(null);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
-  const [forumNotifications, setForumNotifications] = useState<ForumNotification[]>([
-    {
-      id: "fn-1",
-      title: "Balasan Topik Forum",
-      description: "Ahmad Fauzi menanggapi topik Anda di Forum Alumni.",
-      time: "10 mnt lalu",
-      unread: true,
-      href: "/forum",
-    },
-    {
-      id: "fn-2",
-      title: "Tanggapan Diskusi Baru",
-      description: "Diskusi baru di topik: Sharing Karir & Peluang Kerja Alumni.",
-      time: "1 jam lalu",
-      unread: true,
-      href: "/forum",
-    },
-  ]);
+  const [notifications, setNotifications] = useState<NotificationItem[]>(INITIAL_NOTIFICATIONS);
 
   // Smooth gliding pill state for nav items
   const [hover, setHover] = useState<{
@@ -146,20 +163,6 @@ export function Navbar() {
         }
         setCurrentUser(parsed);
 
-        // Sync unread messages count
-        const msgData = localStorage.getItem("m3s_direct_messages");
-        if (msgData) {
-          try {
-            const threads = JSON.parse(msgData);
-            if (Array.isArray(threads)) {
-              const count = threads.reduce(
-                (acc: number, t: any) => acc + (t.unreadCount || 0),
-                0
-              );
-              setUnreadMessagesCount(count);
-            }
-          } catch {}
-        }
       } else {
         setCurrentUser(null);
       }
@@ -168,22 +171,132 @@ export function Navbar() {
     }
   };
 
+  // Sync notifications from local DM threads, forum data, and backend API
+  const syncNotifications = () => {
+    try {
+      let currentId = "user-budi";
+      const userStr = localStorage.getItem("m3s_user");
+      if (userStr) {
+        try {
+          const parsed = JSON.parse(userStr);
+          if (parsed.id) currentId = parsed.id;
+        } catch {}
+      }
+
+      const threads = getStoredThreads();
+      const dmNotifs: NotificationItem[] = [];
+      let totalUnreadDm = 0;
+
+      threads.forEach((t) => {
+        if (t.unreadCount > 0) {
+          totalUnreadDm += t.unreadCount;
+          const counterpart =
+            t.participant1.id === currentId ? t.participant2 : t.participant1;
+
+          dmNotifs.push({
+            id: `dm-${t.id}`,
+            title: `Pesan baru dari ${counterpart.name}`,
+            description: t.lastMessage,
+            time: "Baru saja",
+            unread: true,
+            href: `/messages?thread=${t.id}`,
+            type: "direct_message",
+            avatar: counterpart.avatar,
+          });
+        }
+      });
+
+      setUnreadMessagesCount(totalUnreadDm);
+
+      // Read persistent read status cache for forum notifications
+      let readMap: Record<string, boolean> = {};
+      try {
+        const rawMap = localStorage.getItem("m3s_read_notifications");
+        if (rawMap) readMap = JSON.parse(rawMap);
+      } catch {}
+
+      const forumNotifs = INITIAL_NOTIFICATIONS.map((fn) => ({
+        ...fn,
+        unread: readMap[fn.id] !== undefined ? !readMap[fn.id] : fn.unread,
+      }));
+
+      // Merge: direct messages first, then forum notifications
+      const combined = [...dmNotifs, ...forumNotifs];
+      setNotifications(combined);
+
+      // Also try fetching server notifications if logged in with token
+      const token = localStorage.getItem("m3s_token");
+      if (token) {
+        fetch(`${API_BASE_URL}/notifications`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        })
+          .then((res) => (res.ok ? res.json() : null))
+          .then((data) => {
+            if (data?.data?.notifications && Array.isArray(data.data.notifications)) {
+              const serverNotifs: NotificationItem[] = data.data.notifications.map(
+                (sn: {
+                  id: string;
+                  title: string;
+                  body: string;
+                  href: string;
+                  is_read: boolean;
+                  type: string;
+                  data?: { sender_avatar?: string };
+                }) => ({
+                  id: sn.id,
+                  title: sn.title,
+                  description: sn.body,
+                  time: "Baru saja",
+                  unread: !sn.is_read,
+                  href: sn.href,
+                  type: sn.type === "direct_message" ? "direct_message" : "forum",
+                  avatar: sn.data?.sender_avatar,
+                })
+              );
+
+              if (serverNotifs.length > 0) {
+                setNotifications((prev) => {
+                  const serverIds = new Set(serverNotifs.map((s) => s.id));
+                  const retained = prev.filter((p) => !serverIds.has(p.id));
+                  return [...serverNotifs, ...retained];
+                });
+              }
+            }
+          })
+          .catch(() => {});
+      }
+    } catch {
+      // Graceful fallback
+    }
+  };
+
   useEffect(() => {
     syncUser();
+    syncNotifications();
 
-    // Listen to storage event (cross-tab) and custom m3s_auth_change event (same-tab)
+    // Listen to storage event (cross-tab) and custom events (same-tab)
     window.addEventListener("storage", syncUser);
+    window.addEventListener("storage", syncNotifications);
     window.addEventListener("m3s_auth_change", syncUser);
+    window.addEventListener("m3s_messages_change", syncNotifications);
+    window.addEventListener("m3s_notifications_change", syncNotifications);
 
     return () => {
       window.removeEventListener("storage", syncUser);
+      window.removeEventListener("storage", syncNotifications);
       window.removeEventListener("m3s_auth_change", syncUser);
+      window.removeEventListener("m3s_messages_change", syncNotifications);
+      window.removeEventListener("m3s_notifications_change", syncNotifications);
     };
   }, []);
 
   // Automatically re-sync whenever pathname changes (e.g. redirected from /login to /dashboard or /)
   useEffect(() => {
     syncUser();
+    syncNotifications();
   }, [pathname]);
 
   const handleLogout = () => {
@@ -201,8 +314,78 @@ export function Navbar() {
     window.location.href = "/login";
   };
 
+  const handleNotificationClick = (notif: NotificationItem) => {
+    // If it's a direct message notification, mark thread read locally
+    if (notif.type === "direct_message") {
+      const match = notif.href.match(/thread=([^&]+)/);
+      if (match && match[1]) {
+        markThreadAsRead(match[1]);
+      }
+    }
+
+    // Persist read status locally
+    try {
+      const rawMap = localStorage.getItem("m3s_read_notifications");
+      const readMap = rawMap ? JSON.parse(rawMap) : {};
+      readMap[notif.id] = true;
+      localStorage.setItem("m3s_read_notifications", JSON.stringify(readMap));
+    } catch {}
+
+    // Mark as read in backend if token exists and id is UUID
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("m3s_token");
+      if (token && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(notif.id)) {
+        fetch(`${API_BASE_URL}/notifications/${notif.id}/read`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        }).catch(() => {});
+      }
+    }
+
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === notif.id ? { ...n, unread: false } : n))
+    );
+    setUserDropdownOpen(false);
+  };
+
   const handleMarkAllRead = () => {
-    setForumNotifications((prev) => prev.map((n) => ({ ...n, unread: false })));
+    setNotifications((prev) => prev.map((n) => ({ ...n, unread: false })));
+
+    // Mark all threads in local storage as read
+    try {
+      const threads = getStoredThreads();
+      threads.forEach((t) => {
+        if (t.unreadCount > 0) {
+          markThreadAsRead(t.id);
+        }
+      });
+    } catch {}
+
+    // Persist read map locally
+    try {
+      const readMap: Record<string, boolean> = {};
+      notifications.forEach((n) => {
+        readMap[n.id] = true;
+      });
+      localStorage.setItem("m3s_read_notifications", JSON.stringify(readMap));
+    } catch {}
+
+    // Call backend read-all if token exists
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("m3s_token");
+      if (token) {
+        fetch(`${API_BASE_URL}/notifications/read-all`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        }).catch(() => {});
+      }
+    }
   };
 
   const getUserInitials = (name?: string) => {
@@ -212,8 +395,7 @@ export function Navbar() {
     return (parts[0][0] + parts[1][0]).toUpperCase();
   };
 
-  const unreadForumCount = forumNotifications.filter((n) => n.unread).length;
-  const totalUnread = unreadMessagesCount + unreadForumCount;
+  const totalUnread = notifications.filter((n) => n.unread).length;
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -249,8 +431,8 @@ export function Navbar() {
         compact
           ? "pt-2.5 sm:pt-3 px-3 sm:px-6 bg-transparent pointer-events-none"
           : isHome
-          ? "pt-0 px-0 bg-white/30 backdrop-blur-md"
-          : "pt-0 px-0 bg-white/80 backdrop-blur-md"
+          ? "pt-0 px-0 bg-white/75 sm:bg-white/80 backdrop-blur-xl backdrop-saturate-150 shadow-xs shadow-slate-950/5"
+          : "pt-0 px-0 bg-white/85 backdrop-blur-md shadow-xs shadow-slate-900/5"
       )}
     >
       {/* Delicate 1px bottom border line when full-width at top; smoothly fades out on scroll */}
@@ -258,7 +440,7 @@ export function Navbar() {
         aria-hidden
         className={cn(
           "absolute bottom-0 inset-x-0 h-px pointer-events-none transition-opacity duration-300",
-          isHome ? "bg-white/40" : "bg-slate-200/60",
+          isHome ? "bg-slate-200/60" : "bg-slate-200/60",
           compact ? "opacity-0" : "opacity-100"
         )}
       />
@@ -304,7 +486,7 @@ export function Navbar() {
             </span>
             <span
               className={cn(
-                "text-[10px] sm:text-[11px] text-slate-500 font-medium tracking-normal leading-tight transition-all duration-300",
+                "text-[10px] sm:text-[11px] text-slate-600 font-semibold tracking-normal leading-tight transition-all duration-300",
                 compact ? "hidden md:inline-block" : "hidden sm:inline-block"
               )}
             >
@@ -349,8 +531,8 @@ export function Navbar() {
                     className={cn(
                       "relative block rounded-full px-3.5 py-1.5 text-xs sm:text-sm transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0D9488]",
                       isActive
-                        ? "bg-emerald-50 text-[#0D9488] font-bold"
-                        : "text-slate-600 hover:text-slate-900 font-medium"
+                        ? "bg-emerald-50 text-[#0D9488] font-bold ring-1 ring-emerald-500/20"
+                        : "text-slate-700 hover:text-slate-950 font-semibold"
                     )}
                   >
                     {item.label}
@@ -390,7 +572,7 @@ export function Navbar() {
                 type="button"
                 onClick={() => setSearchOpen(true)}
                 aria-label="Buka pencarian"
-                className="size-8 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-slate-100/80 transition-colors cursor-pointer"
+                className="size-8 rounded-full flex items-center justify-center text-slate-600 hover:text-slate-950 hover:bg-slate-200/60 transition-colors cursor-pointer"
               >
                 <Search className="size-4" />
               </button>
@@ -500,75 +682,70 @@ export function Navbar() {
                       )}
                     </div>
 
-                    <div className="space-y-1.5 max-h-40 overflow-y-auto pr-0.5">
-                      {/* Direct Messages Entry */}
-                      {unreadMessagesCount > 0 && (
-                        <Link
-                          href="/messages"
-                          onClick={() => setUserDropdownOpen(false)}
-                          className="flex items-start gap-2.5 p-2 rounded-xl bg-emerald-50/70 hover:bg-emerald-100/70 transition-colors text-left"
-                        >
-                          <div className="size-6 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 mt-0.5">
-                            <MessageSquare className="size-3.5" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs font-semibold text-slate-900">
-                              Pesan Pribadi Masuk
-                            </p>
-                            <p className="text-[11px] text-slate-600 truncate">
-                              {unreadMessagesCount} pesan baru belum dibaca
-                            </p>
-                          </div>
-                        </Link>
-                      )}
+                    <div className="space-y-1.5 max-h-56 overflow-y-auto pr-0.5">
+                      {notifications.map((notif) => {
+                        const isDm = notif.type === "direct_message";
 
-                      {/* Forum Notifications Entries */}
-                      {forumNotifications.map((notif) => (
-                        <Link
-                          key={notif.id}
-                          href={notif.href}
-                          onClick={() => {
-                            setForumNotifications((prev) =>
-                              prev.map((n) =>
-                                n.id === notif.id ? { ...n, unread: false } : n
-                              )
-                            );
-                            setUserDropdownOpen(false);
-                          }}
-                          className={cn(
-                            "flex items-start gap-2.5 p-2 rounded-xl transition-colors text-left",
-                            notif.unread
-                              ? "bg-slate-50 hover:bg-slate-100/80 font-medium"
-                              : "hover:bg-slate-50 opacity-70"
-                          )}
-                        >
-                          <div
+                        return (
+                          <Link
+                            key={notif.id}
+                            href={notif.href}
+                            onClick={() => handleNotificationClick(notif)}
                             className={cn(
-                              "size-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5",
+                              "flex items-start gap-2.5 p-2 rounded-xl transition-all text-left",
                               notif.unread
-                                ? "bg-emerald-100 text-emerald-700"
-                                : "bg-slate-100 text-slate-500"
+                                ? isDm
+                                  ? "bg-emerald-50/90 hover:bg-emerald-100/80 border border-emerald-200/80 font-medium"
+                                  : "bg-slate-50 hover:bg-slate-100/90 border border-slate-200/70 font-medium"
+                                : "hover:bg-slate-50/80 opacity-75"
                             )}
                           >
-                            <Sparkles className="size-3" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between gap-1">
-                              <p className="text-xs font-semibold text-slate-900 truncate">
-                                {notif.title}
-                              </p>
-                              <span className="text-[10px] text-slate-400 shrink-0">
-                                {notif.time}
-                              </span>
-                            </div>
-                            <p className="text-[11px] text-slate-600 line-clamp-1">
-                              {notif.description}
-                            </p>
-                          </div>
-                        </Link>
-                      ))}
+                            {/* Avatar or Icon Indicator */}
+                            {isDm && notif.avatar ? (
+                              <div className="relative size-7 rounded-full overflow-hidden shrink-0 mt-0.5 ring-1 ring-emerald-400">
+                                <img
+                                  src={notif.avatar}
+                                  alt={notif.title}
+                                  className="size-full object-cover"
+                                />
+                              </div>
+                            ) : (
+                              <div
+                                className={cn(
+                                  "size-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5",
+                                  notif.unread
+                                    ? isDm
+                                      ? "bg-emerald-200 text-[#0D9488]"
+                                      : "bg-teal-100 text-[#0D9488]"
+                                    : "bg-slate-100 text-slate-400"
+                                )}
+                              >
+                                {isDm ? (
+                                  <MessageSquare className="size-3.5" />
+                                ) : (
+                                  <Sparkles className="size-3.5" />
+                                )}
+                              </div>
+                            )}
 
-                      {unreadMessagesCount === 0 && forumNotifications.length === 0 && (
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between gap-1">
+                                <p className="text-xs font-semibold text-slate-900 truncate">
+                                  {notif.title}
+                                </p>
+                                <span className="text-[10px] text-slate-400 shrink-0">
+                                  {notif.time}
+                                </span>
+                              </div>
+                              <p className="text-[11px] text-slate-600 line-clamp-1">
+                                {notif.description}
+                              </p>
+                            </div>
+                          </Link>
+                        );
+                      })}
+
+                      {notifications.length === 0 && (
                         <p className="text-xs text-slate-400 text-center py-2">
                           Tidak ada pemberitahuan baru saat ini.
                         </p>
@@ -735,13 +912,17 @@ export function Navbar() {
                 {/* Notification Alert in Mobile if any */}
                 {totalUnread > 0 && (
                   <Link
-                    href="/messages"
-                    onClick={() => setMobileMenuOpen(false)}
+                    href={notifications.find((n) => n.unread)?.href || "/messages"}
+                    onClick={() => {
+                      const firstUnread = notifications.find((n) => n.unread);
+                      if (firstUnread) handleNotificationClick(firstUnread);
+                      setMobileMenuOpen(false);
+                    }}
                     className="flex items-center justify-between p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-800 font-semibold"
                   >
                     <span className="flex items-center gap-1.5">
                       <Bell className="size-3.5 text-rose-600" />
-                      {totalUnread} notifikasi baru (pesan & forum)
+                      {totalUnread} notifikasi baru (klik untuk membuka)
                     </span>
                     <ArrowRight className="size-3.5" />
                   </Link>

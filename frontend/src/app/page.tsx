@@ -8,12 +8,14 @@ import { HomeTestimonialsMarquee } from "@/components/home/HomeTestimonialsMarqu
 
 export default function HomePage() {
   return (
-    <div className="flex flex-col gap-12 sm:gap-16 pb-16 bg-[#F8FAFC]">
-      {/* 1. Velora Aurora Hero Section */}
+    <div className="flex flex-col pb-16 bg-[#F8FAFC]">
+      {/* 1. Hero Section with Boundary-Overlapping Social Proof */}
       <HeroAurora />
 
-      {/* 2. Velora Features Icon Grid */}
-      <FeaturesIconGrid />
+      {/* Main Content Sections with top spacing for floating Social Proof card */}
+      <div className="pt-16 sm:pt-20 flex flex-col gap-12 sm:gap-16">
+        {/* 2. Velora Features Icon Grid */}
+        <FeaturesIconGrid />
 
 
       {/* 3. Section Row 1: Berita Terbaru (Left) & Alumni Pilihan (Right) */}
@@ -371,6 +373,7 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+      </div>
     </div>
   );
 }

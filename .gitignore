@@ -34,3 +34,11 @@ frontend/pnpm-debug.log*
 
 # System
 *.log
+
+# Specifications & Internal Docs
+PROJECT_SPEC.md
+docs/
+
+# Database Seeders
+backend/database/seeders/
+

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AlumniProfile;
 use App\Models\DirectMessage;
 use App\Models\DirectMessageThread;
+use App\Models\Notification;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -101,6 +102,13 @@ class DirectMessageController extends Controller
         } else {
             $thread->update(['user_two_unread' => 0]);
         }
+
+        // Mark associated direct message notifications as read
+        Notification::where('user_id', $user->id)
+            ->where('type', 'direct_message')
+            ->where('data->thread_id', $thread->id)
+            ->whereNull('read_at')
+            ->update(['read_at' => now()]);
 
         $otherUser = $thread->getOtherParticipant($user->id);
 
@@ -226,6 +234,21 @@ class DirectMessageController extends Controller
             'is_read' => false,
         ]);
 
+        // Send direct message notification to recipient
+        Notification::create([
+            'user_id' => $recipientId,
+            'type' => 'direct_message',
+            'title' => 'Pesan baru dari ' . $user->name,
+            'body' => Str::limit($validated['content'], 120),
+            'data' => [
+                'thread_id' => $thread->id,
+                'sender_id' => $user->id,
+                'sender_name' => $user->name,
+                'sender_avatar' => $user->avatar,
+                'href' => "/messages?thread={$thread->id}",
+            ],
+        ]);
+
         return response()->json([
             'status' => 'success',
             'message' => 'Pesan berhasil dikirim.',
@@ -290,6 +313,21 @@ class DirectMessageController extends Controller
             'user_two_unread' => !$isRecipientOne ? ($thread->user_two_unread + 1) : $thread->user_two_unread,
         ]);
 
+        // Send direct message notification to recipient
+        Notification::create([
+            'user_id' => $recipientId,
+            'type' => 'direct_message',
+            'title' => 'Pesan baru dari ' . $user->name,
+            'body' => Str::limit($validated['content'], 120),
+            'data' => [
+                'thread_id' => $thread->id,
+                'sender_id' => $user->id,
+                'sender_name' => $user->name,
+                'sender_avatar' => $user->avatar,
+                'href' => "/messages?thread={$thread->id}",
+            ],
+        ]);
+
         return response()->json([
             'status' => 'success',
             'message' => 'Balasan berhasil dikirim.',
@@ -340,6 +378,13 @@ class DirectMessageController extends Controller
             } else {
                 $thread->update(['user_two_unread' => 0]);
             }
+
+            // Mark associated direct message notifications as read
+            Notification::where('user_id', $user->id)
+                ->where('type', 'direct_message')
+                ->where('data->thread_id', $thread->id)
+                ->whereNull('read_at')
+                ->update(['read_at' => now()]);
         }
 
         return response()->json([

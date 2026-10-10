@@ -107,7 +107,7 @@ export default function LoginPage() {
             href="/"
             className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white border border-emerald-200 shadow-2xs text-[#0D9488] text-xs font-semibold hover:border-emerald-300 transition-colors"
           >
-            <Sparkles className="size-3.5 text-emerald-600" />
+            
             <span>IKAMAYOGA • Portal Alumni Mayoga</span>
           </Link>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#0F172A]">

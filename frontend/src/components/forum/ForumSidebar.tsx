@@ -1,10 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { FORUM_CATEGORIES } from "@/data/forumData";
+import { Lock, Layers, Clock, TrendingUp, ShieldCheck } from "lucide-react";
+import { ForumCategoryData, FORUM_CATEGORIES, getForumCategories } from "@/data/forumData";
+import { Badge } from "@/components/ui/badge";
 
 interface ForumSidebarProps {
   currentTab?: string;
+  categories?: ForumCategoryData[];
   selectedCategorySlug?: string | null;
   selectedTag?: string | null;
   onSelectCategory?: (slug: string | null) => void;
@@ -14,12 +17,15 @@ interface ForumSidebarProps {
 
 export function ForumSidebar({
   currentTab = "latest",
+  categories,
   selectedCategorySlug = null,
   selectedTag = null,
   onSelectCategory,
   onSelectTag,
   onSelectTab,
 }: ForumSidebarProps) {
+  const dynamicCategories = categories || getForumCategories();
+
   const POPULAR_TAGS = [
     "Reuni2026",
     "LowonganKerja",
@@ -33,8 +39,8 @@ export function ForumSidebar({
   return (
     <aside className="space-y-6">
       {/* 1. Main Navigation (Discourse Style) */}
-      <div className="bg-white rounded-2xl border border-[#E2E8F0] p-3 shadow-xs">
-        <p className="px-3 pt-1 pb-2 text-[11px] font-bold uppercase tracking-wider text-[#94A3B8]">
+      <div className="bg-white rounded-2xl border border-slate-200 p-3 shadow-2xs">
+        <p className="px-3 pt-1 pb-2 text-[11px] font-bold uppercase tracking-wider text-slate-400">
           Navigasi Forum
         </p>
         <nav className="space-y-1">
@@ -47,17 +53,17 @@ export function ForumSidebar({
             }}
             className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-colors ${
               currentTab === "categories" && !selectedCategorySlug && !selectedTag
-                ? "bg-emerald-50 text-[#0D9488]"
-                : "text-[#475569] hover:bg-slate-50 hover:text-[#0F172A]"
+                ? "bg-emerald-50 text-emerald-800 font-bold"
+                : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
             }`}
           >
             <div className="flex items-center gap-2.5">
-              <svg className="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-              </svg>
+              <Layers className="w-4 h-4 text-emerald-600 shrink-0" />
               <span>Semua Kategori</span>
             </div>
-            <span className="text-[11px] font-mono text-[#94A3B8]">6</span>
+            <span className="text-[11px] font-mono text-slate-400">
+              {dynamicCategories.length}
+            </span>
           </button>
 
           <button
@@ -69,14 +75,12 @@ export function ForumSidebar({
             }}
             className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-colors ${
               currentTab === "latest" && !selectedCategorySlug && !selectedTag
-                ? "bg-emerald-50 text-[#0D9488]"
-                : "text-[#475569] hover:bg-slate-50 hover:text-[#0F172A]"
+                ? "bg-emerald-50 text-emerald-800 font-bold"
+                : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
             }`}
           >
             <div className="flex items-center gap-2.5">
-              <svg className="w-4 h-4 text-teal-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+              <Clock className="w-4 h-4 text-teal-600 shrink-0" />
               <span>Terbaru (Latest)</span>
             </div>
           </button>
@@ -90,14 +94,12 @@ export function ForumSidebar({
             }}
             className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-colors ${
               currentTab === "top" && !selectedCategorySlug && !selectedTag
-                ? "bg-emerald-50 text-[#0D9488]"
-                : "text-[#475569] hover:bg-slate-50 hover:text-[#0F172A]"
+                ? "bg-emerald-50 text-emerald-800 font-bold"
+                : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
             }`}
           >
             <div className="flex items-center gap-2.5">
-              <svg className="w-4 h-4 text-amber-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-              </svg>
+              <TrendingUp className="w-4 h-4 text-amber-500 shrink-0" />
               <span>Populer (Top)</span>
             </div>
           </button>
@@ -105,16 +107,16 @@ export function ForumSidebar({
       </div>
 
       {/* 2. Categories Quick Filter (Discourse Colored Category Badges) */}
-      <div className="bg-white rounded-2xl border border-[#E2E8F0] p-4 shadow-xs">
+      <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-2xs">
         <div className="flex items-center justify-between mb-2.5">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-[#94A3B8]">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
             Kategori Komunitas
           </p>
           {selectedCategorySlug && onSelectCategory && (
             <button
               type="button"
               onClick={() => onSelectCategory(null)}
-              className="text-[11px] font-bold text-[#0D9488] hover:underline"
+              className="text-[11px] font-bold text-emerald-700 hover:underline"
             >
               Reset
             </button>
@@ -122,7 +124,7 @@ export function ForumSidebar({
         </div>
 
         <div className="space-y-1">
-          {FORUM_CATEGORIES.map((cat) => {
+          {dynamicCategories.map((cat) => {
             const isSelected = selectedCategorySlug === cat.slug;
             return (
               <button
@@ -135,8 +137,8 @@ export function ForumSidebar({
                 }}
                 className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs transition-colors ${
                   isSelected
-                    ? "bg-emerald-50 font-bold text-[#0F172A]"
-                    : "text-[#475569] hover:bg-slate-50 hover:text-[#0F172A]"
+                    ? "bg-emerald-50 font-bold text-slate-900 border border-emerald-200"
+                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                 }`}
               >
                 <div className="flex items-center gap-2 truncate">
@@ -146,9 +148,11 @@ export function ForumSidebar({
                   />
                   <span className="truncate">{cat.name}</span>
                 </div>
-                <span className="text-[11px] font-mono text-[#94A3B8] shrink-0">
-                  {cat.topicCount}
-                </span>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <span className="text-[11px] font-mono text-slate-500 font-medium">
+                    {cat.topicCount}
+                  </span>
+                </div>
               </button>
             );
           })}
@@ -156,16 +160,16 @@ export function ForumSidebar({
       </div>
 
       {/* 3. Popular Tags */}
-      <div className="bg-white rounded-2xl border border-[#E2E8F0] p-4 shadow-xs">
+      <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-2xs">
         <div className="flex items-center justify-between mb-3">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-[#94A3B8]">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
             Tag Populer
           </p>
           {selectedTag && onSelectTag && (
             <button
               type="button"
               onClick={() => onSelectTag(null)}
-              className="text-[11px] font-bold text-[#0D9488] hover:underline"
+              className="text-[11px] font-bold text-emerald-700 hover:underline"
             >
               Reset
             </button>
@@ -186,8 +190,8 @@ export function ForumSidebar({
                 }}
                 className={`text-[11px] font-medium px-2.5 py-1 rounded-full border transition-colors ${
                   isSelected
-                    ? "bg-[#0D9488] text-white border-[#0D9488]"
-                    : "bg-slate-50 text-[#64748B] border-slate-200 hover:border-[#0D9488] hover:text-[#0D9488]"
+                    ? "bg-emerald-700 text-white border-emerald-700 shadow-2xs"
+                    : "bg-slate-50 text-slate-600 border-slate-200 hover:border-emerald-600 hover:text-emerald-700"
                 }`}
               >
                 #{tag}
@@ -197,22 +201,20 @@ export function ForumSidebar({
         </div>
       </div>
 
-      {/* 4. Community Rules & Stats Card */}
+      {/* 4. Community Rules & Privacy Notice */}
       <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50/50 border border-emerald-100 space-y-2.5">
-        <div className="flex items-center gap-2 text-emerald-800">
-          <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <span className="text-xs font-bold">Tata Tertib Komunitas</span>
+        <div className="flex items-center gap-2 text-emerald-900">
+          <ShieldCheck className="w-4 h-4 shrink-0 text-emerald-700" />
+          <span className="text-xs font-bold">Privasi & Etika Alumni</span>
         </div>
-        <p className="text-[11px] text-[#065F46] leading-relaxed">
-          Forum IKAMAYOGA menjunjung tinggi sopan santun dan persaudaraan madrasah. Pastikan topik sesuai kategori.
+        <p className="text-[11px] text-emerald-950/80 leading-relaxed">
+          Semua kategori dan topik di forum IKAMAYOGA dilindungi untuk memastikan ruang diskusi yang aman dan bermartabat bagi sesama alumni.
         </p>
         <Link
           href="/forum/pedoman-etika-tata-tertib-berdiskusi-forum-m3s-connect"
-          className="inline-block text-[11px] font-bold text-[#0D9488] hover:underline"
+          className="inline-block text-[11px] font-bold text-emerald-800 hover:underline"
         >
-          Baca Pedoman Lengkap &rarr;
+          Pedoman Komunitas &rarr;
         </Link>
       </div>
     </aside>

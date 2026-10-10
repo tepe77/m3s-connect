@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Container } from "@/components/ui/Container";
 import {
   DirectMessageThread,
@@ -12,9 +13,13 @@ import {
   syncThreadsWithBackend,
 } from "@/data/messageData";
 
-export default function MessagesInboxPage() {
+function MessagesInboxContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const requestedThreadId = searchParams.get("thread") || searchParams.get("id");
+
   const [threads, setThreads] = useState<DirectMessageThread[]>([]);
-  const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
+  const [activeThreadId, setActiveThreadId] = useState<string | null>(requestedThreadId);
   const [replyText, setReplyText] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentUserId, setCurrentUserId] = useState<string>("user-budi");
@@ -23,7 +28,13 @@ export default function MessagesInboxPage() {
   const loadData = () => {
     const all = getStoredThreads();
     setThreads(all);
-    if (!activeThreadId && all.length > 0) {
+
+    // If a specific thread was requested via URL, prioritize it
+    const targetId = requestedThreadId || activeThreadId;
+    if (targetId && all.some((t) => t.id === targetId)) {
+      setActiveThreadId(targetId);
+      markThreadAsRead(targetId);
+    } else if (!activeThreadId && all.length > 0) {
       setActiveThreadId(all[0].id);
       markThreadAsRead(all[0].id);
     }
@@ -46,7 +57,7 @@ export default function MessagesInboxPage() {
 
     window.addEventListener("m3s_messages_change", loadData);
     return () => window.removeEventListener("m3s_messages_change", loadData);
-  }, []);
+  }, [requestedThreadId]);
 
   const activeThread = threads.find((t) => t.id === activeThreadId);
 
@@ -61,6 +72,11 @@ export default function MessagesInboxPage() {
   const handleSelectThread = (threadId: string) => {
     setActiveThreadId(threadId);
     markThreadAsRead(threadId);
+    try {
+      router.replace(`/messages?thread=${threadId}`, { scroll: false });
+    } catch {
+      // Fallback
+    }
     loadData();
   };
 
@@ -382,5 +398,20 @@ export default function MessagesInboxPage() {
         </div>
       </Container>
     </div>
+  );
+}
+
+export default function MessagesInboxPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="py-24 text-center text-xs text-[#64748B]">
+          <div className="w-8 h-8 rounded-full border-2 border-[#0D9488] border-t-transparent animate-spin mx-auto mb-3" />
+          <p>Memuat kotak masuk pesan...</p>
+        </div>
+      }
+    >
+      <MessagesInboxContent />
+    </Suspense>
   );
 }

@@ -64,6 +64,13 @@ export function TopicListRow({
 
         {/* Metadata Badges (Discourse Category Pill + Tags) */}
         <div className="flex flex-wrap items-center gap-1.5 text-xs">
+          <Badge
+            variant="outline"
+            className="text-[10px] font-bold text-emerald-800 bg-emerald-50/70 border-emerald-200 px-2 py-0"
+          >
+            Khusus Alumni
+          </Badge>
+
           {/* Category Pill with Colored Box */}
           <button
             type="button"
@@ -130,11 +137,11 @@ export function TopicListRow({
         <div className="flex items-center gap-4 text-xs font-mono">
           {/* Replies */}
           <Badge
-            variant={topic.repliesCount > 0 ? "emerald" : "secondary"}
-            title={`${topic.repliesCount} balasan`}
+            variant={(topic.replies?.length ?? topic.repliesCount) > 0 ? "emerald" : "secondary"}
+            title={`${topic.replies?.length ?? topic.repliesCount} balasan`}
             className="min-w-[40px] justify-center px-2 py-0.5 font-bold"
           >
-            {topic.repliesCount}
+            {topic.replies?.length ?? topic.repliesCount}
           </Badge>
 
           {/* Views */}

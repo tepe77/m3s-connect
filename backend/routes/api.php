@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\V1\ContactController;
 use App\Http\Controllers\Api\V1\DirectMessageController;
 use App\Http\Controllers\Api\V1\ForumController;
 use App\Http\Controllers\Api\V1\NewsController;
+use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -41,6 +42,13 @@ Route::prefix('v1')->group(function () {
         Route::get('/unread-count', [DirectMessageController::class, 'unreadCount']);
     });
 
+    // Notification Center Routes
+    Route::middleware('auth:sanctum')->prefix('notifications')->group(function () {
+        Route::get('/', [NotificationController::class, 'index']);
+        Route::post('/read-all', [NotificationController::class, 'markAllAsRead']);
+        Route::post('/{id}/read', [NotificationController::class, 'markAsRead']);
+    });
+
     // Alumni Directory Routes
     Route::prefix('alumni')->group(function () {
         Route::get('/', [AlumniController::class, 'index']);
@@ -64,6 +72,9 @@ Route::prefix('v1')->group(function () {
             Route::post('/threads', [ForumController::class, 'storeThread']);
             Route::post('/threads/{id}/posts', [ForumController::class, 'storePost']);
             Route::post('/threads/{id}/like', [ForumController::class, 'toggleThreadLike']);
+            Route::post('/threads/{id}/bookmark', [ForumController::class, 'toggleThreadBookmark']);
+            Route::post('/posts/{id}/like', [ForumController::class, 'togglePostLike']);
+            Route::post('/threads/{id}/view', [ForumController::class, 'recordView']);
         });
     });
 

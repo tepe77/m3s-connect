@@ -26,6 +26,7 @@ import {
   FORUM_CATEGORIES,
   ForumTopic,
   getStoredTopics,
+  getForumCategories,
 } from "@/data/forumData";
 
 function ForumContent() {
@@ -107,7 +108,8 @@ function ForumContent() {
   const startItemIndex = (currentPage - 1) * pageSize + 1;
   const endItemIndex = Math.min(currentPage * pageSize, filteredTopics.length);
 
-  const selectedCategoryObj = FORUM_CATEGORIES.find((c) => c.slug === selectedCategorySlug);
+  const dynamicCategories = getForumCategories(topics);
+  const selectedCategoryObj = dynamicCategories.find((c) => c.slug === selectedCategorySlug);
 
   return (
     <div className="py-6 sm:py-10 bg-slate-50/50 min-h-screen">
@@ -152,6 +154,7 @@ function ForumContent() {
           <div className={`lg:col-span-4 xl:col-span-3 ${mobileSidebarOpen ? "block" : "hidden lg:block"}`}>
             <ForumSidebar
               currentTab={activeTab}
+              categories={dynamicCategories}
               selectedCategorySlug={selectedCategorySlug}
               selectedTag={selectedTag}
               onSelectCategory={(slug) => {
@@ -297,7 +300,7 @@ function ForumContent() {
             {/* Content View: Category Grid vs Topic Stream */}
             {activeTab === "categories" && !selectedCategorySlug && !selectedTag ? (
               <CategoryGridView
-                categories={FORUM_CATEGORIES}
+                categories={dynamicCategories}
                 topics={topics}
                 onSelectCategory={(slug) => {
                   setSelectedCategorySlug(slug);
