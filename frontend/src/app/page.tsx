@@ -5,8 +5,124 @@ import { FeaturesIconGrid } from "@/components/velora/features-icon-grid";
 import { HomeForumThreads } from "@/components/home/HomeForumThreads";
 import { HomeDocumentationSection } from "@/components/home/HomeDocumentationSection";
 import { HomeTestimonialsMarquee } from "@/components/home/HomeTestimonialsMarquee";
+import { NewsItem } from "@/data/newsData";
+import { AlumniItem } from "@/data/alumniData";
+import { HomeAlumniCarousel } from "@/components/home/HomeAlumniCarousel";
+import { API_BASE_URL, getAssetUrl } from "@/lib/api";
 
-export default function HomePage() {
+function resolveNewsImage(url: string | undefined | null, fallbackUrl: string): string {
+  if (!url) return fallbackUrl;
+  const match = url.match(/(news-[a-z0-9-]+|doc-[a-z0-9-]+|avatar-[a-z0-9-]+)\.(jpg|png|webp)/i);
+  if (match) {
+    return `/images/${match[0]}`;
+  }
+  return getAssetUrl(url);
+}
+
+function resolveAvatarImage(avatar: string | undefined | null, name: string): string {
+  if (avatar) {
+    const match = avatar.match(/(avatar-[a-z0-9-]+)\.(jpg|png|webp)/i);
+    if (match) return `/images/${match[0]}`;
+    return getAssetUrl(avatar);
+  }
+  const n = (name || "").toLowerCase();
+  if (n.includes("siti")) return "/images/avatar-siti.jpg";
+  if (n.includes("rina")) return "/images/avatar-rina.jpg";
+  if (n.includes("budi")) return "/images/avatar-budi.jpg";
+  if (n.includes("farhan")) return "/images/avatar-farhan.jpg";
+  if (n.includes("nurul")) return "/images/avatar-nurul.jpg";
+  return "/images/avatar-ahmad.jpg";
+}
+
+async function getHomeNews(): Promise<NewsItem[]> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/news?per_page=4`, {
+      cache: "no-store",
+    });
+    if (res.ok) {
+      const json = await res.json();
+      const list = json?.data?.data || json?.data;
+      if (Array.isArray(list) && list.length > 0) {
+        return list.map((item: any) => ({
+          id: item.id,
+          slug: item.slug,
+          title: item.title,
+          excerpt: item.excerpt || "",
+          category: {
+            name: item.category?.parent?.name || item.category?.name || "Berita",
+            slug: item.category?.parent?.slug || item.category?.slug || "berita",
+          },
+          subCategory: {
+            name: item.category?.parent ? item.category?.name : "",
+            slug: item.category?.parent ? item.category?.slug : "",
+          },
+          tags: Array.isArray(item.tags) ? item.tags : [],
+          publishedAt: item.published_at
+            ? new Date(item.published_at).toLocaleDateString("id-ID", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })
+            : "",
+          readTime: item.read_time ? `${item.read_time} menit baca` : "4 menit baca",
+          author: {
+            name: item.author?.name || "Redaksi IKAMAYOGA",
+            role: item.author?.role || "Divisi Publikasi",
+            avatar: resolveNewsImage(item.author?.avatar_url || item.author?.avatar, "/images/avatar-ahmad.jpg"),
+          },
+          thumbnail: resolveNewsImage(item.cover_image, "/images/news-reuni.jpg"),
+          contentImages: [],
+          contentHtml: [],
+          comments: [],
+        }));
+      }
+    }
+  } catch {}
+  return [];
+}
+
+async function getHomeAlumni(): Promise<AlumniItem[]> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/alumni?per_page=6`, {
+      cache: "no-store",
+    });
+    if (res.ok) {
+      const json = await res.json();
+      const list = json?.data?.data || json?.data;
+      if (Array.isArray(list) && list.length > 0) {
+        return list.map((item: any) => ({
+          id: item.id,
+          slug: item.slug,
+          name: item.name,
+          email: item.user?.email || "",
+          avatar: resolveAvatarImage(item.user?.avatar, item.name),
+          graduationYear: item.graduation_year || 2015,
+          graduationClass: item.graduation_class || "",
+          alumniIdentifier: item.alumni_identifier || item.nis || "",
+          isVerified: Boolean(item.is_verified),
+          occupation: item.profession || item.occupation || "Alumni Terdaftar",
+          company: item.company || "",
+          city: item.city || "",
+          country: item.country || "Indonesia",
+          bio: item.bio || "",
+          skills: Array.isArray(item.skills) ? item.skills : [],
+          socialLinks: [],
+        }));
+      }
+    }
+  } catch {}
+  return [];
+}
+
+export default async function HomePage() {
+  const [newsList, alumniList] = await Promise.all([
+    getHomeNews(),
+    getHomeAlumni(),
+  ]);
+
+  const featuredNews = newsList[0];
+  const smallNews = newsList.slice(1, 4);
+
   return (
     <div className="flex flex-col pb-16 bg-[#F8FAFC]">
       {/* 1. Hero Section with Boundary-Overlapping Social Proof */}
@@ -36,253 +152,83 @@ export default function HomePage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 flex-1">
               {/* Featured Big News Card (Span 7) */}
-              <div className="sm:col-span-7 relative rounded-2xl overflow-hidden bg-slate-900 min-h-[300px] sm:min-h-full flex flex-col justify-end p-5 group shadow-xs">
-                <Image
-                  src="/images/news-reuni.jpg"
-                  alt="Reuni Akbar Alumni MAN 3 Sleman 2025"
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+              {featuredNews ? (
+                <div className="sm:col-span-7 relative rounded-2xl overflow-hidden bg-slate-900 min-h-[300px] sm:min-h-full flex flex-col justify-end p-5 group shadow-xs">
+                  <Image
+                    src={featuredNews.thumbnail}
+                    alt={featuredNews.title}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
 
-                <div className="relative z-10 space-y-2 text-white">
-                  <div className="flex items-center gap-1.5 text-[11px] text-white/80">
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <span>12 Mei 2025</span>
+                  <div className="relative z-10 space-y-2 text-white">
+                    <div className="flex items-center gap-1.5 text-[11px] text-white/80">
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <span>{featuredNews.publishedAt}</span>
+                    </div>
+
+                    <h3 className="text-base font-bold leading-snug group-hover:text-[#2DD4BF] transition-colors">
+                      <Link href={`/news/${featuredNews.slug}`}>
+                        {featuredNews.title}
+                      </Link>
+                    </h3>
+
+                    <p className="text-xs text-white/70 line-clamp-2 leading-relaxed">
+                      {featuredNews.excerpt}
+                    </p>
                   </div>
-
-                  <h3 className="text-base font-bold leading-snug group-hover:text-[#2DD4BF] transition-colors">
-                    <Link href="/news/reuni-akbar-alumni-man-3-sleman-2025">
-                      Reuni Akbar Alumni MAN 3 Sleman 2025 Berlangsung Meriah
-                    </Link>
-                  </h3>
-
-                  <p className="text-xs text-white/70 line-clamp-2 leading-relaxed">
-                    Ribuan alumni dari berbagai angkatan hadir dalam acara Reuni Akbar yang digelar di halaman MAN 3 Sleman...
-                  </p>
                 </div>
-              </div>
+              ) : (
+                <div className="sm:col-span-7 p-8 rounded-2xl bg-white border border-[#E5E7EB] flex items-center justify-center text-center text-xs text-[#64748B]">
+                  Belum ada warta berita utama yang dipublikasikan.
+                </div>
+              )}
 
               {/* 3 Smaller Stacked News Items (Span 5) */}
               <div className="sm:col-span-5 flex flex-col justify-between gap-3">
-                {/* Small News 1 */}
-                <Link
-                  href="/news/program-beasiswa-alumni-berprestasi"
-                  className="group bg-white p-3 rounded-2xl border border-[#E5E7EB] hover:border-emerald-300 shadow-xs flex items-center gap-3 transition-all"
-                >
-                  <div className="relative w-16 h-16 rounded-xl overflow-hidden bg-slate-100 shrink-0">
-                    <Image
-                      src="/images/news-beasiswa.jpg"
-                      alt="Program Beasiswa"
-                      fill
-                      className="object-cover"
-                    />
+                {smallNews.length > 0 ? (
+                  smallNews.map((news) => (
+                    <Link
+                      key={news.id}
+                      href={`/news/${news.slug}`}
+                      className="group bg-white p-3 rounded-2xl border border-[#E5E7EB] hover:border-emerald-300 shadow-xs flex items-center gap-3 transition-all"
+                    >
+                      <div className="relative w-16 h-16 rounded-xl overflow-hidden bg-slate-100 shrink-0">
+                        <Image
+                          src={news.thumbnail}
+                          alt={news.title}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0 space-y-1">
+                        <h4 className="text-xs font-bold text-[#0F172A] leading-snug line-clamp-2 group-hover:text-[#0D9488] transition-colors">
+                          {news.title}
+                        </h4>
+                        <div className="flex items-center gap-1 text-[10px] text-[#64748B]">
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          <span>{news.publishedAt}</span>
+                        </div>
+                      </div>
+                    </Link>
+                  ))
+                ) : (
+                  <div className="p-6 rounded-2xl bg-white border border-[#E5E7EB] text-center text-xs text-[#64748B]">
+                    Belum ada berita tambahan lainnya.
                   </div>
-                  <div className="flex-1 min-w-0 space-y-1">
-                    <h4 className="text-xs font-bold text-[#0F172A] leading-snug line-clamp-2 group-hover:text-[#0D9488] transition-colors">
-                      Program Beasiswa untuk Alumni Berprestasi
-                    </h4>
-                    <div className="flex items-center gap-1 text-[10px] text-[#64748B]">
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                      <span>8 Mei 2025</span>
-                    </div>
-                  </div>
-                </Link>
-
-                {/* Small News 2 */}
-                <Link
-                  href="/news/alumni-man-3-sleman-sukses-kancah-internasional"
-                  className="group bg-white p-3 rounded-2xl border border-[#E5E7EB] hover:border-emerald-300 shadow-xs flex items-center gap-3 transition-all"
-                >
-                  <div className="relative w-16 h-16 rounded-xl overflow-hidden bg-slate-100 shrink-0">
-                    <Image
-                      src="/images/news-internasional.jpg"
-                      alt="Alumni Sukses di Kancah Internasional"
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0 space-y-1">
-                    <h4 className="text-xs font-bold text-[#0F172A] leading-snug line-clamp-2 group-hover:text-[#0D9488] transition-colors">
-                      Alumni MAN 3 Sleman Sukses di Kancah Internasional
-                    </h4>
-                    <div className="flex items-center gap-1 text-[10px] text-[#64748B]">
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                      <span>5 Mei 2025</span>
-                    </div>
-                  </div>
-                </Link>
-
-                {/* Small News 3 */}
-                <Link
-                  href="/news/peluncuran-platform-m3s-connect-resmi-dimulai"
-                  className="group bg-white p-3 rounded-2xl border border-[#E5E7EB] hover:border-emerald-300 shadow-xs flex items-center gap-3 transition-all"
-                >
-                  <div className="relative w-16 h-16 rounded-xl overflow-hidden bg-slate-100 shrink-0">
-                    <Image
-                      src="/images/news-peluncuran.jpg"
-                      alt="Peluncuran Platform IKAMAYOGA"
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0 space-y-1">
-                    <h4 className="text-xs font-bold text-[#0F172A] leading-snug line-clamp-2 group-hover:text-[#0D9488] transition-colors">
-                      Peluncuran Platform IKAMAYOGA Resmi Dimulai
-                    </h4>
-                    <div className="flex items-center gap-1 text-[10px] text-[#64748B]">
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                      <span>1 Mei 2025</span>
-                    </div>
-                  </div>
-                </Link>
+                )}
               </div>
             </div>
           </div>
 
-          {/* Right Column: Alumni Pilihan (~42% width: 5 cols) */}
+          {/* Right Column: Alumni Pilihan Carousel (~42% width: 5 cols) */}
           <div className="lg:col-span-5 flex flex-col">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-[#0F172A]">Alumni Pilihan</h2>
-              <Link
-                href="/alumni"
-                className="text-xs font-semibold text-[#0D9488] hover:underline flex items-center gap-1"
-              >
-                <span>Lihat Semua</span>
-                <span>&rarr;</span>
-              </Link>
-            </div>
-
-            {/* 3 Profile Cards Side by Side */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 flex-1">
-              {/* Alumni Card 1 */}
-              <div className="bg-white p-4 rounded-2xl border border-[#E5E7EB] shadow-xs hover:border-emerald-300 transition-all flex flex-col items-center text-center justify-between">
-                <div className="flex flex-col items-center space-y-3 w-full">
-                  <div className="relative">
-                    <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow-xs">
-                      <Image
-                        src="/images/avatar-siti.jpg"
-                        alt="Siti Nurhaliza, S.T."
-                        width={64}
-                        height={64}
-                        className="object-cover w-full h-full"
-                      />
-                    </div>
-                    {/* Active Green Dot */}
-                    <span className="absolute bottom-0 right-1 w-3.5 h-3.5 rounded-full bg-[#10B981] border-2 border-white" />
-                  </div>
-
-                  <div>
-                    <h3 className="text-xs font-bold text-[#0F172A] leading-tight">
-                      Siti Nurhaliza, S.T.
-                    </h3>
-                    <p className="text-[10px] text-[#64748B] mt-0.5 font-medium">Alumni 2012</p>
-                    <p className="text-[11px] text-[#334155] font-normal mt-1 leading-snug">
-                      Software Engineer
-                      <br />
-                      <span className="text-[#64748B]">at Tokopedia</span>
-                    </p>
-                  </div>
-                </div>
-
-                <div className="w-full pt-4">
-                  <Link
-                    href="/alumni/alumni-1"
-                    className="block w-full py-1.5 text-center text-xs font-semibold text-[#0D9488] border border-[#0D9488] hover:bg-[#0D9488] hover:text-white rounded-lg transition-colors"
-                  >
-                    Lihat Profil
-                  </Link>
-                </div>
-              </div>
-
-              {/* Alumni Card 2 */}
-              <div className="bg-white p-4 rounded-2xl border border-[#E5E7EB] shadow-xs hover:border-emerald-300 transition-all flex flex-col items-center text-center justify-between">
-                <div className="flex flex-col items-center space-y-3 w-full">
-                  <div className="relative">
-                    <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow-xs">
-                      <Image
-                        src="/images/avatar-ahmad.jpg"
-                        alt="Ahmad Fauzi, M.Pd."
-                        width={64}
-                        height={64}
-                        className="object-cover w-full h-full"
-                      />
-                    </div>
-                    {/* Active Green Dot */}
-                    <span className="absolute bottom-0 right-1 w-3.5 h-3.5 rounded-full bg-[#10B981] border-2 border-white" />
-                  </div>
-
-                  <div>
-                    <h3 className="text-xs font-bold text-[#0F172A] leading-tight">
-                      Ahmad Fauzi, M.Pd.
-                    </h3>
-                    <p className="text-[10px] text-[#64748B] mt-0.5 font-medium">Alumni 2010</p>
-                    <p className="text-[11px] text-[#334155] font-normal mt-1 leading-snug">
-                      Dosen
-                      <br />
-                      <span className="text-[#64748B]">UIN Sunan Kalijaga</span>
-                    </p>
-                  </div>
-                </div>
-
-                <div className="w-full pt-4">
-                  <Link
-                    href="/alumni/alumni-2"
-                    className="block w-full py-1.5 text-center text-xs font-semibold text-[#0D9488] border border-[#0D9488] hover:bg-[#0D9488] hover:text-white rounded-lg transition-colors"
-                  >
-                    Lihat Profil
-                  </Link>
-                </div>
-              </div>
-
-              {/* Alumni Card 3 */}
-              <div className="bg-white p-4 rounded-2xl border border-[#E5E7EB] shadow-xs hover:border-emerald-300 transition-all flex flex-col items-center text-center justify-between">
-                <div className="flex flex-col items-center space-y-3 w-full">
-                  <div className="relative">
-                    <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow-xs">
-                      <Image
-                        src="/images/avatar-rina.jpg"
-                        alt="Rina Oktaviani, S.E."
-                        width={64}
-                        height={64}
-                        className="object-cover w-full h-full"
-                      />
-                    </div>
-                    {/* Active Green Dot */}
-                    <span className="absolute bottom-0 right-1 w-3.5 h-3.5 rounded-full bg-[#10B981] border-2 border-white" />
-                  </div>
-
-                  <div>
-                    <h3 className="text-xs font-bold text-[#0F172A] leading-tight">
-                      Rina Oktaviani, S.E.
-                    </h3>
-                    <p className="text-[10px] text-[#64748B] mt-0.5 font-medium">Alumni 2015</p>
-                    <p className="text-[11px] text-[#334155] font-normal mt-1 leading-snug">
-                      Entrepreneur
-                      <br />
-                      <span className="text-[#64748B]">(Founder KaryaRasa)</span>
-                    </p>
-                  </div>
-                </div>
-
-                <div className="w-full pt-4">
-                  <Link
-                    href="/alumni/alumni-3"
-                    className="block w-full py-1.5 text-center text-xs font-semibold text-[#0D9488] border border-[#0D9488] hover:bg-[#0D9488] hover:text-white rounded-lg transition-colors"
-                  >
-                    Lihat Profil
-                  </Link>
-                </div>
-              </div>
-            </div>
+            <HomeAlumniCarousel alumniList={alumniList} />
           </div>
         </div>
       </section>

@@ -25,9 +25,12 @@ import { Input } from "@/components/ui/input";
 import {
   FORUM_CATEGORIES,
   ForumTopic,
+  ForumCategoryData,
+  mapApiThreadToTopic,
+  mapApiCategory,
   getStoredTopics,
-  getForumCategories,
 } from "@/data/forumData";
+import { API_BASE_URL } from "@/lib/api";
 
 function ForumContent() {
   const searchParams = useSearchParams();
@@ -35,6 +38,8 @@ function ForumContent() {
   const initialTab = searchParams.get("tab") || "latest";
 
   const [topics, setTopics] = useState<ForumTopic[]>([]);
+  const [categories, setCategories] = useState<ForumCategoryData[]>(FORUM_CATEGORIES);
+  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<string>(initialTab);
   const [selectedCategorySlug, setSelectedCategorySlug] = useState<string | null>(initialCategory);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
@@ -44,9 +49,36 @@ function ForumContent() {
 
   const pageSize = 6;
 
-  const loadData = () => {
-    const loaded = getStoredTopics();
-    setTopics(loaded);
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const [threadsRes, catRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/forum/threads?per_page=50`, { cache: "no-store" }),
+        fetch(`${API_BASE_URL}/forum/categories`, { cache: "no-store" }),
+      ]);
+
+      if (threadsRes.ok) {
+        const json = await threadsRes.json();
+        const list = json?.data?.data || json?.data;
+        if (Array.isArray(list)) {
+          const mapped = list.map(mapApiThreadToTopic);
+          setTopics(mapped);
+        }
+      }
+
+      if (catRes.ok) {
+        const catJson = await catRes.json();
+        const catList = catJson?.data;
+        if (Array.isArray(catList) && catList.length > 0) {
+          setCategories(catList.map(mapApiCategory));
+        }
+      }
+    } catch {
+      const loaded = getStoredTopics();
+      if (loaded.length > 0) setTopics(loaded);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -108,7 +140,19 @@ function ForumContent() {
   const startItemIndex = (currentPage - 1) * pageSize + 1;
   const endItemIndex = Math.min(currentPage * pageSize, filteredTopics.length);
 
-  const dynamicCategories = getForumCategories(topics);
+  const dynamicCategories = categories.map((cat) => {
+    const catTopics = topics.filter(
+      (t) => t.categoryId === cat.id || t.categorySlug === cat.slug
+    );
+    return {
+      ...cat,
+      topicCount: catTopics.length > 0 ? catTopics.length : cat.topicCount,
+      postCount: catTopics.length > 0
+        ? catTopics.reduce((acc, t) => acc + (t.replies ? t.replies.length : t.repliesCount || 0), 0)
+        : cat.postCount,
+      isMembersOnly: true,
+    };
+  });
   const selectedCategoryObj = dynamicCategories.find((c) => c.slug === selectedCategorySlug);
 
   return (
@@ -321,7 +365,12 @@ function ForumContent() {
                   </div>
                 </div>
 
-                {filteredTopics.length === 0 ? (
+                {loading ? (
+                  <div className="p-16 text-center text-xs text-slate-500 space-y-3">
+                    <div className="w-8 h-8 rounded-full border-2 border-emerald-600 border-t-transparent animate-spin mx-auto" />
+                    <p>Memuat topik diskusi dari database...</p>
+                  </div>
+                ) : filteredTopics.length === 0 ? (
                   <div className="p-12 text-center space-y-3">
                     <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
                       <MessageSquare className="w-6 h-6" />

@@ -18,6 +18,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import {
+  MessageSquare,
+  Share2,
+  Check,
+  Lock,
+  ExternalLink,
+} from "lucide-react";
 
 interface AlumniDetailClientProps {
   alumni: AlumniItem;
@@ -27,6 +34,7 @@ export function AlumniDetailClient({ alumni }: AlumniDetailClientProps) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false);
 
   // Direct Message Modal states
   const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
@@ -117,18 +125,6 @@ export function AlumniDetailClient({ alumni }: AlumniDetailClientProps) {
               fill
               className="object-cover opacity-25 mix-blend-overlay"
             />
-            <div className="absolute top-4 right-4 flex items-center gap-2">
-              <button
-                type="button"
-                onClick={handleCopyLink}
-                className="px-3 py-1.5 rounded-full bg-black/40 hover:bg-black/60 text-white text-xs font-semibold backdrop-blur-xs transition-colors flex items-center gap-1.5 border border-white/20"
-              >
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-                </svg>
-                <span>{copiedLink ? "Link Tersalin!" : "Bagikan"}</span>
-              </button>
-            </div>
           </div>
 
           {/* Profile Identity Details */}
@@ -156,47 +152,45 @@ export function AlumniDetailClient({ alumni }: AlumniDetailClientProps) {
               </div>
 
               {/* Action Buttons on right */}
-              <div className="flex flex-wrap items-center gap-3">
+              <div className="flex flex-wrap items-center gap-2.5">
+                {/* Bagikan Profil (Aksesibel untuk semua pengunjung) */}
+                <button
+                  type="button"
+                  onClick={handleCopyLink}
+                  className="inline-flex items-center justify-center min-h-[40px] px-4 py-2 text-xs font-semibold text-slate-700 hover:text-emerald-700 bg-white hover:bg-slate-50 rounded-full border border-slate-200 transition-colors gap-1.5 shadow-2xs cursor-pointer"
+                >
+                  {copiedLink ? (
+                    <Check className="w-3.5 h-3.5 text-emerald-600" />
+                  ) : (
+                    <Share2 className="w-3.5 h-3.5 text-slate-500" />
+                  )}
+                  <span>{copiedLink ? "Tautan Tersalin" : "Bagikan"}</span>
+                </button>
+
+                {/* Primary Action Button */}
                 {isOwner ? (
                   <Link
                     href="/profile"
-                    className="inline-flex items-center justify-center min-h-[42px] px-5 py-2 text-xs font-bold text-[#0D9488] bg-emerald-50 hover:bg-[#0D9488] hover:text-white rounded-full border border-emerald-200 transition-colors"
+                    className="inline-flex items-center justify-center min-h-[40px] px-5 py-2 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-700 hover:text-white rounded-full border border-emerald-200 transition-colors"
                   >
                     Edit Profil Saya
                   </Link>
-                ) : isLoggedIn ? (
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={handleCopyLink}
-                      className="inline-flex items-center justify-center min-h-[42px] px-4 py-2 text-xs font-bold text-[#475569] hover:text-[#0D9488] bg-slate-50 hover:bg-slate-100 rounded-full border border-slate-200 transition-colors gap-1.5"
-                    >
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                      </svg>
-                      <span>{copiedLink ? "Tautan Tersalin" : "Bagikan"}</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (isLoggedIn) {
                         setSendSuccess(false);
                         setIsMessageModalOpen(true);
-                      }}
-                      className="inline-flex items-center justify-center min-h-[42px] px-5 py-2 text-xs font-bold text-white bg-[#0D9488] hover:bg-[#0f766e] rounded-full shadow-xs transition-colors gap-1.5"
-                    >
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                      </svg>
-                      <span>Kirim Pesan Privat</span>
-                    </button>
-                  </div>
-                ) : (
-                  <Link
-                    href="/login"
-                    className="inline-flex items-center justify-center min-h-[42px] px-5 py-2 text-xs font-bold text-white bg-[#0D9488] hover:bg-[#0f766e] rounded-full shadow-xs transition-colors"
+                      } else {
+                        setIsLoginPromptOpen(true);
+                      }
+                    }}
+                    className="inline-flex items-center justify-center min-h-[40px] px-5 py-2 text-xs font-bold text-white bg-emerald-700 hover:bg-emerald-800 rounded-full shadow-xs transition-colors gap-1.5 cursor-pointer"
                   >
-                    Masuk untuk Terhubung &rarr;
-                  </Link>
+                    <MessageSquare className="w-3.5 h-3.5" />
+                    <span>Kirim Pesan</span>
+                  </button>
                 )}
               </div>
             </div>
@@ -244,7 +238,7 @@ export function AlumniDetailClient({ alumni }: AlumniDetailClientProps) {
                 {alumni.bio}
               </p>
 
-              {/* Social Media Links Bar (with member privacy lock) */}
+              {/* Social Media Links Bar */}
               <div className="pt-4 border-t border-[#F1F5F9]">
                 {isLoggedIn ? (
                   <div className="flex flex-wrap items-center gap-3">
@@ -261,53 +255,39 @@ export function AlumniDetailClient({ alumni }: AlumniDetailClientProps) {
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 hover:bg-emerald-50 text-[#334155] hover:text-[#0D9488] border border-slate-200 text-xs font-semibold transition-colors"
                         >
                           <span className="capitalize">{link.platform}</span>
-                          <svg className="w-3 h-3 text-[#94A3B8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                          </svg>
+                          <ExternalLink className="w-3 h-3 text-[#94A3B8]" />
                         </a>
                       ))}
                     </div>
                   </div>
-                ) : (
-                  <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
-                    <div className="flex items-center gap-2 text-xs text-[#64748B]">
-                      <svg className="w-4 h-4 text-amber-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                      </svg>
-                      <span>Tautan kontak & media sosial hanya dapat dilihat oleh sesama alumni terdaftar.</span>
+                ) : alumni.socialLinks && alumni.socialLinks.length > 0 ? (
+                  <div className="flex flex-wrap items-center gap-3">
+                    <span className="text-xs font-bold uppercase tracking-wider text-[#94A3B8]">
+                      Tautan Media Sosial:
+                    </span>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {alumni.socialLinks.map((link) => (
+                        <button
+                          key={link.platform}
+                          type="button"
+                          onClick={() => setIsLoginPromptOpen(true)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-50 hover:bg-slate-100 text-slate-500 border border-slate-200 text-xs font-medium transition-colors cursor-pointer"
+                          title="Masuk untuk membuka tautan profil"
+                        >
+                          <Lock className="w-3 h-3 text-slate-400" />
+                          <span className="capitalize">{link.platform}</span>
+                        </button>
+                      ))}
+                      <span className="text-[11px] text-slate-400 hidden sm:inline">
+                        (Terkunci untuk sesama alumni)
+                      </span>
                     </div>
-                    <Link
-                      href="/login"
-                      className="text-xs font-bold text-[#0D9488] hover:underline shrink-0"
-                    >
-                      Masuk untuk Melihat &rarr;
-                    </Link>
                   </div>
-                )}
+                ) : null}
               </div>
             </div>
           </div>
         </div>
-
-        {/* 3. Non-Logged-In Visitor Notice */}
-        {!isLoggedIn && (
-          <div className="mb-8 p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-emerald-50 via-teal-50 to-white border border-emerald-200 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="space-y-1 text-center sm:text-left">
-              <h3 className="text-sm font-bold text-[#064E3B]">
-                Ingin Berjejaring atau Mengirim Pesan ke {alumni.name}?
-              </h3>
-              <p className="text-xs text-[#065F46] leading-relaxed">
-                Halaman ini menampilkan profil publik alumni. Masuk ke akun alumni Anda untuk membuka direktori kontak penuh, forum diskusi angkatan, dan peluang karir.
-              </p>
-            </div>
-            <Link
-              href="/login"
-              className="inline-flex items-center justify-center min-h-[40px] px-5 py-2 text-xs font-bold text-white bg-[#0D9488] hover:bg-[#0f766e] rounded-full shrink-0 shadow-xs transition-colors"
-            >
-              Masuk Sekarang &rarr;
-            </Link>
-          </div>
-        )}
 
         {/* 4. Two Columns Grid for Detailed Sections */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -547,6 +527,40 @@ export function AlumniDetailClient({ alumni }: AlumniDetailClientProps) {
                 </DialogFooter>
               </form>
             )}
+          </DialogContent>
+        </Dialog>
+        {/* Polite Login Prompt Modal for Guests */}
+        <Dialog open={isLoginPromptOpen} onOpenChange={setIsLoginPromptOpen}>
+          <DialogContent className="sm:max-w-md p-6">
+            <DialogHeader className="text-center sm:text-left">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 border border-emerald-200/80 flex items-center justify-center mb-3 mx-auto sm:mx-0">
+                <Lock className="w-5 h-5 text-emerald-700" />
+              </div>
+              <DialogTitle className="text-base font-bold text-slate-900">
+                Masuk ke Akun Alumni
+              </DialogTitle>
+              <DialogDescription className="text-xs text-slate-600 leading-relaxed pt-1">
+                Kirim pesan privat dan akses jaringan kontak langsung dengan {alumni.name} khusus diperuntukkan bagi sesama alumni MAN 3 Sleman terdaftar demi menjaga privasi dan keamanan data anggota.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="pt-3 space-y-3">
+              <Link
+                href={`/login?redirect=/alumni/${alumni.slug || alumni.id}`}
+                className="w-full inline-flex items-center justify-center min-h-[42px] px-5 py-2.5 text-xs font-bold text-white bg-emerald-700 hover:bg-emerald-800 rounded-xl transition-colors shadow-2xs"
+              >
+                Masuk ke Akun Alumni &rarr;
+              </Link>
+              <div className="flex items-center justify-between pt-1 text-xs text-slate-500">
+                <span>Belum memiliki akun?</span>
+                <Link
+                  href="/register"
+                  className="font-semibold text-emerald-700 hover:underline"
+                >
+                  Daftar Verifikasi Alumni
+                </Link>
+              </div>
+            </div>
           </DialogContent>
         </Dialog>
       </Container>

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Container } from "@/components/ui/Container";
-import { NEWS_ITEMS, NewsItem, NewsComment } from "@/data/newsData";
+import { NewsItem, NewsComment } from "@/data/newsData";
 import { API_BASE_URL } from "@/lib/api";
 
 interface NewsDetailClientProps {

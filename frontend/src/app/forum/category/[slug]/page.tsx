@@ -19,9 +19,13 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   ForumTopic,
+  ForumCategoryData,
+  mapApiThreadToTopic,
+  mapApiCategory,
+  FORUM_CATEGORIES,
   getStoredTopics,
-  getForumCategories,
 } from "@/data/forumData";
+import { API_BASE_URL } from "@/lib/api";
 
 interface ForumCategoryPageProps {
   params: Promise<{ slug: string }>;
@@ -31,6 +35,8 @@ export default function ForumCategoryPage({ params }: ForumCategoryPageProps) {
   const { slug } = use(params);
 
   const [topics, setTopics] = useState<ForumTopic[]>([]);
+  const [categories, setCategories] = useState<ForumCategoryData[]>(FORUM_CATEGORIES);
+  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"latest" | "top" | "new">("latest");
   const [searchQuery, setSearchQuery] = useState("");
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -46,17 +52,55 @@ export default function ForumCategoryPage({ params }: ForumCategoryPageProps) {
     }
   }, []);
 
-  const loadData = () => {
-    setTopics(getStoredTopics());
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const [threadsRes, catRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/forum/threads?category=${slug}&per_page=50`, { cache: "no-store" }),
+        fetch(`${API_BASE_URL}/forum/categories`, { cache: "no-store" }),
+      ]);
+
+      if (threadsRes.ok) {
+        const json = await threadsRes.json();
+        const list = json?.data?.data || json?.data;
+        if (Array.isArray(list)) {
+          setTopics(list.map(mapApiThreadToTopic));
+        }
+      }
+
+      if (catRes.ok) {
+        const catJson = await catRes.json();
+        const catList = catJson?.data;
+        if (Array.isArray(catList) && catList.length > 0) {
+          setCategories(catList.map(mapApiCategory));
+        }
+      }
+    } catch {
+      setTopics(getStoredTopics());
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
     loadData();
     window.addEventListener("m3s_forum_change", loadData);
     return () => window.removeEventListener("m3s_forum_change", loadData);
-  }, []);
+  }, [slug]);
 
-  const dynamicCategories = getForumCategories(topics);
+  const dynamicCategories = categories.map((cat) => {
+    const catTopics = topics.filter(
+      (t) => t.categoryId === cat.id || t.categorySlug === cat.slug
+    );
+    return {
+      ...cat,
+      topicCount: catTopics.length > 0 ? catTopics.length : cat.topicCount,
+      postCount: catTopics.length > 0
+        ? catTopics.reduce((acc, t) => acc + (t.replies ? t.replies.length : t.repliesCount || 0), 0)
+        : cat.postCount,
+      isMembersOnly: true,
+    };
+  });
   const category = dynamicCategories.find((c) => c.slug === slug);
 
   // 1. Loading auth state

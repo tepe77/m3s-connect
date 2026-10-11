@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
-import { NEWS_ITEMS, NewsItem, NewsComment } from "@/data/newsData";
+import { NewsItem, NewsComment } from "@/data/newsData";
 import { NewsDetailClient } from "./NewsDetailClient";
 import { API_BASE_URL, getAssetUrl } from "@/lib/api";
 
@@ -20,8 +20,6 @@ function resolveNewsImage(url: string | undefined | null, fallbackUrl: string): 
 }
 
 async function getNewsBySlug(slug: string): Promise<NewsItem | null> {
-  const fallback = NEWS_ITEMS.find((n) => n.slug === slug) || null;
-
   try {
     const res = await fetch(`${API_BASE_URL}/news/${slug}`, {
       cache: "no-store",
@@ -55,35 +53,45 @@ async function getNewsBySlug(slug: string): Promise<NewsItem | null> {
           id: apiData.id,
           slug: apiData.slug,
           title: apiData.title,
-          excerpt: apiData.excerpt || fallback?.excerpt || "",
+          excerpt: apiData.excerpt || "",
           category: {
-            name: apiData.category?.parent?.name || apiData.category?.name || fallback?.category?.name || "Berita",
-            slug: apiData.category?.parent?.slug || apiData.category?.slug || fallback?.category?.slug || "berita",
+            name: apiData.category?.parent?.name || apiData.category?.name || "Berita",
+            slug: apiData.category?.parent?.slug || apiData.category?.slug || "berita",
           },
           subCategory: {
-            name: apiData.category?.parent ? apiData.category?.name : (fallback?.subCategory?.name || ""),
-            slug: apiData.category?.parent ? apiData.category?.slug : (fallback?.subCategory?.slug || ""),
+            name: apiData.category?.parent ? apiData.category?.name : "",
+            slug: apiData.category?.parent ? apiData.category?.slug : "",
           },
-          tags: Array.isArray(apiData.tags) ? apiData.tags : (fallback?.tags || []),
-          publishedAt: fallback?.publishedAt || (apiData.published_at ? new Date(apiData.published_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }) : ""),
-          readTime: fallback?.readTime || "4 menit baca",
+          tags: Array.isArray(apiData.tags) ? apiData.tags : [],
+          publishedAt: apiData.published_at
+            ? new Date(apiData.published_at).toLocaleDateString("id-ID", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })
+            : "",
+          readTime: apiData.read_time ? `${apiData.read_time} menit baca` : "4 menit baca",
           author: {
-            name: apiData.author?.name || fallback?.author?.name || "Redaksi IKAMAYOGA",
-            role: fallback?.author?.role || "Divisi Publikasi",
-            avatar: resolveNewsImage(apiData.author?.avatar_url || apiData.author?.avatar, fallback?.author?.avatar || "/images/avatar-ahmad.jpg"),
+            name: apiData.author?.name || "Redaksi IKAMAYOGA",
+            role: apiData.author?.role || "Divisi Publikasi",
+            avatar: resolveNewsImage(apiData.author?.avatar_url || apiData.author?.avatar, "/images/avatar-ahmad.jpg"),
           },
-          thumbnail: resolveNewsImage(apiData.cover_image, fallback?.thumbnail || "/images/news-reuni.jpg"),
-          contentImages: Array.isArray(apiData.content_images) && apiData.content_images.length > 0 ? apiData.content_images : (fallback?.contentImages || []),
-          contentHtml: fallback?.contentHtml || [apiData.content],
+          thumbnail: resolveNewsImage(apiData.cover_image, "/images/news-reuni.jpg"),
+          contentImages: Array.isArray(apiData.content_images) && apiData.content_images.length > 0 ? apiData.content_images : [],
+          contentHtml: Array.isArray(apiData.content_html)
+            ? apiData.content_html
+            : typeof apiData.content === "string"
+              ? apiData.content.split("\n\n").filter(Boolean)
+              : [apiData.content || ""],
           comments,
         };
       }
     }
   } catch {
-    // API not reachable or static fallback
+    // API not reachable
   }
 
-  return fallback;
+  return null;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {

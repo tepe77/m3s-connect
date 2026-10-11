@@ -42,11 +42,26 @@ class AlumniProfile extends Model
 
     protected $appends = [
         'avatar_url',
+        'slug',
     ];
 
     public function getAvatarUrlAttribute(): ?string
     {
         return $this->user?->avatar_url ?? asset('images/avatar-ahmad.jpg');
+    }
+
+    /**
+     * Generate human-readable, URL-safe slug from alumni name
+     */
+    public function getSlugAttribute(): string
+    {
+        $rawName = $this->user?->name ?? 'alumni';
+        // Strip common academic titles and honorifics for clean URLs
+        $cleanName = preg_replace('/\b(S\.T\.|S\.Kom\.|S\.Pd\.|M\.Pd\.|S\.E\.|S\.Psi\.|dr\.|drg\.|Drs\.|Dra\.|H\.|Hj\.|M\.Sc\.|M\.Eng\.|Ph\.D\.|M\.M\.|M\.Si\.|S\.Si\.|S\.Ked)\b/i', '', $rawName);
+        $cleanName = trim(preg_replace('/[,\.]/', ' ', (string) $cleanName));
+        $baseSlug = \Illuminate\Support\Str::slug($cleanName);
+
+        return !empty($baseSlug) ? $baseSlug : 'alumni';
     }
 
     /**

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Container } from "@/components/ui/Container";
-import { NEWS_ITEMS, NewsItem } from "@/data/newsData";
+import { NewsItem } from "@/data/newsData";
 import { API_BASE_URL, getAssetUrl } from "@/lib/api";
 
 function resolveImageUrl(url: string | undefined | null, fallbackUrl: string): string {
@@ -23,38 +23,43 @@ async function getNewsList(): Promise<NewsItem[]> {
       const list = json?.data?.data;
       if (Array.isArray(list) && list.length > 0) {
         return list.map((item: any) => {
-          const fallback = NEWS_ITEMS.find((n) => n.slug === item.slug);
           return {
             id: item.id,
             slug: item.slug,
             title: item.title,
-            excerpt: item.excerpt || fallback?.excerpt || "",
+            excerpt: item.excerpt || "",
             category: {
-              name: item.category?.parent?.name || item.category?.name || fallback?.category?.name || "Berita",
-              slug: item.category?.parent?.slug || item.category?.slug || fallback?.category?.slug || "berita",
+              name: item.category?.parent?.name || item.category?.name || "Berita",
+              slug: item.category?.parent?.slug || item.category?.slug || "berita",
             },
             subCategory: {
-              name: item.category?.parent ? item.category?.name : (fallback?.subCategory?.name || ""),
-              slug: item.category?.parent ? item.category?.slug : (fallback?.subCategory?.slug || ""),
+              name: item.category?.parent ? item.category?.name : "",
+              slug: item.category?.parent ? item.category?.slug : "",
             },
-            tags: Array.isArray(item.tags) ? item.tags : (fallback?.tags || []),
-            publishedAt: fallback?.publishedAt || (item.published_at ? new Date(item.published_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }) : ""),
-            readTime: fallback?.readTime || "4 menit baca",
+            tags: Array.isArray(item.tags) ? item.tags : [],
+            publishedAt: item.published_at
+              ? new Date(item.published_at).toLocaleDateString("id-ID", {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                })
+              : "",
+            readTime: item.read_time ? `${item.read_time} menit baca` : "4 menit baca",
             author: {
-              name: item.author?.name || fallback?.author?.name || "Redaksi IKAMAYOGA",
-              role: fallback?.author?.role || "Divisi Publikasi",
-              avatar: resolveImageUrl(item.author?.avatar_url || item.author?.avatar, fallback?.author?.avatar || "/images/avatar-ahmad.jpg"),
+              name: item.author?.name || "Redaksi IKAMAYOGA",
+              role: item.author?.role || "Divisi Publikasi",
+              avatar: resolveImageUrl(item.author?.avatar_url || item.author?.avatar, "/images/avatar-ahmad.jpg"),
             },
-            thumbnail: resolveImageUrl(item.cover_image_url || item.cover_image, fallback?.thumbnail || "/images/news-reuni.jpg"),
-            contentImages: fallback?.contentImages || [],
-            contentHtml: fallback?.contentHtml || [item.content],
-            comments: fallback?.comments || [],
+            thumbnail: resolveImageUrl(item.cover_image_url || item.cover_image, "/images/news-reuni.jpg"),
+            contentImages: Array.isArray(item.content_images) ? item.content_images : [],
+            contentHtml: Array.isArray(item.content_html) ? item.content_html : [item.content || ""],
+            comments: Array.isArray(item.comments) ? item.comments : [],
           };
         });
       }
     }
   } catch {}
-  return NEWS_ITEMS;
+  return [];
 }
 
 export default async function NewsIndexPage() {
@@ -132,9 +137,16 @@ export default async function NewsIndexPage() {
         <div className="mb-8 flex items-center justify-between">
           <h2 className="text-xl font-bold text-[#0F172A]">Daftar Berita Lainnya</h2>
           <span className="text-xs text-[#64748B] font-medium">
-            Menampilkan {NEWS_ITEMS.length} Artikel
+            Menampilkan {newsList.length} Artikel
           </span>
         </div>
+
+        {newsList.length === 0 && (
+          <div className="bg-white rounded-2xl border border-[#E2E8F0] p-12 text-center text-[#64748B]">
+            <p className="text-base font-semibold text-[#0F172A]">Belum ada berita yang dipublikasikan</p>
+            <p className="text-xs text-[#64748B] mt-1">Silakan cek kembali di lain waktu untuk kabar terbaru madrasah.</p>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {rest.map((item) => (

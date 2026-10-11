@@ -3,28 +3,36 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { INITIAL_FORUM_TOPICS, ForumTopic, getStoredTopics } from "@/data/forumData";
+import { ForumTopic, mapApiThreadToTopic } from "@/data/forumData";
+import { API_BASE_URL } from "@/lib/api";
 
 export function HomeForumThreads() {
-  const [threads, setThreads] = useState<ForumTopic[]>(INITIAL_FORUM_TOPICS.slice(0, 4));
+  const [threads, setThreads] = useState<ForumTopic[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loaded = getStoredTopics();
-    const sorted = [...loaded].sort(
-      (a, b) => new Date(b.lastActivityAt).getTime() - new Date(a.lastActivityAt).getTime()
-    );
-    setThreads(sorted.slice(0, 4));
-
-    const handleUpdate = () => {
-      const updated = getStoredTopics();
-      const updatedSorted = [...updated].sort(
-        (a, b) => new Date(b.lastActivityAt).getTime() - new Date(a.lastActivityAt).getTime()
-      );
-      setThreads(updatedSorted.slice(0, 4));
+    const fetchThreads = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/forum/threads?per_page=4`, {
+          cache: "no-store",
+        });
+        if (res.ok) {
+          const json = await res.json();
+          const list = json?.data?.data || json?.data;
+          if (Array.isArray(list)) {
+            setThreads(list.map(mapApiThreadToTopic));
+          }
+        }
+      } catch {
+        // Ignored gracefully
+      } finally {
+        setLoading(false);
+      }
     };
 
-    window.addEventListener("m3s_forum_change", handleUpdate);
-    return () => window.removeEventListener("m3s_forum_change", handleUpdate);
+    fetchThreads();
+    window.addEventListener("m3s_forum_change", fetchThreads);
+    return () => window.removeEventListener("m3s_forum_change", fetchThreads);
   }, []);
 
   const formatTimeAgo = (dateStr: string) => {
@@ -41,6 +49,42 @@ export function HomeForumThreads() {
       return "Beberapa waktu lalu";
     }
   };
+
+  if (loading) {
+    return (
+      <div className="space-y-3 flex-1">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="bg-white p-4 rounded-2xl border border-[#E5E7EB] animate-pulse flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-slate-200" />
+              <div className="space-y-2">
+                <div className="h-3 w-48 bg-slate-200 rounded" />
+                <div className="h-2 w-28 bg-slate-100 rounded" />
+              </div>
+            </div>
+            <div className="h-5 w-20 bg-slate-100 rounded-full" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (threads.length === 0) {
+    return (
+      <div className="bg-white p-8 rounded-2xl border border-[#E5E7EB] text-center text-xs text-[#64748B]">
+        <p className="font-semibold text-[#0F172A]">Belum ada topik diskusi terbaru</p>
+        <p className="mt-1">Mulai diskusi pertama di forum alumni.</p>
+        <div className="mt-4">
+          <Link
+            href="/forum/new"
+            className="inline-flex items-center px-4 py-2 bg-[#0D9488] text-white font-semibold rounded-lg hover:bg-[#0f766e] transition-colors"
+          >
+            Buka Topik Baru
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-3 flex-1">

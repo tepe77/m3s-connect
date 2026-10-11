@@ -37,6 +37,7 @@ import {
   ForumTopic,
   ForumAuthor,
   ForumReply,
+  mapApiThreadToTopic,
   getStoredTopics,
   addReply,
   toggleTopicLike,
@@ -44,6 +45,7 @@ import {
   toggleTopicBookmark,
   incrementTopicViews,
 } from "@/data/forumData";
+import { API_BASE_URL } from "@/lib/api";
 
 interface ForumTopicPageProps {
   params: Promise<{ slug: string }>;
@@ -97,12 +99,50 @@ export default function ForumTopicPage({ params }: ForumTopicPageProps) {
     }
   }, []);
 
-  // 2. Load topic data
-  const refreshTopic = () => {
+  // 2. Load topic data directly from backend API
+  const refreshTopic = async () => {
+    try {
+      const token = typeof window !== "undefined" ? localStorage.getItem("m3s_token") : null;
+      const headers: Record<string, string> = {
+        Accept: "application/json",
+      };
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
+      const res = await fetch(`${API_BASE_URL}/forum/threads/${slug}`, {
+        headers,
+        cache: "no-store",
+      });
+
+      if (res.ok) {
+        const json = await res.json();
+        if (json?.data) {
+          setTopic(mapApiThreadToTopic(json.data));
+          setLoading(false);
+          return;
+        }
+      } else if (res.status === 401) {
+        // Restricted / requires_auth: show blurred guard with real thread preview data
+        const json = await res.json().catch(() => null);
+        if (json?.data) {
+          setTopic(mapApiThreadToTopic(json.data));
+          setIsAuthenticated(false);
+          setLoading(false);
+          return;
+        }
+      }
+    } catch (e) {
+      console.error("API error loading topic:", e);
+    }
+
+    // Fallback to locally stored topics if offline
     const all = getStoredTopics();
     const found = all.find((t) => t.slug === slug);
     if (found) {
       setTopic(found);
+    } else {
+      setTopic(null);
     }
     setLoading(false);
   };
@@ -147,32 +187,71 @@ export default function ForumTopicPage({ params }: ForumTopicPageProps) {
   }, [loading, topic]);
 
   // Handle Likes & Bookmarks
-  const handleLikeOP = () => {
+  const handleLikeOP = async () => {
     if (!currentUser) {
       router.push(`/login?redirect=/forum/${slug}`);
       return;
     }
     if (!topic) return;
+    const token = typeof window !== "undefined" ? localStorage.getItem("m3s_token") : null;
+    if (token) {
+      try {
+        await fetch(`${API_BASE_URL}/forum/threads/${topic.id}/like`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      } catch {}
+    }
     toggleTopicLike(topic.slug);
     refreshTopic();
   };
 
-  const handleLikeReply = (replyId: string) => {
+  const handleLikeReply = async (replyId: string) => {
     if (!currentUser) {
       router.push(`/login?redirect=/forum/${slug}`);
       return;
     }
     if (!topic) return;
+    const token = typeof window !== "undefined" ? localStorage.getItem("m3s_token") : null;
+    if (token) {
+      try {
+        await fetch(`${API_BASE_URL}/forum/posts/${replyId}/like`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      } catch {}
+    }
     toggleReplyLike(topic.slug, replyId);
     refreshTopic();
   };
 
-  const handleBookmark = () => {
+  const handleBookmark = async () => {
     if (!currentUser) {
       router.push(`/login?redirect=/forum/${slug}`);
       return;
     }
     if (!topic) return;
+    const token = typeof window !== "undefined" ? localStorage.getItem("m3s_token") : null;
+    if (token) {
+      try {
+        await fetch(`${API_BASE_URL}/forum/threads/${topic.id}/bookmark`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      } catch {}
+    }
     const isNowBookmarked = toggleTopicBookmark(topic.slug);
     refreshTopic();
     setBookmarkToast(
@@ -215,6 +294,26 @@ export default function ForumTopicPage({ params }: ForumTopicPageProps) {
   ): Promise<boolean> => {
     if (!topic || !currentUser) return false;
     try {
+      const token = typeof window !== "undefined" ? localStorage.getItem("m3s_token") : null;
+      if (token) {
+        const apiRes = await fetch(`${API_BASE_URL}/forum/threads/${topic.id}/posts`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            body,
+            parent_id: parentId || null,
+          }),
+        });
+        if (apiRes.ok) {
+          await refreshTopic();
+          return true;
+        }
+      }
+
       const res = addReply(topic.slug, {
         body,
         author: currentUser,

@@ -64,32 +64,88 @@ class AlumniController extends Controller
      */
     public function show(string $id, Request $request): JsonResponse
     {
+        // 1. Sanitasi input: cegah karakter berbahaya / injection / directory traversal
+        $cleanId = trim($id);
+        if (!preg_match('/^[a-zA-Z0-9_\-\.]+$/', $cleanId)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Format pengenal alumni tidak valid.',
+            ], 400);
+        }
+
         $viewer = $request->user('sanctum');
 
         $query = AlumniProfile::with(['user', 'skills', 'socialLinks', 'educations', 'experiences']);
 
-        $slugToIdentifier = [
-            'alumni-1' => 'M3S-2012-0081',
-            'alumni-2' => 'M3S-2010-0034',
-            'alumni-3' => 'M3S-2015-0112',
-            'alumni-4' => 'M3S-2018-0042',
-            'alumni-5' => 'M3S-2016-0067',
-            'alumni-6' => 'M3S-2014-0019',
-        ];
+        $profile = null;
 
-        if (Str::isUuid($id)) {
-            $query->where(function ($q) use ($id) {
-                $q->where('id', $id)->orWhere('user_id', $id);
-            });
-            $profile = $query->first();
-        } elseif (isset($slugToIdentifier[$id])) {
-            $profile = $query->where('alumni_identifier', $slugToIdentifier[$id])->first();
-        } elseif (preg_match('/^alumni-(\d+)$/', $id, $matches)) {
-            // Support dummy/sample slug format gracefully
-            $offset = max(0, ((int) $matches[1]) - 1);
-            $profile = $query->orderBy('created_at', 'asc')->skip($offset)->first();
-        } else {
-            $profile = $query->where('alumni_identifier', $id)->first();
+        // A. Cek jika input adalah UUID (Direct PK / User ID lookup)
+        if (Str::isUuid($cleanId)) {
+            $profile = (clone $query)->where(function ($q) use ($cleanId) {
+                $q->where('id', $cleanId)->orWhere('user_id', $cleanId);
+            })->first();
+        }
+
+        // B. Cek Format Resmi Alumni Identifier (misal: "M3S-2012-0081" atau "m3s-2012-0081")
+        if (!$profile && preg_match('/^m3s-\d{4}-\d{4}$/i', $cleanId)) {
+            $profile = (clone $query)->whereRaw('LOWER(alumni_identifier) = ?', [strtolower($cleanId)])->first();
+        }
+
+        // C. Cek Format Slug Nama + Year/Identifier (e.g. "siti-nurhaliza-2012" atau "siti-nurhaliza-0081")
+        if (!$profile && preg_match('/^(.*?)-(\d{4})$/', $cleanId, $matches)) {
+            $namePart = $matches[1];
+            $codeOrYear = (int) $matches[2];
+            $profile = (clone $query)
+                ->where(function ($q) use ($codeOrYear) {
+                    $q->where('graduation_year', $codeOrYear)
+                      ->orWhere('alumni_identifier', 'like', "%{$codeOrYear}");
+                })
+                ->whereHas('user', function ($u) use ($namePart) {
+                    $u->whereRaw("LOWER(REPLACE(name, ' ', '-')) LIKE ?", ['%' . strtolower($namePart) . '%']);
+                })
+                ->first();
+        }
+
+        // D. Cek Format Slug Nama Bersih (e.g. "siti-nurhaliza", "dr-farhan-hakim", "farhan-hakim", "siti-nurhaliza-s-t")
+        if (!$profile) {
+            $words = array_values(array_filter(explode('-', strtolower($cleanId)), fn ($w) => strlen($w) > 2));
+            if (!empty($words)) {
+                $profile = (clone $query)->whereHas('user', function ($u) use ($words) {
+                    $u->where(function ($sub) use ($words) {
+                        foreach ($words as $w) {
+                            $sub->whereRaw("LOWER(name) LIKE ?", ['%' . $w . '%']);
+                        }
+                    });
+                })->first();
+            }
+
+            if (!$profile) {
+                $normalizedSlug = str_replace('-', ' ', strtolower($cleanId));
+                $profile = (clone $query)->whereHas('user', function ($u) use ($normalizedSlug) {
+                    $u->whereRaw("LOWER(name) LIKE ?", ['%' . $normalizedSlug . '%']);
+                })->first();
+            }
+        }
+
+        // E. Backward-compatibility untuk legacy dummy slug ("alumni-1", "alumni-2", dst.)
+        if (!$profile) {
+            $slugToIdentifier = [
+                'alumni-1' => 'M3S-2012-0081',
+                'alumni-2' => 'M3S-2010-0034',
+                'alumni-3' => 'M3S-2015-0112',
+                'alumni-4' => 'M3S-2018-0042',
+                'alumni-5' => 'M3S-2016-0067',
+                'alumni-6' => 'M3S-2014-0019',
+            ];
+
+            if (isset($slugToIdentifier[$cleanId])) {
+                $profile = (clone $query)->where('alumni_identifier', $slugToIdentifier[$cleanId])->first();
+            } elseif (preg_match('/^alumni-(\d+)$/', $cleanId, $matches)) {
+                $offset = max(0, ((int) $matches[1]) - 1);
+                $profile = (clone $query)->orderBy('created_at', 'asc')->skip($offset)->first();
+            } else {
+                $profile = (clone $query)->where('alumni_identifier', $cleanId)->first();
+            }
         }
 
         if (!$profile) {

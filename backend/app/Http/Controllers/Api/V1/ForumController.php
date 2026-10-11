@@ -95,15 +95,6 @@ class ForumController extends Controller
     {
         $user = auth('sanctum')->user() ?? $request->user();
 
-        // Privacy Check: Only authenticated alumni/members can access full thread details
-        if (!$user) {
-            return response()->json([
-                'status' => 'restricted',
-                'requires_auth' => true,
-                'message' => 'Akses terbatas: Topik diskusi dan balasan forum hanya dapat diakses oleh member alumni yang sudah login.',
-            ], 401);
-        }
-
         $thread = ForumThread::with([
             'category',
             'author:id,name,role,avatar',
@@ -117,7 +108,38 @@ class ForumController extends Controller
         ])
             ->where('slug', $slug)
             ->where('status', ForumThreadStatus::PUBLISHED)
-            ->firstOrFail();
+            ->first();
+
+        if (!$thread) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Topik diskusi tidak ditemukan.',
+            ], 404);
+        }
+
+        // Privacy Check: Only authenticated alumni/members can access full thread details and posts
+        if (!$user) {
+            return response()->json([
+                'status' => 'restricted',
+                'requires_auth' => true,
+                'message' => 'Akses terbatas: Topik diskusi dan balasan forum hanya dapat diakses oleh member alumni yang sudah login.',
+                'data' => [
+                    'id' => $thread->id,
+                    'slug' => $thread->slug,
+                    'title' => $thread->title,
+                    'category' => $thread->category,
+                    'author' => $thread->author,
+                    'created_at' => $thread->created_at,
+                    'is_pinned' => $thread->is_pinned,
+                    'is_locked' => $thread->is_locked,
+                    'likes_count' => $thread->likes->count(),
+                    'replies_count' => $thread->posts->count(),
+                    'views_count' => $thread->views_count,
+                    'body' => $thread->body,
+                    'posts' => [],
+                ],
+            ], 401);
+        }
 
         // Increment view count
         $thread->increment('views_count');

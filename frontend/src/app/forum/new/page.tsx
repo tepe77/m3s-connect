@@ -4,7 +4,8 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Container } from "@/components/ui/Container";
-import { FORUM_CATEGORIES, ForumAuthor, addTopic } from "@/data/forumData";
+import { ForumAuthor, addTopic } from "@/data/forumData";
+import { API_BASE_URL } from "@/lib/api";
 import { RichContentRenderer } from "@/components/forum/RichContentRenderer";
 
 export default function NewTopicPage() {
@@ -12,9 +13,10 @@ export default function NewTopicPage() {
 
   const [currentUser, setCurrentUser] = useState<ForumAuthor | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [categories, setCategories] = useState<{ id: string; name: string; slug: string; color: string; description?: string }[]>([]);
 
   const [title, setTitle] = useState("");
-  const [categoryId, setCategoryId] = useState("cat-1");
+  const [categoryId, setCategoryId] = useState("");
   const [tagInput, setTagInput] = useState("Reuni2026, Mayoga");
   const [body, setBody] = useState("");
   const [activeTab, setActiveTab] = useState<"write" | "preview">("write");
@@ -64,6 +66,17 @@ export default function NewTopicPage() {
       setIsAuthenticated(false);
       setCurrentUser(null);
     }
+
+    // Fetch live categories from backend API
+    fetch(`${API_BASE_URL}/forum/categories`, { cache: "no-store" })
+      .then((res) => res.json())
+      .then((json) => {
+        if (json?.data && Array.isArray(json.data) && json.data.length > 0) {
+          setCategories(json.data);
+          setCategoryId(json.data[0].id);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const insertFormatting = (prefix: string, suffix = "") => {
@@ -132,7 +145,7 @@ export default function NewTopicPage() {
     setErrorMessage(null);
 
     try {
-      const selectedCat = FORUM_CATEGORIES.find((c) => c.id === categoryId) || FORUM_CATEGORIES[0];
+      const selectedCat = categories.find((c) => c.id === categoryId) || categories[0];
       const tags = tagInput
         .split(",")
         .map((t) => t.trim().replace(/^#/, ""))
@@ -144,23 +157,50 @@ export default function NewTopicPage() {
         .replace(/\s+/g, "-")
         .slice(0, 70) + `-${Date.now().toString().slice(-4)}`;
 
-      const created = addTopic({
-        title: title.trim(),
-        slug: generatedSlug,
-        categoryId: selectedCat.id,
-        categorySlug: selectedCat.slug,
-        categoryName: selectedCat.name,
-        categoryColor: selectedCat.color,
-        author: currentUser,
-        body: body.trim(),
-        isPinned: false,
-        isLocked: false,
-        tags: tags.length > 0 ? tags : ["AlumniMayoga"],
-      });
+      const token = typeof window !== "undefined" ? localStorage.getItem("m3s_token") : null;
+      let createdSlug = "";
+
+      if (token && selectedCat) {
+        const res = await fetch(`${API_BASE_URL}/forum/threads`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            category_id: selectedCat.id,
+            title: title.trim(),
+            body: body.trim(),
+          }),
+        });
+
+        if (res.ok) {
+          const json = await res.json();
+          createdSlug = json?.data?.slug;
+        }
+      }
+
+      if (!createdSlug && selectedCat) {
+        const created = addTopic({
+          title: title.trim(),
+          slug: generatedSlug,
+          categoryId: selectedCat.id,
+          categorySlug: selectedCat.slug,
+          categoryName: selectedCat.name,
+          categoryColor: selectedCat.color || "#0D9488",
+          author: currentUser,
+          body: body.trim(),
+          isPinned: false,
+          isLocked: false,
+          tags: tags.length > 0 ? tags : ["AlumniMayoga"],
+        });
+        createdSlug = created.slug;
+      }
 
       setSuccessBanner("Topik berhasil diterbitkan langsung ke forum!");
       setTimeout(() => {
-        router.push(`/forum/${created.slug}`);
+        router.push(`/forum/${createdSlug || generatedSlug}`);
       }, 700);
     } catch {
       setErrorMessage("Terjadi kesalahan saat mempublikasikan topik.");
@@ -275,7 +315,7 @@ export default function NewTopicPage() {
                   Pilih Kategori Diskusi
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                  {FORUM_CATEGORIES.map((cat) => {
+                  {categories.map((cat) => {
                     const isSelected = categoryId === cat.id;
                     return (
                       <button

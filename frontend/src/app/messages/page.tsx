@@ -12,6 +12,7 @@ import {
   markThreadAsRead,
   syncThreadsWithBackend,
 } from "@/data/messageData";
+import { getAlumniBySlugOrId } from "@/data/alumniData";
 
 function MessagesInboxContent() {
   const searchParams = useSearchParams();
@@ -282,12 +283,20 @@ function MessagesInboxContent() {
                       </div>
 
                       <div className="flex items-center gap-2 shrink-0">
-                        <Link
-                          href={`/alumni/${counterpart.id}`}
-                          className="px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-[#0F172A] text-xs font-semibold transition-colors"
-                        >
-                          Lihat Profil
-                        </Link>
+                        {(() => {
+                          const counterpartProfile = getAlumniBySlugOrId(counterpart.id);
+                          const href = counterpartProfile?.slug
+                            ? `/alumni/${counterpartProfile.slug}`
+                            : `/alumni/${counterpart.id}`;
+                          return (
+                            <Link
+                              href={href}
+                              className="px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-[#0F172A] text-xs font-semibold transition-colors"
+                            >
+                              Lihat Profil
+                            </Link>
+                          );
+                        })()}
                       </div>
                     </div>
                   );

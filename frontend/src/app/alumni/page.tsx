@@ -4,50 +4,65 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Container } from "@/components/ui/Container";
-import { ALUMNI_ITEMS, AlumniItem } from "@/data/alumniData";
+import { AlumniItem, getAlumniProfileUrl } from "@/data/alumniData";
 import { API_BASE_URL } from "@/lib/api";
 
 export default function AlumniDirectoryPage() {
-  const [alumniList, setAlumniList] = useState<AlumniItem[]>(ALUMNI_ITEMS);
+  const [alumniList, setAlumniList] = useState<AlumniItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedYear, setSelectedYear] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
 
   useEffect(() => {
+    setLoading(true);
     fetch(`${API_BASE_URL}/alumni`)
       .then((res) => res.json())
       .then((json) => {
-        if (json?.data?.data && Array.isArray(json.data.data) && json.data.data.length > 0) {
-          const mapped: AlumniItem[] = json.data.data.map((p: any, idx: number) => {
-            const fallback = ALUMNI_ITEMS.find((a) => a.alumniIdentifier === p.alumni_identifier) || ALUMNI_ITEMS[idx];
+        if (json?.data?.data && Array.isArray(json.data.data)) {
+          const mapped: AlumniItem[] = json.data.data.map((p: any) => {
+            const rawName = p.user?.name || "Alumni";
+            const generatedSlug = rawName
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, "-")
+              .replace(/(^-|-$)/g, "");
+
             return {
-              id: fallback?.id || `alumni-${idx + 1}`,
-              name: p.user?.name || fallback?.name || "",
-              email: p.user?.email || fallback?.email,
-              avatar: p.user?.avatar || p.avatar_url || fallback?.avatar || "/images/avatar-ahmad.jpg",
-              graduationYear: p.graduation_year || fallback?.graduationYear || 2018,
-              graduationClass: p.graduation_class || fallback?.graduationClass || "",
-              alumniIdentifier: p.alumni_identifier || fallback?.alumniIdentifier || "",
-              isVerified: true,
-              occupation: p.occupation || fallback?.occupation || "",
-              company: p.company || fallback?.company || "",
-              city: p.current_city || fallback?.city || "",
-              country: p.current_country || fallback?.country || "Indonesia",
-              bio: p.bio || fallback?.bio || "",
+              id: p.id,
+              slug: p.slug || generatedSlug || p.id,
+              name: rawName,
+              email: p.user?.email || "",
+              avatar: p.user?.avatar || p.avatar_url || "/images/avatar-ahmad.jpg",
+              graduationYear: p.graduation_year || 0,
+              graduationClass: p.graduation_class || "",
+              alumniIdentifier: p.alumni_identifier || "",
+              isVerified: Boolean(p.verified_at),
+              occupation: p.occupation || "",
+              company: p.company || "",
+              city: p.current_city || "",
+              country: p.current_country || "Indonesia",
+              bio: p.bio || "",
               skills: Array.isArray(p.skills)
-                ? p.skills.map((s: any) => typeof s === "string" ? s : s.name)
-                : (fallback?.skills || []),
-              socialLinks: Array.isArray(p.social_links) && p.social_links.length > 0
+                ? p.skills.map((s: any) => (typeof s === "string" ? s : s.name))
+                : [],
+              socialLinks: Array.isArray(p.social_links)
                 ? p.social_links.map((s: any) => ({ platform: s.platform, url: s.url }))
-                : (fallback?.socialLinks || []),
-              educations: fallback?.educations,
-              experiences: fallback?.experiences,
+                : [],
+              educations: Array.isArray(p.educations) ? p.educations : [],
+              experiences: Array.isArray(p.experiences) ? p.experiences : [],
             };
           });
           setAlumniList(mapped);
+        } else {
+          setAlumniList([]);
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        setAlumniList([]);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, []);
 
   const filteredAlumni = alumniList.filter((item) => {
@@ -166,7 +181,23 @@ export default function AlumniDirectoryPage() {
         </div>
 
         {/* Alumni List Grid (Complete Cards with Photos & Social Links) */}
-        {filteredAlumni.length === 0 ? (
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="bg-white rounded-2xl border border-slate-200 p-6 animate-pulse space-y-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-full bg-slate-200" />
+                  <div className="space-y-2 flex-1">
+                    <div className="h-4 bg-slate-200 rounded w-3/4" />
+                    <div className="h-3 bg-slate-100 rounded w-1/2" />
+                  </div>
+                </div>
+                <div className="h-3 bg-slate-100 rounded w-full" />
+                <div className="h-3 bg-slate-100 rounded w-5/6" />
+              </div>
+            ))}
+          </div>
+        ) : filteredAlumni.length === 0 ? (
           <div className="p-12 text-center bg-white rounded-2xl border border-dashed border-[#CBD5E1] space-y-3">
             <div className="w-12 h-12 mx-auto rounded-full bg-slate-100 flex items-center justify-center text-[#64748B]">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -187,7 +218,7 @@ export default function AlumniDirectoryPage() {
               >
                 {/* 1. Header Card: Avatar & Badges */}
                 <div className="flex items-start gap-4">
-                  <Link href={`/alumni/${alumni.id}`} className="relative shrink-0 group">
+                  <Link href={getAlumniProfileUrl(alumni)} className="relative shrink-0 group">
                     <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow-xs bg-slate-100 group-hover:ring-2 group-hover:ring-[#0D9488] transition-all">
                       <Image
                         src={alumni.avatar}
@@ -211,7 +242,7 @@ export default function AlumniDirectoryPage() {
                   <div className="min-w-0 flex-1 space-y-1">
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <h2 className="text-base font-bold text-[#0F172A] leading-snug hover:text-[#0D9488] transition-colors">
-                        <Link href={`/alumni/${alumni.id}`}>
+                        <Link href={getAlumniProfileUrl(alumni)}>
                           {alumni.name}
                         </Link>
                       </h2>
@@ -329,7 +360,7 @@ export default function AlumniDirectoryPage() {
                   </div>
 
                   <Link
-                    href={`/alumni/${alumni.id}`}
+                    href={getAlumniProfileUrl(alumni)}
                     className="inline-flex items-center px-4 py-1.5 text-xs font-bold text-[#0D9488] bg-emerald-50 hover:bg-[#0D9488] hover:text-white rounded-full transition-colors border border-emerald-200 shadow-xs"
                   >
                     Lihat Profil
