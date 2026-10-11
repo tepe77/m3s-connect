@@ -170,7 +170,13 @@ class ForumController extends Controller
             'category_id' => 'required|uuid|exists:forum_categories,id',
             'title' => 'required|string|max:255',
             'body' => 'required|string',
+            'is_pinned' => 'nullable|boolean',
         ]);
+
+        $isPinned = false;
+        if ($request->user() && $request->user()->isModerator() && !empty($validated['is_pinned'])) {
+            $isPinned = (bool) $validated['is_pinned'];
+        }
 
         $slug = Str::slug($validated['title']) . '-' . Str::lower(Str::random(5));
 
@@ -181,7 +187,7 @@ class ForumController extends Controller
             'slug' => $slug,
             'body' => $validated['body'],
             'status' => ForumThreadStatus::PUBLISHED,
-            'is_pinned' => false,
+            'is_pinned' => $isPinned,
             'is_locked' => false,
             'views_count' => 1,
             'last_post_at' => now(),
@@ -210,7 +216,7 @@ class ForumController extends Controller
             ], 404);
         }
 
-        if ($thread->is_locked) {
+        if ($thread->is_locked && !$request->user()->isModerator()) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Topik ini telah dikunci oleh moderator.',
@@ -422,6 +428,140 @@ class ForumController extends Controller
             'data' => [
                 'views_count' => $thread->views_count,
             ],
+        ]);
+    }
+
+    /**
+     * Toggle pin status on a thread (Staff only: Admin/Moderator).
+     */
+    public function togglePin(Request $request, string $threadId): JsonResponse
+    {
+        $user = $request->user();
+        if (!$user || !$user->isModerator()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Akses ditolak. Tindakan ini memerlukan hak akses Moderator atau Administrator.',
+            ], 403);
+        }
+
+        $thread = Str::isUuid($threadId)
+            ? ForumThread::find($threadId)
+            : ForumThread::where('slug', $threadId)->first();
+
+        if (!$thread) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Topik diskusi tidak ditemukan.',
+            ], 404);
+        }
+
+        $thread->is_pinned = !$thread->is_pinned;
+        $thread->save();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => $thread->is_pinned ? 'Topik berhasil disematkan di bagian atas forum.' : 'Topik berhasil dilepas dari sematan.',
+            'data' => [
+                'is_pinned' => $thread->is_pinned,
+            ],
+        ]);
+    }
+
+    /**
+     * Toggle lock status on a thread (Staff only: Admin/Moderator).
+     */
+    public function toggleLock(Request $request, string $threadId): JsonResponse
+    {
+        $user = $request->user();
+        if (!$user || !$user->isModerator()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Akses ditolak. Tindakan ini memerlukan hak akses Moderator atau Administrator.',
+            ], 403);
+        }
+
+        $thread = Str::isUuid($threadId)
+            ? ForumThread::find($threadId)
+            : ForumThread::where('slug', $threadId)->first();
+
+        if (!$thread) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Topik diskusi tidak ditemukan.',
+            ], 404);
+        }
+
+        $thread->is_locked = !$thread->is_locked;
+        $thread->save();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => $thread->is_locked ? 'Diskusi topik ini berhasil dikunci oleh moderator.' : 'Diskusi topik ini berhasil dibuka kembali.',
+            'data' => [
+                'is_locked' => $thread->is_locked,
+            ],
+        ]);
+    }
+
+    /**
+     * Delete/takedown a thread (Author or Staff: Admin/Moderator).
+     */
+    public function destroyThread(Request $request, string $threadId): JsonResponse
+    {
+        $user = $request->user();
+        $thread = Str::isUuid($threadId)
+            ? ForumThread::find($threadId)
+            : ForumThread::where('slug', $threadId)->first();
+
+        if (!$thread) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Topik diskusi tidak ditemukan.',
+            ], 404);
+        }
+
+        if (!$user || (!$user->isModerator() && $thread->user_id !== $user->id)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Akses ditolak. Anda tidak memiliki izin untuk menghapus topik ini.',
+            ], 403);
+        }
+
+        $thread->delete();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Topik diskusi berhasil dihapus dari forum.',
+        ]);
+    }
+
+    /**
+     * Delete/takedown a post/reply (Author or Staff: Admin/Moderator).
+     */
+    public function destroyPost(Request $request, string $postId): JsonResponse
+    {
+        $user = $request->user();
+        $post = ForumPost::find($postId);
+
+        if (!$post) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Balasan tidak ditemukan.',
+            ], 404);
+        }
+
+        if (!$user || (!$user->isModerator() && $post->user_id !== $user->id)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Akses ditolak. Anda tidak memiliki izin untuk menghapus balasan ini.',
+            ], 403);
+        }
+
+        $post->delete();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Balasan berhasil dihapus dari diskusi.',
         ]);
     }
 }

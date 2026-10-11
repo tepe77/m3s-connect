@@ -13,6 +13,7 @@ import {
   Send,
   X,
   MessageSquare,
+  Trash2,
 } from "lucide-react";
 
 import { ForumAuthor, ForumReply } from "@/data/forumData";
@@ -24,6 +25,8 @@ import { Textarea } from "@/components/ui/textarea";
 interface ThreadedRepliesStreamProps {
   replies: ForumReply[];
   currentUserId?: string | null;
+  canModerate?: boolean;
+  onDeleteReply?: (replyId: string) => void;
   onLikeReply: (replyId: string) => void;
   onShareReply: (reply: ForumReply) => void;
   onSubmitReply: (
@@ -40,6 +43,9 @@ interface ReplyTreeNode {
 
 export function ThreadedRepliesStream({
   replies,
+  currentUserId,
+  canModerate,
+  onDeleteReply,
   onLikeReply,
   onShareReply,
   onSubmitReply,
@@ -284,16 +290,36 @@ export function ThreadedRepliesStream({
                   )}
                 </div>
 
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onShareReply(parent)}
-                  className="h-7 px-2.5 rounded-full text-xs text-slate-500 hover:text-slate-800 gap-1"
-                >
-                  <Share2 className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Bagikan</span>
-                </Button>
+                <div className="flex items-center gap-1.5">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onShareReply(parent)}
+                    className="h-7 px-2.5 rounded-full text-xs text-slate-500 hover:text-slate-800 gap-1"
+                  >
+                    <Share2 className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">Bagikan</span>
+                  </Button>
+
+                  {(canModerate || currentUserId === parent.author.id) && onDeleteReply && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        if (window.confirm("Apakah Anda yakin ingin menghapus balasan ini dari diskusi?")) {
+                          onDeleteReply(parent.id);
+                        }
+                      }}
+                      className="h-7 px-2.5 rounded-full text-xs text-rose-500 hover:text-rose-700 hover:bg-rose-50 gap-1"
+                      title="Hapus Balasan"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">Hapus</span>
+                    </Button>
+                  )}
+                </div>
               </div>
 
               {/* Inline Quick Reply Composer under Parent */}
@@ -472,15 +498,34 @@ export function ThreadedRepliesStream({
                               </Button>
                             </div>
 
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => onShareReply(child)}
-                              className="h-6 px-2 rounded-full text-[11px] text-slate-400 hover:text-slate-700"
-                            >
-                              <Share2 className="w-3 h-3" />
-                            </Button>
+                            <div className="flex items-center gap-1">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => onShareReply(child)}
+                                className="h-6 px-2 rounded-full text-[11px] text-slate-400 hover:text-slate-700"
+                              >
+                                <Share2 className="w-3 h-3" />
+                              </Button>
+
+                              {(canModerate || currentUserId === child.author.id) && onDeleteReply && (
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    if (window.confirm("Apakah Anda yakin ingin menghapus tanggapan ini?")) {
+                                      onDeleteReply(child.id);
+                                    }
+                                  }}
+                                  className="h-6 px-1.5 rounded-full text-[11px] text-rose-500 hover:text-rose-700 hover:bg-rose-50"
+                                  title="Hapus Tanggapan"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </Button>
+                              )}
+                            </div>
                           </div>
 
                           {/* Inline Quick Reply Composer under Child */}

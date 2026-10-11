@@ -208,7 +208,7 @@ class ForumCategoryResource extends Resource
                     ->label('Lihat Forum')
                     ->icon('heroicon-m-arrow-top-right-on-square')
                     ->color('gray')
-                    ->url(fn (ForumCategory $record): string => "http://localhost:3000/forum?category={$record->slug}")
+                    ->url(fn (ForumCategory $record): string => rtrim(config('app.frontend_url', env('FRONTEND_URL', 'https://alumni.mayoga.sch.id')), '/') . ($record->slug ? "/forum?category={$record->slug}" : '/forum'))
                     ->openUrlInNewTab(),
 
                 Tables\Actions\EditAction::make(),

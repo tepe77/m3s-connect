@@ -13,16 +13,99 @@ import {
 } from "lucide-react";
 import { AlumniItem, getAlumniProfileUrl } from "@/data/alumniData";
 import { SpotlightCard } from "@/components/velora/spotlight-card";
+import { API_BASE_URL, getAssetUrl } from "@/lib/api";
 
 interface HomeAlumniCarouselProps {
-  alumniList: AlumniItem[];
+  alumniList?: AlumniItem[];
+}
+
+function resolveAvatar(avatar: string | undefined | null, name: string): string {
+  if (avatar) {
+    const match = avatar.match(/(avatar-[a-z0-9-]+)\.(jpg|png|webp)/i);
+    if (match) return `/images/${match[0]}`;
+    return getAssetUrl(avatar);
+  }
+  const n = (name || "").toLowerCase();
+  if (n.includes("siti")) return "/images/avatar-siti.jpg";
+  if (n.includes("rina")) return "/images/avatar-rina.jpg";
+  if (n.includes("budi")) return "/images/avatar-budi.jpg";
+  if (n.includes("farhan")) return "/images/avatar-farhan.jpg";
+  if (n.includes("nurul")) return "/images/avatar-nurul.jpg";
+  return "/images/avatar-ahmad.jpg";
 }
 
 export function HomeAlumniCarousel({ alumniList }: HomeAlumniCarouselProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [items, setItems] = useState<AlumniItem[]>(alumniList && alumniList.length > 0 ? alumniList : []);
+  const [loading, setLoading] = useState(!alumniList || alumniList.length === 0);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
+
+  // Client-side fallback fetch if SSR returned empty
+  useEffect(() => {
+    if (alumniList && alumniList.length > 0) {
+      setItems(alumniList);
+      setLoading(false);
+      return;
+    }
+
+    let isMounted = true;
+    const fetchFeaturedAlumni = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch(`${API_BASE_URL}/alumni?featured=true&per_page=6`, {
+          cache: "no-store",
+        });
+        if (res.ok && isMounted) {
+          const json = await res.json();
+          const list = json?.data?.data || json?.data;
+          if (Array.isArray(list) && list.length > 0) {
+            const mapped: AlumniItem[] = list.map((item: any) => {
+              const rawName = item.user?.name || item.name || "Alumni Terdaftar";
+              const generatedSlug = rawName
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, "-")
+                .replace(/(^-|-$)/g, "");
+
+              return {
+                id: item.id,
+                slug: item.slug || generatedSlug || item.id,
+                name: rawName,
+                email: item.user?.email || "",
+                avatar: resolveAvatar(item.user?.avatar || item.avatar_url, rawName),
+                graduationYear: item.graduation_year || 2015,
+                graduationClass: item.graduation_class || "",
+                alumniIdentifier: item.alumni_identifier || item.nis || "",
+                isVerified: Boolean(item.is_verified || item.verified_at),
+                occupation: item.profession || item.occupation || "Alumni Terdaftar",
+                company: item.company || "",
+                city: item.current_city || item.city || "",
+                country: item.current_country || item.country || "Indonesia",
+                bio: item.bio || "",
+                skills: Array.isArray(item.skills)
+                  ? item.skills.map((s: any) => (typeof s === "string" ? s : s.name))
+                  : [],
+                socialLinks: Array.isArray(item.social_links)
+                  ? item.social_links.map((s: any) => ({ platform: s.platform, url: s.url }))
+                  : [],
+              };
+            });
+            setItems(mapped);
+          }
+        }
+      } catch (e) {
+        console.error("Error fetching featured alumni:", e);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    fetchFeaturedAlumni();
+    return () => {
+      isMounted = false;
+    };
+  }, [alumniList]);
 
   const checkScrollState = useCallback(() => {
     const el = scrollRef.current;
@@ -38,8 +121,8 @@ export function HomeAlumniCarousel({ alumniList }: HomeAlumniCarouselProps) {
     const cardWidth = el.querySelector("[data-alumni-card]")?.clientWidth || 280;
     const gap = 14;
     const newIndex = Math.round(el.scrollLeft / (cardWidth + gap));
-    setActiveIndex(Math.min(Math.max(0, newIndex), alumniList.length - 1));
-  }, [alumniList.length]);
+    setActiveIndex(Math.min(Math.max(0, newIndex), Math.max(0, items.length - 1)));
+  }, [items.length]);
 
   useEffect(() => {
     checkScrollState();
@@ -79,7 +162,34 @@ export function HomeAlumniCarousel({ alumniList }: HomeAlumniCarouselProps) {
     el.scrollTo({ left: index * step, behavior: "smooth" });
   };
 
-  if (!alumniList || alumniList.length === 0) {
+  if (loading && items.length === 0) {
+    return (
+      <div className="relative flex flex-col justify-between flex-1">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg font-bold text-slate-900 tracking-tight">Alumni Pilihan</h2>
+            <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+              Terverifikasi
+            </span>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          {[1, 2].map((i) => (
+            <div key={i} className="p-5 rounded-2xl bg-white border border-slate-200/80 animate-pulse space-y-4">
+              <div className="w-16 h-16 rounded-full bg-slate-200 mx-auto" />
+              <div className="space-y-2 text-center">
+                <div className="h-3 w-32 bg-slate-200 rounded mx-auto" />
+                <div className="h-2 w-24 bg-slate-100 rounded mx-auto" />
+              </div>
+              <div className="h-8 bg-slate-100 rounded-xl mt-4" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (items.length === 0) {
     return (
       <div className="bg-white p-8 rounded-2xl border border-slate-200/90 text-center text-xs text-slate-500 shadow-xs">
         Belum ada profil alumni pilihan yang dipublikasikan.
@@ -102,7 +212,7 @@ export function HomeAlumniCarousel({ alumniList }: HomeAlumniCarouselProps) {
 
         <div className="flex items-center gap-3">
           {/* Carousel Next / Prev Controls */}
-          {alumniList.length > 1 && (
+          {items.length > 1 && (
             <div className="flex items-center gap-1.5">
               <button
                 type="button"
@@ -143,7 +253,7 @@ export function HomeAlumniCarousel({ alumniList }: HomeAlumniCarouselProps) {
         className="flex items-stretch gap-3.5 overflow-x-auto scroll-smooth pb-2 pt-0.5 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-none snap-x snap-mandatory"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
-        {alumniList.map((alumni) => (
+        {items.map((alumni) => (
           <div
             key={alumni.id}
             data-alumni-card
@@ -227,9 +337,9 @@ export function HomeAlumniCarousel({ alumniList }: HomeAlumniCarouselProps) {
       </div>
 
       {/* Pagination Dot Indicators (visible on mobile & tablet) */}
-      {alumniList.length > 1 && (
+      {items.length > 1 && (
         <div className="flex sm:hidden items-center justify-center gap-1.5 pt-3">
-          {alumniList.map((_, idx) => (
+          {items.map((_, idx) => (
             <button
               key={idx}
               type="button"

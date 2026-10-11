@@ -7,6 +7,7 @@ import { Container } from "@/components/ui/Container";
 import { ForumAuthor, addTopic } from "@/data/forumData";
 import { API_BASE_URL } from "@/lib/api";
 import { RichContentRenderer } from "@/components/forum/RichContentRenderer";
+import { Pin } from "lucide-react";
 
 export default function NewTopicPage() {
   const router = useRouter();
@@ -19,6 +20,7 @@ export default function NewTopicPage() {
   const [categoryId, setCategoryId] = useState("");
   const [tagInput, setTagInput] = useState("Reuni2026, Mayoga");
   const [body, setBody] = useState("");
+  const [isPinned, setIsPinned] = useState(false);
   const [activeTab, setActiveTab] = useState<"write" | "preview">("write");
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -159,6 +161,7 @@ export default function NewTopicPage() {
 
       const token = typeof window !== "undefined" ? localStorage.getItem("m3s_token") : null;
       let createdSlug = "";
+      const isStaff = currentUser?.role === "moderator" || currentUser?.role === "admin";
 
       if (token && selectedCat) {
         const res = await fetch(`${API_BASE_URL}/forum/threads`, {
@@ -172,6 +175,7 @@ export default function NewTopicPage() {
             category_id: selectedCat.id,
             title: title.trim(),
             body: body.trim(),
+            ...(isStaff && isPinned ? { is_pinned: true } : {}),
           }),
         });
 
@@ -191,7 +195,7 @@ export default function NewTopicPage() {
           categoryColor: selectedCat.color || "#0D9488",
           author: currentUser,
           body: body.trim(),
-          isPinned: false,
+          isPinned: isStaff ? isPinned : false,
           isLocked: false,
           tags: tags.length > 0 ? tags : ["AlumniMayoga"],
         });
@@ -741,6 +745,32 @@ export default function NewTopicPage() {
                   </div>
                 )}
               </div>
+
+              {/* Moderator Option: Sematkan Topik */}
+              {(currentUser?.role === "moderator" || currentUser?.role === "admin") && (
+                <div className="p-3.5 bg-amber-50/80 border border-amber-200/90 rounded-2xl flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center shrink-0">
+                      <Pin className="w-4 h-4 fill-amber-700 text-amber-700" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-slate-900">Sematkan Topik (Opsi Moderator)</p>
+                      <p className="text-[11px] text-slate-500">
+                        Topik akan disematkan di baris paling atas daftar forum untuk informasi penting/pengumuman.
+                      </p>
+                    </div>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                    <input
+                      type="checkbox"
+                      checked={isPinned}
+                      onChange={(e) => setIsPinned(e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-slate-200 peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
+                  </label>
+                </div>
+              )}
 
               {/* Action Buttons */}
               <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-100">

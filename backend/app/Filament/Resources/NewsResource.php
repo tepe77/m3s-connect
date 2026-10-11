@@ -255,7 +255,7 @@ class NewsResource extends Resource
                     ->label('Lihat')
                     ->icon('heroicon-m-arrow-top-right-on-square')
                     ->color('gray')
-                    ->url(fn (News $record): string => "http://localhost:3000/news/{$record->slug}")
+                    ->url(fn (News $record): string => rtrim(config('app.frontend_url', env('FRONTEND_URL', 'https://alumni.mayoga.sch.id')), '/') . ($record->slug ? "/news/{$record->slug}" : '/news'))
                     ->openUrlInNewTab(),
 
                 Tables\Actions\EditAction::make(),

@@ -27,6 +27,8 @@ class AlumniProfile extends Model
         'occupation',
         'company',
         'visibility',
+        'is_featured',
+        'featured_order',
         'verified_at',
     ];
 
@@ -36,6 +38,8 @@ class AlumniProfile extends Model
             'graduation_year' => 'integer',
             'birth_date' => 'date',
             'verified_at' => 'datetime',
+            'is_featured' => 'boolean',
+            'featured_order' => 'integer',
             'visibility' => ProfileVisibility::class,
         ];
     }
@@ -116,5 +120,10 @@ class AlumniProfile extends Model
     public function socialLinks(): HasMany
     {
         return $this->hasMany(AlumniSocialLink::class);
+    }
+
+    public function scopeFeatured($query)
+    {
+        return $query->where('is_featured', true);
     }
 }

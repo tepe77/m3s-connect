@@ -51,7 +51,27 @@ class AlumniController extends Controller
             $query->where('occupation', 'like', "%{$request->occupation}%");
         }
 
-        $alumni = $query->latest('verified_at')->paginate($request->integer('per_page', 24));
+        // Filter featured alumni for homepage carousel
+        if ($request->boolean('featured')) {
+            $hasFeatured = (clone $query)->where('is_featured', true)->exists();
+            if ($hasFeatured) {
+                $query->where('is_featured', true)
+                      ->orderByRaw('featured_order IS NULL, featured_order ASC')
+                      ->latest('verified_at');
+            } else {
+                // Smart fallback: verified alumni with complete profile (occupation & bio)
+                $query->whereNotNull('verified_at')
+                      ->whereNotNull('occupation')
+                      ->whereNotNull('bio')
+                      ->latest('verified_at');
+            }
+        } else {
+            $query->orderByDesc('is_featured')
+                  ->orderByRaw('featured_order IS NULL, featured_order ASC')
+                  ->latest('verified_at');
+        }
+
+        $alumni = $query->paginate($request->integer('per_page', 24));
 
         return response()->json([
             'status' => 'success',

@@ -42,6 +42,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 
 interface ReplyComposerProps {
   isLocked: boolean;
+  canReplyLocked?: boolean;
   replyTarget?: { author: ForumAuthor; postId: string } | null;
   onClearTarget?: () => void;
   onSubmitReply: (body: string, parentId?: string, parentAuthorName?: string) => Promise<boolean>;
@@ -49,6 +50,7 @@ interface ReplyComposerProps {
 
 export function ReplyComposer({
   isLocked,
+  canReplyLocked,
   replyTarget,
   onClearTarget,
   onSubmitReply,
@@ -187,8 +189,10 @@ export function ReplyComposer({
     setIsVideoDialogOpen(false);
   };
 
-  // Case 1: Topic is locked
-  if (isLocked) {
+  const isStaff = currentUser?.role === "moderator" || currentUser?.role === "admin" || Boolean(canReplyLocked);
+
+  // Case 1: Topic is locked AND user is not a staff/moderator
+  if (isLocked && !isStaff) {
     return (
       <Card className="bg-slate-50 border-slate-200 text-center p-6 sm:p-8">
         <div className="w-12 h-12 rounded-2xl bg-slate-200 text-slate-600 flex items-center justify-center mx-auto mb-3">
@@ -232,6 +236,16 @@ export function ReplyComposer({
   return (
     <Card className="bg-white border-[#E2E8F0] shadow-sm overflow-hidden">
       <CardContent className="p-5 sm:p-7 space-y-4">
+        {/* Moderator Notice when replying in a locked topic */}
+        {isLocked && (
+          <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-center gap-2.5">
+            <Lock className="w-4 h-4 text-amber-600 shrink-0" />
+            <span>
+              <strong>Topik Terkunci:</strong> Anda membalas sebagai {currentUser?.role === "admin" ? "Administrator" : "Moderator Komunitas"}. Balasan ini dapat berfungsi sebagai catatan penutup atau arahan resmi.
+            </span>
+          </div>
+        )}
+
         {/* Header Bar: Author Info, Replying Badge, and Mode Tabs */}
         <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
           <div className="flex items-center gap-3">

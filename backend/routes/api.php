@@ -75,6 +75,10 @@ Route::prefix('v1')->group(function () {
             Route::post('/threads/{id}/bookmark', [ForumController::class, 'toggleThreadBookmark']);
             Route::post('/posts/{id}/like', [ForumController::class, 'togglePostLike']);
             Route::post('/threads/{id}/view', [ForumController::class, 'recordView']);
+            Route::post('/threads/{id}/pin', [ForumController::class, 'togglePin']);
+            Route::post('/threads/{id}/lock', [ForumController::class, 'toggleLock']);
+            Route::delete('/threads/{id}', [ForumController::class, 'destroyThread']);
+            Route::delete('/posts/{id}', [ForumController::class, 'destroyPost']);
         });
     });
 

@@ -56,6 +56,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Frontend Application URL
+    |--------------------------------------------------------------------------
+    |
+    | URL publik untuk frontend web portal (Next.js) yang digunakan untuk
+    | tautan pratinjau (preview), email verifikasi, dan referensi eksternal.
+    |
+    */
+
+    'frontend_url' => env('FRONTEND_URL', (env('APP_ENV') === 'local' && !str_contains(env('APP_URL', ''), 'mayoga.sch.id')) ? 'http://localhost:3000' : 'https://alumni.mayoga.sch.id'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |

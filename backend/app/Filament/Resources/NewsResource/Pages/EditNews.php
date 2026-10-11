@@ -13,6 +13,12 @@ class EditNews extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            Actions\Action::make('preview_portal')
+                ->label('Lihat di Portal')
+                ->icon('heroicon-m-arrow-top-right-on-square')
+                ->color('gray')
+                ->url(fn (): string => rtrim(config('app.frontend_url', env('FRONTEND_URL', 'https://alumni.mayoga.sch.id')), '/') . ($this->record->slug ? "/news/{$this->record->slug}" : '/news'))
+                ->openUrlInNewTab(),
             Actions\DeleteAction::make(),
         ];
     }

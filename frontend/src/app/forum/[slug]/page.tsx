@@ -6,7 +6,11 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   Pin,
+  PinOff,
   Lock,
+  Unlock,
+  Trash2,
+  AlertTriangle,
   Bookmark,
   Share2,
   Check,
@@ -68,8 +72,14 @@ export default function ForumTopicPage({ params }: ForumTopicPageProps) {
     url: "",
   });
 
+  // Moderator actions state
+  const [isModerating, setIsModerating] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
   // Bookmark notification toast
   const [bookmarkToast, setBookmarkToast] = useState<string | null>(null);
+
+  const isStaff = currentUser?.role === "moderator" || currentUser?.role === "admin";
 
   const viewIncrementedRef = useRef(false);
 
@@ -331,6 +341,108 @@ export default function ForumTopicPage({ params }: ForumTopicPageProps) {
     }
   };
 
+  // Moderator API handlers
+  const handleTogglePin = async () => {
+    if (!topic || !isStaff) return;
+    setIsModerating(true);
+    try {
+      const token = typeof window !== "undefined" ? localStorage.getItem("m3s_token") : null;
+      if (token) {
+        const res = await fetch(`${API_BASE_URL}/forum/threads/${topic.id}/pin`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (res.ok) {
+          const json = await res.json();
+          setTopic((prev) => (prev ? { ...prev, isPinned: json.is_pinned } : null));
+        }
+      }
+    } catch (e) {
+      console.error("Gagal mengubah status sematan:", e);
+    } finally {
+      setIsModerating(false);
+    }
+  };
+
+  const handleToggleLock = async () => {
+    if (!topic || !isStaff) return;
+    setIsModerating(true);
+    try {
+      const token = typeof window !== "undefined" ? localStorage.getItem("m3s_token") : null;
+      if (token) {
+        const res = await fetch(`${API_BASE_URL}/forum/threads/${topic.id}/lock`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (res.ok) {
+          const json = await res.json();
+          setTopic((prev) => (prev ? { ...prev, isLocked: json.is_locked } : null));
+        }
+      }
+    } catch (e) {
+      console.error("Gagal mengubah status kunci topik:", e);
+    } finally {
+      setIsModerating(false);
+    }
+  };
+
+  const handleDeleteThread = async () => {
+    if (!topic || !isStaff) return;
+    setIsModerating(true);
+    try {
+      const token = typeof window !== "undefined" ? localStorage.getItem("m3s_token") : null;
+      if (token) {
+        const res = await fetch(`${API_BASE_URL}/forum/threads/${topic.id}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (res.ok) {
+          router.push("/forum");
+          return;
+        }
+      }
+    } catch (e) {
+      console.error("Gagal menghapus topik:", e);
+    } finally {
+      setIsModerating(false);
+      setShowDeleteModal(false);
+    }
+  };
+
+  const handleDeletePost = async (postId: string) => {
+    if (!topic || !isStaff) return;
+    try {
+      const token = typeof window !== "undefined" ? localStorage.getItem("m3s_token") : null;
+      if (token) {
+        const res = await fetch(`${API_BASE_URL}/forum/posts/${postId}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (res.ok) {
+          await refreshTopic();
+        }
+      }
+    } catch (e) {
+      console.error("Gagal menghapus balasan:", e);
+    }
+  };
+
   const formatCreationDate = (dateStr: string) => {
     try {
       return new Date(dateStr).toLocaleDateString("id-ID", {
@@ -430,6 +542,53 @@ export default function ForumTopicPage({ params }: ForumTopicPageProps) {
             {topic.title}
           </span>
         </nav>
+
+        {/* Moderator Action Toolbar */}
+        {isStaff && topic && (
+          <div className="mb-6 p-3.5 sm:p-4 rounded-2xl bg-amber-50/90 border border-amber-200 flex flex-wrap items-center justify-between gap-3 shadow-2xs">
+            <div className="flex items-center gap-2 text-xs font-bold text-amber-950">
+              <ShieldCheck className="w-4 h-4 text-amber-700" />
+              <span>Panel Moderasi ({currentUser?.role === "admin" ? "Administrator" : "Moderator"})</span>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={isModerating}
+                onClick={handleTogglePin}
+                className="h-8 rounded-full text-xs font-bold gap-1.5 border-amber-300 bg-white hover:bg-amber-100 text-amber-900"
+              >
+                {topic.isPinned ? <PinOff className="w-3.5 h-3.5 text-amber-700" /> : <Pin className="w-3.5 h-3.5 text-amber-700" />}
+                <span>{topic.isPinned ? "Lepas Sematan" : "Sematkan Topik"}</span>
+              </Button>
+
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={isModerating}
+                onClick={handleToggleLock}
+                className="h-8 rounded-full text-xs font-bold gap-1.5 border-amber-300 bg-white hover:bg-amber-100 text-amber-900"
+              >
+                {topic.isLocked ? <Unlock className="w-3.5 h-3.5 text-amber-700" /> : <Lock className="w-3.5 h-3.5 text-amber-700" />}
+                <span>{topic.isLocked ? "Buka Kunci" : "Kunci Topik"}</span>
+              </Button>
+
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={isModerating}
+                onClick={() => setShowDeleteModal(true)}
+                className="h-8 rounded-full text-xs font-bold gap-1.5 border-rose-200 bg-white hover:bg-rose-50 text-rose-700"
+              >
+                <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                <span>Hapus Topik</span>
+              </Button>
+            </div>
+          </div>
+        )}
 
         {/* 2. Topic Header Title & Badges */}
         <header className="mb-8 space-y-4">
@@ -779,6 +938,8 @@ export default function ForumTopicPage({ params }: ForumTopicPageProps) {
                 onLikeReply={handleLikeReply}
                 onShareReply={handleShareReply}
                 onSubmitReply={handleAddReply}
+                canModerate={isStaff}
+                onDeleteReply={handleDeletePost}
               />
             </div>
 
@@ -789,6 +950,7 @@ export default function ForumTopicPage({ params }: ForumTopicPageProps) {
                 replyTarget={replyTarget}
                 onClearTarget={() => setReplyTarget(null)}
                 onSubmitReply={handleAddReply}
+                canReplyLocked={isStaff}
               />
             </div>
           </>
@@ -802,6 +964,45 @@ export default function ForumTopicPage({ params }: ForumTopicPageProps) {
           url={shareData.url}
           subtitle={shareData.subtitle}
         />
+
+        {/* Delete Confirmation Modal */}
+        {showDeleteModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
+            <div className="w-full max-w-md p-6 bg-white rounded-3xl border border-slate-200 shadow-2xl space-y-4">
+              <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 border border-rose-100 flex items-center justify-center mx-auto">
+                <AlertTriangle className="w-6 h-6" />
+              </div>
+              <div className="text-center space-y-2">
+                <h3 className="text-base font-bold text-slate-900">Konfirmasi Hapus Topik</h3>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Apakah Anda yakin ingin menghapus topik diskusi <strong className="text-slate-800">&ldquo;{topic.title}&rdquo;</strong>? Tindakan ini akan mengarsipkan topik beserta balasannya dari forum alumni.
+                </p>
+              </div>
+              <div className="pt-2 flex items-center justify-end gap-2.5">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={isModerating}
+                  onClick={() => setShowDeleteModal(false)}
+                  className="rounded-full px-4 text-xs font-semibold"
+                >
+                  Batal
+                </Button>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="sm"
+                  disabled={isModerating}
+                  onClick={handleDeleteThread}
+                  className="rounded-full px-5 text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white"
+                >
+                  {isModerating ? "Menghapus..." : "Ya, Hapus Topik"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </Container>
     </div>
   );
