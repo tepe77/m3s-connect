@@ -6,14 +6,18 @@ import Image from "next/image";
 import { Container } from "@/components/ui/Container";
 import { NewsItem, NewsComment } from "@/data/newsData";
 import { API_BASE_URL } from "@/lib/api";
+import { mapNewsItem } from "./page";
 
 interface NewsDetailClientProps {
-  initialNews: NewsItem;
+  initialNews?: NewsItem | null;
+  slug: string;
 }
 
-export function NewsDetailClient({ initialNews }: NewsDetailClientProps) {
-  const [news, setNews] = useState<NewsItem>(initialNews);
-  const [comments, setComments] = useState<NewsComment[]>(initialNews.comments);
+export function NewsDetailClient({ initialNews, slug }: NewsDetailClientProps) {
+  const [news, setNews] = useState<NewsItem | null>(initialNews || null);
+  const [loading, setLoading] = useState<boolean>(!initialNews);
+  const [error, setError] = useState<boolean>(false);
+  const [comments, setComments] = useState<NewsComment[]>(initialNews?.comments || []);
 
   // Form State
   const [commentText, setCommentText] = useState("");
@@ -26,12 +30,53 @@ export function NewsDetailClient({ initialNews }: NewsDetailClientProps) {
   const [copiedLink, setCopiedLink] = useState(false);
 
   // Social share URL with hydration-safe initial state
-  const [shareUrl, setShareUrl] = useState(`https://m3s-connect.id/news/${news.slug}`);
+  const [shareUrl, setShareUrl] = useState(`https://alumni.mayoga.sch.id/news/${slug}`);
+
+  // Client-side fallback fetch if SSR was unable to fetch
+  useEffect(() => {
+    if (initialNews) {
+      setNews(initialNews);
+      setComments(initialNews.comments);
+      setLoading(false);
+      return;
+    }
+
+    let isMounted = true;
+    const fetchNews = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch(`${API_BASE_URL}/news/${slug}`, {
+          cache: "no-store",
+        });
+        if (res.ok && isMounted) {
+          const json = await res.json();
+          const apiData = json?.data;
+          if (apiData) {
+            const mapped = mapNewsItem(apiData);
+            setNews(mapped);
+            setComments(mapped.comments);
+            setError(false);
+            return;
+          }
+        }
+        if (isMounted) setError(true);
+      } catch {
+        if (isMounted) setError(true);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    fetchNews();
+    return () => {
+      isMounted = false;
+    };
+  }, [slug, initialNews]);
 
   // Fetch real-time live comments from backend API
   const fetchLiveComments = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/news/${initialNews.slug}`, {
+      const res = await fetch(`${API_BASE_URL}/news/${slug}`, {
         cache: "no-store",
       });
       if (res.ok) {
@@ -82,7 +127,55 @@ export function NewsDetailClient({ initialNews }: NewsDetailClientProps) {
     }
 
     fetchLiveComments();
-  }, [initialNews.slug]);
+  }, [slug]);
+
+  if (loading) {
+    return (
+      <div className="py-8 md:py-12 bg-[#F8FAFC]">
+        <Container size="default">
+          <div className="animate-pulse space-y-6 max-w-3xl mx-auto">
+            <div className="h-4 bg-slate-200 rounded w-48 mb-6" />
+            <div className="h-8 bg-slate-200 rounded w-3/4" />
+            <div className="h-4 bg-slate-200 rounded w-1/3" />
+            <div className="h-72 bg-slate-200 rounded-3xl" />
+            <div className="space-y-3 pt-4">
+              <div className="h-4 bg-slate-200 rounded w-full" />
+              <div className="h-4 bg-slate-200 rounded w-5/6" />
+              <div className="h-4 bg-slate-200 rounded w-4/6" />
+            </div>
+          </div>
+        </Container>
+      </div>
+    );
+  }
+
+  if (error || !news) {
+    return (
+      <div className="py-16 md:py-24 bg-[#F8FAFC]">
+        <Container size="default">
+          <div className="max-w-md mx-auto text-center bg-white p-8 rounded-3xl border border-slate-200 shadow-xs space-y-5">
+            <div className="w-16 h-16 mx-auto rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-2xl font-bold">
+              404
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-xl font-bold text-slate-900">Berita Tidak Ditemukan</h2>
+              <p className="text-sm text-slate-500 leading-relaxed">
+                Artikel berita atau pengumuman yang Anda cari tidak tersedia atau telah diarsipkan.
+              </p>
+            </div>
+            <div className="pt-2">
+              <Link
+                href="/news"
+                className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors shadow-xs"
+              >
+                Kembali ke Daftar Berita
+              </Link>
+            </div>
+          </div>
+        </Container>
+      </div>
+    );
+  }
 
   const handleCopyLink = () => {
     if (typeof window !== "undefined") {

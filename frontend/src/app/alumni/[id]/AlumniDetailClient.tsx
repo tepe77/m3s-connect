@@ -25,12 +25,19 @@ import {
   Lock,
   ExternalLink,
 } from "lucide-react";
+import { API_BASE_URL } from "@/lib/api";
+import { mapAlumniProfile } from "./page";
 
 interface AlumniDetailClientProps {
-  alumni: AlumniItem;
+  initialAlumni?: AlumniItem | null;
+  identifier: string;
 }
 
-export function AlumniDetailClient({ alumni }: AlumniDetailClientProps) {
+export function AlumniDetailClient({ initialAlumni, identifier }: AlumniDetailClientProps) {
+  const [alumni, setAlumni] = useState<AlumniItem | null>(initialAlumni || null);
+  const [loading, setLoading] = useState<boolean>(!initialAlumni);
+  const [error, setError] = useState<boolean>(false);
+
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
@@ -42,6 +49,44 @@ export function AlumniDetailClient({ alumni }: AlumniDetailClientProps) {
   const [messageBody, setMessageBody] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [sendSuccess, setSendSuccess] = useState(false);
+
+  // Client-side fallback fetch if SSR was unable to fetch
+  useEffect(() => {
+    if (initialAlumni) {
+      setAlumni(initialAlumni);
+      setLoading(false);
+      return;
+    }
+
+    let isMounted = true;
+    const fetchAlumni = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch(`${API_BASE_URL}/alumni/${identifier}`, {
+          cache: "no-store",
+        });
+        if (res.ok && isMounted) {
+          const json = await res.json();
+          const p = json?.data;
+          if (p) {
+            setAlumni(mapAlumniProfile(p));
+            setError(false);
+            return;
+          }
+        }
+        if (isMounted) setError(true);
+      } catch {
+        if (isMounted) setError(true);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    fetchAlumni();
+    return () => {
+      isMounted = false;
+    };
+  }, [identifier, initialAlumni]);
 
   useEffect(() => {
     try {
@@ -58,6 +103,57 @@ export function AlumniDetailClient({ alumni }: AlumniDetailClientProps) {
       // Graceful fallback
     }
   }, []);
+
+  if (loading) {
+    return (
+      <div className="py-8 md:py-12 bg-[#F8FAFC]">
+        <Container size="default">
+          <div className="animate-pulse space-y-6">
+            <div className="h-4 bg-slate-200 rounded w-48 mb-6" />
+            <div className="bg-white rounded-3xl border border-slate-200 p-8 space-y-6">
+              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+                <div className="w-24 h-24 rounded-full bg-slate-200 shrink-0" />
+                <div className="flex-1 space-y-3 w-full text-center sm:text-left">
+                  <div className="h-6 bg-slate-200 rounded w-1/3" />
+                  <div className="h-4 bg-slate-200 rounded w-1/4" />
+                  <div className="h-3 bg-slate-200 rounded w-1/2" />
+                </div>
+              </div>
+              <div className="h-20 bg-slate-100 rounded-xl" />
+            </div>
+          </div>
+        </Container>
+      </div>
+    );
+  }
+
+  if (error || !alumni) {
+    return (
+      <div className="py-16 md:py-24 bg-[#F8FAFC]">
+        <Container size="default">
+          <div className="max-w-md mx-auto text-center bg-white p-8 rounded-3xl border border-slate-200 shadow-xs space-y-5">
+            <div className="w-16 h-16 mx-auto rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
+              <Lock className="w-8 h-8 text-amber-600" />
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-xl font-bold text-slate-900">Profil Alumni Tidak Ditemukan</h2>
+              <p className="text-sm text-slate-500 leading-relaxed">
+                Profil alumni dengan pengenal <span className="font-semibold text-slate-700">&quot;{identifier}&quot;</span> tidak ditemukan, berstatus privat, atau telah diperbarui.
+              </p>
+            </div>
+            <div className="pt-2">
+              <Link
+                href="/alumni"
+                className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors shadow-xs"
+              >
+                Kembali ke Direktori Alumni
+              </Link>
+            </div>
+          </div>
+        </Container>
+      </div>
+    );
+  }
 
   const handleCopyLink = () => {
     if (typeof window !== "undefined") {

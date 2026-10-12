@@ -1,8 +1,19 @@
+const IS_PROD =
+  process.env.NODE_ENV === "production" ||
+  Boolean(process.env.VERCEL) ||
+  (typeof window !== "undefined" &&
+    (window.location.hostname.includes("mayoga.sch.id") ||
+      window.location.hostname.includes("vercel.app")));
+
+const DEFAULT_BACKEND = IS_PROD
+  ? "https://api-alumni.mayoga.sch.id"
+  : "http://localhost:8000";
+
 export const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL ||
   (process.env.NEXT_PUBLIC_API_URL
     ? process.env.NEXT_PUBLIC_API_URL.replace(/\/api\/v1\/?$/, "")
-    : "http://localhost:8000");
+    : DEFAULT_BACKEND);
 
 export const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || `${BACKEND_URL}/api/v1`;

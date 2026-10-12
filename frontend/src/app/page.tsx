@@ -94,9 +94,9 @@ async function getHomeAlumni(): Promise<AlumniItem[]> {
         return list.map((item: any) => ({
           id: item.id,
           slug: item.slug,
-          name: item.name,
+          name: item.user?.name || item.name || "Alumni Terdaftar",
           email: item.user?.email || "",
-          avatar: resolveAvatarImage(item.user?.avatar, item.name),
+          avatar: resolveAvatarImage(item.user?.avatar, item.user?.name || item.name),
           graduationYear: item.graduation_year || 2015,
           graduationClass: item.graduation_class || "",
           alumniIdentifier: item.alumni_identifier || item.nis || "",
