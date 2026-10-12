@@ -4,9 +4,8 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Container } from "@/components/ui/Container";
-import { NewsItem, NewsComment } from "@/data/newsData";
+import { NewsItem, NewsComment, mapNewsItem } from "@/data/newsData";
 import { API_BASE_URL } from "@/lib/api";
-import { mapNewsItem } from "./page";
 
 interface NewsDetailClientProps {
   initialNews?: NewsItem | null;

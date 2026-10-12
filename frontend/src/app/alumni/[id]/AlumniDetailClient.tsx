@@ -26,7 +26,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { API_BASE_URL } from "@/lib/api";
-import { mapAlumniProfile } from "./page";
+import { mapAlumniProfile } from "@/data/alumniData";
 
 interface AlumniDetailClientProps {
   initialAlumni?: AlumniItem | null;
