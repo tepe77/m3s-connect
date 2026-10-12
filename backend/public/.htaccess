@@ -1,8 +1,22 @@
-<IfModule mod_rewrite.c>
-    <IfModule mod_negotiation.c>
-        Options -MultiViews -Indexes
-    </IfModule>
+# Prevent Directory Listing
+Options -Indexes -MultiViews
 
+# Disable Server Signature
+ServerSignature Off
+
+# Block Access to Hidden Files (.env, .git, etc.)
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Block Access to Sensitive Files and Backups
+<FilesMatch "(composer\.(json|lock)|package(-lock)?\.json|\.(env|sql|log|bak|yml|yaml|ini|conf))$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+<IfModule mod_rewrite.c>
     RewriteEngine On
 
     # Handle Authorization Header

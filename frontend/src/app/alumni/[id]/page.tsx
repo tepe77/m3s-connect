@@ -1,4 +1,3 @@
-import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { AlumniItem, mapAlumniProfile } from "@/data/alumniData";
 import { AlumniDetailClient } from "./AlumniDetailClient";

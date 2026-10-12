@@ -1,4 +1,3 @@
-import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { NewsItem, mapNewsItem } from "@/data/newsData";
 import { NewsDetailClient } from "./NewsDetailClient";

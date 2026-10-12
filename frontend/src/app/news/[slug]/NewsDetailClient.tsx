@@ -12,6 +12,19 @@ interface NewsDetailClientProps {
   slug: string;
 }
 
+function renderHtmlParagraph(content: string | undefined) {
+  if (!content) return null;
+  if (/<[a-z][\s\S]*>/i.test(content)) {
+    return (
+      <div
+        dangerouslySetInnerHTML={{ __html: content }}
+        className="space-y-4 leading-relaxed [&_p]:mb-4 [&_strong]:font-bold [&_a]:text-emerald-700 [&_a]:underline"
+      />
+    );
+  }
+  return <p>{content}</p>;
+}
+
 export function NewsDetailClient({ initialNews, slug }: NewsDetailClientProps) {
   const [news, setNews] = useState<NewsItem | null>(initialNews || null);
   const [loading, setLoading] = useState<boolean>(!initialNews);
@@ -410,9 +423,9 @@ export function NewsDetailClient({ initialNews, slug }: NewsDetailClientProps) {
 
         {/* 7. Article Body Content with Embedded Content Images (WordPress style) */}
         <div className="space-y-6 text-[#1E293B] text-base leading-relaxed mb-10">
-          <p>{news.contentHtml[0]}</p>
+          {renderHtmlParagraph(news.contentHtml[0])}
 
-          {news.contentHtml[1] && <p>{news.contentHtml[1]}</p>}
+          {news.contentHtml[1] && renderHtmlParagraph(news.contentHtml[1])}
 
           {/* Embedded Content Image 1 */}
           {news.contentImages[0] && (
@@ -431,14 +444,14 @@ export function NewsDetailClient({ initialNews, slug }: NewsDetailClientProps) {
             </figure>
           )}
 
-          {news.contentHtml[2] && <p>{news.contentHtml[2]}</p>}
+          {news.contentHtml[2] && renderHtmlParagraph(news.contentHtml[2])}
 
           {/* Highlight Quote Box */}
           <blockquote className="my-6 p-6 rounded-xl bg-emerald-50/60 border-l-4 border-[#0D9488] text-[#064E3B] font-medium italic text-lg">
             &ldquo;Satu Alumni, Seribu Cerita, Satu Tujuan. Kehadiran setiap angkatan menjadi energi utama kemajuan madrasah ke depan.&rdquo;
           </blockquote>
 
-          {news.contentHtml[3] && <p>{news.contentHtml[3]}</p>}
+          {news.contentHtml[3] && renderHtmlParagraph(news.contentHtml[3])}
 
           {/* Embedded Content Image 2 */}
           {news.contentImages[1] && (
@@ -457,7 +470,11 @@ export function NewsDetailClient({ initialNews, slug }: NewsDetailClientProps) {
             </figure>
           )}
 
-          {news.contentHtml[4] && <p>{news.contentHtml[4]}</p>}
+          {news.contentHtml[4] && renderHtmlParagraph(news.contentHtml[4])}
+
+          {news.contentHtml.slice(5).map((para, idx) => (
+            <div key={idx}>{renderHtmlParagraph(para)}</div>
+          ))}
         </div>
 
         {/* 8. WordPress-style Tags Cloud */}
