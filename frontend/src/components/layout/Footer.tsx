@@ -174,6 +174,7 @@ export function Footer() {
           <div className="flex items-center gap-1">
             <span>Made with</span>
             <span className="text-rose-400">❤️</span>
+            <span>by <a href="https://www.linkedin.com/in/prasaswo-tepe/">Prasaswo Tepe</a></span>
             <span>for MAN 3 Sleman Yogyakarta</span>
           </div>
         </div>
