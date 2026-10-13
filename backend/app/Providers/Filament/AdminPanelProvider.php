@@ -30,6 +30,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login(Login::class)
+            ->profile()
             ->brandName('M3S Connect Admin Panel')
             ->brandLogo(fn () => view('filament.admin.logo'))
             ->brandLogoHeight('2.5rem')

@@ -76,6 +76,21 @@ class AlumniVerificationResource extends Resource
                             ])
                             ->required(),
                     ])->columns(3),
+                Forms\Components\Section::make('Data Profil & Keanggotaan')
+                    ->relationship('profile')
+                    ->schema([
+                        Forms\Components\TextInput::make('graduation_year')
+                            ->label('Tahun Angkatan')
+                            ->numeric()
+                            ->required(),
+                        Forms\Components\TextInput::make('graduation_class')
+                            ->label('Kelas / Jurusan'),
+                        Forms\Components\TextInput::make('alumni_identifier')
+                            ->label('Nomor Anggota (NPA)')
+                            ->placeholder('Otomatis diterbitkan saat disetujui'),
+                        Forms\Components\DateTimePicker::make('verified_at')
+                            ->label('Waktu Terverifikasi'),
+                    ])->columns(2),
             ]);
     }
 

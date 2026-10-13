@@ -62,6 +62,31 @@ class User extends Authenticatable implements FilamentUser
         ];
     }
 
+    protected static function booted(): void
+    {
+        static::saved(function (User $user): void {
+            if ($user->wasChanged('status')) {
+                $statusVal = $user->status instanceof UserStatus ? $user->status->value : $user->status;
+                if ($statusVal === UserStatus::ACTIVE->value || $statusVal === 'active') {
+                    if ($user->profile) {
+                        $year = $user->profile->graduation_year ?? (int) date('Y');
+                        $identifier = $user->profile->alumni_identifier ?: AlumniProfile::generateIdentifier($year);
+                        $user->profile->updateQuietly([
+                            'alumni_identifier' => $identifier,
+                            'verified_at' => $user->profile->verified_at ?? now(),
+                        ]);
+                    }
+                } elseif (in_array($statusVal, [UserStatus::PENDING->value, UserStatus::SUSPENDED->value, 'pending', 'suspended'], true)) {
+                    if ($user->profile && $user->profile->verified_at) {
+                        $user->profile->updateQuietly([
+                            'verified_at' => null,
+                        ]);
+                    }
+                }
+            }
+        });
+    }
+
     protected $appends = [
         'avatar_url',
     ];

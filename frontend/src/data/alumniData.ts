@@ -96,7 +96,12 @@ export function mapAlumniProfile(p: any): AlumniItem {
     graduationYear: p.graduation_year || 0,
     graduationClass: p.graduation_class || "",
     alumniIdentifier: p.alumni_identifier || "",
-    isVerified: Boolean(p.verified_at),
+    isVerified: Boolean(
+      p.verified_at ||
+      p.user?.status === "active" ||
+      p.user?.status?.value === "active" ||
+      p.status === "active"
+    ),
     occupation: p.occupation || "",
     company: p.company || "",
     city: p.current_city || "",

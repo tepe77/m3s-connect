@@ -291,7 +291,7 @@ export default function ProfileUpdatePage() {
               graduationYear: p.graduation_year || prev.graduationYear,
               graduationClass: p.graduation_class || prev.graduationClass,
               alumniIdentifier: p.alumni_identifier || prev.alumniIdentifier,
-              isVerified: Boolean(p.verified_at),
+              isVerified: Boolean(p.verified_at || u?.status === "active" || u?.status?.value === "active"),
               gender: p.gender || prev.gender,
               birthDate: p.birth_date ? p.birth_date.split("T")[0] : prev.birthDate,
               bio: p.bio || prev.bio,
