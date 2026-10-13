@@ -6,55 +6,155 @@ import Link from "next/link";
 import { Container } from "@/components/ui/Container";
 import { AlumniItem, getAlumniProfileUrl, mapAlumniProfile, resolveAlumniAvatar } from "@/data/alumniData";
 import { API_BASE_URL } from "@/lib/api";
+import { ChevronLeft, ChevronRight, Search, RotateCcw } from "lucide-react";
+
+const GRADUATION_YEARS = Array.from({ length: 2026 - 1990 + 1 }, (_, i) => 2026 - i);
 
 export default function AlumniDirectoryPage() {
   const [alumniList, setAlumniList] = useState<AlumniItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedYear, setSelectedYear] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [fromItem, setFromItem] = useState(0);
+  const [toItem, setToItem] = useState(0);
+  const perPage = 12;
 
+  // Debounce search query input (350ms)
   useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+      setCurrentPage(1);
+    }, 350);
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
+
+  // Fetch paginated alumni from server
+  useEffect(() => {
+    let isCurrent = true;
     setLoading(true);
-    fetch(`${API_BASE_URL}/alumni`)
-      .then((res) => res.json())
-      .then((json) => {
-        if (json?.data?.data && Array.isArray(json.data.data)) {
-          const mapped: AlumniItem[] = json.data.data.map(mapAlumniProfile);
+
+    const params = new URLSearchParams();
+    params.set("page", String(currentPage));
+    params.set("per_page", String(perPage));
+    if (debouncedSearch.trim()) params.set("search", debouncedSearch.trim());
+    if (selectedYear) params.set("graduation_year", selectedYear);
+    if (selectedCity.trim()) params.set("city", selectedCity.trim());
+
+    const token = typeof window !== "undefined" ? localStorage.getItem("m3s_token") : null;
+    const headers: Record<string, string> = {
+      Accept: "application/json",
+    };
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    const fetchAlumniData = async () => {
+      try {
+        let res = await fetch(`${API_BASE_URL}/alumni?${params.toString()}`, { headers });
+
+        // If user has an invalid or expired token (401 Unauthorized from Laravel Sanctum),
+        // clean up stale token and immediately fallback to anonymous request so public data loads
+        if (res.status === 401 && token) {
+          try {
+            localStorage.removeItem("m3s_token");
+            localStorage.removeItem("m3s_user");
+          } catch {}
+          res = await fetch(`${API_BASE_URL}/alumni?${params.toString()}`, {
+            headers: { Accept: "application/json" },
+          });
+        }
+
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        const json = await res.json();
+        if (!isCurrent) return;
+
+        const p = json?.data;
+        if (p?.data && Array.isArray(p.data)) {
+          const mapped: AlumniItem[] = p.data.map(mapAlumniProfile);
           setAlumniList(mapped);
+          setCurrentPage(p.current_page || 1);
+          setTotalPages(p.last_page || 1);
+          setTotalItems(p.total || 0);
+          setFromItem(p.from || (mapped.length > 0 ? (currentPage - 1) * perPage + 1 : 0));
+          setToItem(p.to || (mapped.length > 0 ? (currentPage - 1) * perPage + mapped.length : 0));
         } else {
           setAlumniList([]);
+          setTotalPages(1);
+          setTotalItems(0);
+          setFromItem(0);
+          setToItem(0);
         }
-      })
-      .catch(() => {
+      } catch (err) {
+        if (!isCurrent) return;
+        console.error("Error fetching alumni:", err);
         setAlumniList([]);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, []);
+        setTotalPages(1);
+        setTotalItems(0);
+        setFromItem(0);
+        setToItem(0);
+      } finally {
+        if (isCurrent) setLoading(false);
+      }
+    };
 
-  const filteredAlumni = alumniList.filter((item) => {
-    const matchesSearch =
-      searchQuery === "" ||
-      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.occupation.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.skills.some((s) => s.toLowerCase().includes(searchQuery.toLowerCase()));
+    fetchAlumniData();
 
-    const matchesYear =
-      selectedYear === "" || item.graduationYear.toString() === selectedYear;
+    return () => {
+      isCurrent = false;
+    };
+  }, [currentPage, perPage, debouncedSearch, selectedYear, selectedCity]);
 
-    const matchesCity =
-      selectedCity === "" ||
-      item.city.toLowerCase().includes(selectedCity.toLowerCase());
+  const handleYearChange = (yr: string) => {
+    setSelectedYear(yr);
+    setCurrentPage(1);
+  };
 
-    return matchesSearch && matchesYear && matchesCity;
-  });
+  const handleCityChange = (city: string) => {
+    setSelectedCity(city);
+    setCurrentPage(1);
+  };
 
-  const uniqueYears = Array.from(new Set(alumniList.map((a) => a.graduationYear))).sort(
-    (a, b) => b - a
-  );
+  const handleResetFilter = () => {
+    setSearchQuery("");
+    setDebouncedSearch("");
+    setSelectedYear("");
+    setSelectedCity("");
+    setCurrentPage(1);
+  };
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage < 1 || newPage > totalPages || newPage === currentPage) return;
+    setCurrentPage(newPage);
+    if (typeof window !== "undefined") {
+      const el = document.getElementById("alumni-results");
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+      } else {
+        window.scrollTo({ top: 260, behavior: "smooth" });
+      }
+    }
+  };
+
+  const getPageNumbers = () => {
+    const pages: (number | "...")[] = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      if (currentPage <= 4) {
+        pages.push(1, 2, 3, 4, 5, "...", totalPages);
+      } else if (currentPage >= totalPages - 3) {
+        pages.push(1, "...", totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+      } else {
+        pages.push(1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages);
+      }
+    }
+    return pages;
+  };
 
   return (
     <div className="py-8 md:py-12 bg-[#F8FAFC]">
@@ -100,11 +200,11 @@ export default function AlumniDirectoryPage() {
             <select
               id="year"
               value={selectedYear}
-              onChange={(e) => setSelectedYear(e.target.value)}
+              onChange={(e) => handleYearChange(e.target.value)}
               className="w-full px-3.5 py-2.5 text-xs sm:text-sm rounded-xl border border-[#D1D5DB] focus:outline-none focus:ring-2 focus:ring-[#0D9488] bg-white text-[#1E293B]"
             >
               <option value="">Semua Tahun Angkatan</option>
-              {uniqueYears.map((yr) => (
+              {GRADUATION_YEARS.map((yr) => (
                 <option key={yr} value={yr.toString()}>
                   Angkatan {yr}
                 </option>
@@ -120,7 +220,7 @@ export default function AlumniDirectoryPage() {
               id="city"
               type="text"
               value={selectedCity}
-              onChange={(e) => setSelectedCity(e.target.value)}
+              onChange={(e) => handleCityChange(e.target.value)}
               placeholder="Contoh: Yogyakarta, Jakarta..."
               className="w-full px-3.5 py-2.5 text-xs sm:text-sm rounded-xl border border-[#D1D5DB] focus:outline-none focus:ring-2 focus:ring-[#0D9488] focus:border-transparent transition-all"
             />
@@ -129,24 +229,40 @@ export default function AlumniDirectoryPage() {
           <div className="lg:col-span-1">
             <button
               type="button"
-              onClick={() => {
-                setSearchQuery("");
-                setSelectedYear("");
-                setSelectedCity("");
-              }}
-              className="w-full min-h-[42px] px-3 py-2 text-xs font-semibold text-[#64748B] hover:text-[#0F172A] bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors flex items-center justify-center gap-1"
+              onClick={handleResetFilter}
+              className="w-full min-h-[42px] px-3 py-2 text-xs font-semibold text-[#64748B] hover:text-[#0F172A] bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors flex items-center justify-center gap-1 cursor-pointer"
               title="Reset Filter"
             >
-              Reset
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Reset</span>
             </button>
           </div>
         </div>
 
-        {/* Counter Results */}
-        <div className="flex items-center justify-between mb-6">
+        {/* Counter Results & Scroll Target */}
+        <div id="alumni-results" className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6">
           <p className="text-xs sm:text-sm font-semibold text-[#475569]">
-            Menampilkan <span className="text-[#0D9488] font-bold">{filteredAlumni.length}</span> Profil Alumni Terverifikasi
+            {loading ? (
+              <span>Memuat data alumni...</span>
+            ) : totalItems > 0 ? (
+              <span>
+                Menampilkan{" "}
+                <span className="text-[#0D9488] font-bold">
+                  {fromItem} - {toItem}
+                </span>{" "}
+                dari <span className="text-[#0F172A] font-bold">{totalItems}</span> Profil Alumni Terverifikasi
+              </span>
+            ) : (
+              <span>Tidak ada alumni yang sesuai kriteria</span>
+            )}
           </p>
+
+          {totalPages > 1 && (
+            <span className="text-xs text-slate-500 font-medium">
+              Halaman <span className="font-bold text-slate-900">{currentPage}</span> dari{" "}
+              <span className="font-bold text-slate-900">{totalPages}</span>
+            </span>
+          )}
         </div>
 
         {/* Alumni List Grid (Complete Cards with Photos & Social Links) */}
@@ -166,21 +282,27 @@ export default function AlumniDirectoryPage() {
               </div>
             ))}
           </div>
-        ) : filteredAlumni.length === 0 ? (
+        ) : alumniList.length === 0 ? (
           <div className="p-12 text-center bg-white rounded-2xl border border-dashed border-[#CBD5E1] space-y-3">
             <div className="w-12 h-12 mx-auto rounded-full bg-slate-100 flex items-center justify-center text-[#64748B]">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-              </svg>
+              <Search className="w-6 h-6" />
             </div>
             <h3 className="text-base font-bold text-[#0F172A]">Alumni tidak ditemukan</h3>
             <p className="text-xs text-[#64748B] max-w-sm mx-auto">
-              Coba sesuaikan kata kunci pencarian, tahun kelulusan, atau kota domisili.
+              Tidak ada profil alumni yang cocok dengan kata kunci atau filter ini. Coba sesuaikan pencarian Anda.
             </p>
+            <button
+              type="button"
+              onClick={handleResetFilter}
+              className="mt-2 inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-full bg-emerald-50 text-[#0D9488] hover:bg-emerald-100 transition-colors cursor-pointer"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Reset Filter Pencarian</span>
+            </button>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredAlumni.map((alumni) => (
+            {alumniList.map((alumni) => (
               <div
                 key={alumni.id}
                 className="bg-white rounded-2xl border border-[#E5E7EB] hover:border-emerald-300 shadow-xs hover:shadow-md transition-all p-6 flex flex-col justify-between space-y-5"
@@ -343,6 +465,69 @@ export default function AlumniDirectoryPage() {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="mt-12 flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-slate-200">
+            <p className="text-xs text-slate-500 font-medium">
+              Menampilkan halaman <span className="font-bold text-slate-900">{currentPage}</span> dari{" "}
+              <span className="font-bold text-slate-900">{totalPages}</span> (Total{" "}
+              <span className="font-bold text-[#0D9488]">{totalItems}</span> alumni)
+            </p>
+
+            <nav aria-label="Navigasi Halaman Direktori" className="flex items-center gap-1.5 flex-wrap justify-center">
+              {/* Prev Button */}
+              <button
+                type="button"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage <= 1 || loading}
+                className="px-3.5 py-2 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-[#0D9488] disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-1 shadow-2xs cursor-pointer"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                <span className="hidden sm:inline">Sebelumnya</span>
+              </button>
+
+              {/* Numbered Page Buttons */}
+              {getPageNumbers().map((pageNum, idx) => {
+                if (pageNum === "...") {
+                  return (
+                    <span key={`ellipsis-${idx}`} className="px-2 py-1 text-xs text-slate-400">
+                      ...
+                    </span>
+                  );
+                }
+
+                const isActive = pageNum === currentPage;
+                return (
+                  <button
+                    key={pageNum}
+                    type="button"
+                    onClick={() => handlePageChange(pageNum)}
+                    disabled={loading}
+                    className={`min-w-[36px] h-9 px-2 text-xs font-bold rounded-xl transition-all shadow-2xs cursor-pointer ${
+                      isActive
+                        ? "bg-[#0D9488] text-white shadow-xs"
+                        : "bg-white border border-slate-200 text-slate-700 hover:bg-emerald-50 hover:text-[#0D9488] hover:border-emerald-300"
+                    }`}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+
+              {/* Next Button */}
+              <button
+                type="button"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage >= totalPages || loading}
+                className="px-3.5 py-2 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-[#0D9488] disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-1 shadow-2xs cursor-pointer"
+              >
+                <span className="hidden sm:inline">Selanjutnya</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </nav>
           </div>
         )}
       </Container>
