@@ -61,6 +61,21 @@ class ProfileController extends Controller
             'social_links' => 'nullable|array',
             'social_links.*.platform' => 'required|in:linkedin,github,instagram,twitter,website',
             'social_links.*.url' => 'required|url|max:255',
+            'educations' => 'nullable|array',
+            'educations.*.institution' => 'required|string|max:150',
+            'educations.*.degree' => 'nullable|string|max:100',
+            'educations.*.field_of_study' => 'nullable|string|max:100',
+            'educations.*.start_year' => 'nullable|integer|min:1970|max:2035',
+            'educations.*.end_year' => 'nullable|integer|min:1970|max:2035',
+            'educations.*.description' => 'nullable|string|max:500',
+            'experiences' => 'nullable|array',
+            'experiences.*.company' => 'required|string|max:150',
+            'experiences.*.position' => 'required|string|max:100',
+            'experiences.*.location' => 'nullable|string|max:100',
+            'experiences.*.start_date' => 'nullable|string|max:30',
+            'experiences.*.end_date' => 'nullable|string|max:30',
+            'experiences.*.is_current' => 'nullable|boolean',
+            'experiences.*.description' => 'nullable|string|max:500',
         ]);
 
         if (isset($validated['name'])) {
@@ -147,6 +162,41 @@ class ProfileController extends Controller
             }
         }
 
+        // Sync Educations if provided
+        if (isset($validated['educations'])) {
+            $profile->educations()->delete();
+            foreach ($validated['educations'] as $edu) {
+                if (!empty($edu['institution'])) {
+                    $profile->educations()->create([
+                        'institution' => $edu['institution'],
+                        'degree' => $edu['degree'] ?? null,
+                        'field_of_study' => $edu['field_of_study'] ?? null,
+                        'start_year' => !empty($edu['start_year']) ? (int) $edu['start_year'] : null,
+                        'end_year' => !empty($edu['end_year']) ? (int) $edu['end_year'] : null,
+                        'description' => $edu['description'] ?? null,
+                    ]);
+                }
+            }
+        }
+
+        // Sync Experiences if provided
+        if (isset($validated['experiences'])) {
+            $profile->experiences()->delete();
+            foreach ($validated['experiences'] as $exp) {
+                if (!empty($exp['company']) && !empty($exp['position'])) {
+                    $profile->experiences()->create([
+                        'company' => $exp['company'],
+                        'position' => $exp['position'],
+                        'location' => $exp['location'] ?? null,
+                        'start_date' => !empty($exp['start_date']) ? $exp['start_date'] : null,
+                        'end_date' => !empty($exp['end_date']) ? $exp['end_date'] : null,
+                        'is_current' => !empty($exp['is_current']),
+                        'description' => $exp['description'] ?? null,
+                    ]);
+                }
+            }
+        }
+
         return response()->json([
             'status' => 'success',
             'message' => 'Profil berhasil diperbarui.',
@@ -154,6 +204,14 @@ class ProfileController extends Controller
                 'user' => $user->fresh()->load([
                     'profile.skills',
                     'profile.socialLinks',
+                    'profile.educations',
+                    'profile.experiences',
+                ]),
+                'profile' => $profile->fresh([
+                    'skills',
+                    'socialLinks',
+                    'educations',
+                    'experiences',
                 ]),
             ],
         ]);
@@ -176,7 +234,7 @@ class ProfileController extends Controller
             'status' => 'success',
             'message' => 'Foto profil berhasil diunggah.',
             'data' => [
-                'avatar' => $user->avatar,
+                'avatar' => $user->avatar_url ?? $user->avatar,
             ],
         ]);
     }

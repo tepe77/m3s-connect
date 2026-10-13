@@ -1,3 +1,12 @@
+import { getAssetUrl } from "@/lib/api";
+
+export function resolveAlumniAvatar(avatar: string | null | undefined): string {
+  if (!avatar) return "/images/avatar-ahmad.jpg";
+  if (avatar.startsWith("/images/")) return avatar;
+  if (avatar.startsWith("http://") || avatar.startsWith("https://")) return avatar;
+  return getAssetUrl(avatar);
+}
+
 export interface AlumniSocialLink {
   platform: "linkedin" | "github" | "instagram" | "twitter" | "website";
   url: string;
@@ -83,7 +92,7 @@ export function mapAlumniProfile(p: any): AlumniItem {
     slug: p.slug || generatedSlug || p.id,
     name: rawName,
     email: p.user?.email || "",
-    avatar: p.user?.avatar || p.avatar_url || "/images/avatar-ahmad.jpg",
+    avatar: resolveAlumniAvatar(p.user?.avatar || p.avatar_url || p.avatar),
     graduationYear: p.graduation_year || 0,
     graduationClass: p.graduation_class || "",
     alumniIdentifier: p.alumni_identifier || "",

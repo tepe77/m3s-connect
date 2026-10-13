@@ -16,7 +16,36 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
-import { API_BASE_URL } from "@/lib/api";
+import { API_BASE_URL, getAssetUrl } from "@/lib/api";
+import { Plus, Trash2, GraduationCap, Briefcase, Check } from "lucide-react";
+
+export interface EducationItem {
+  id?: string;
+  institution: string;
+  degree?: string;
+  fieldOfStudy?: string;
+  startYear?: number | string;
+  endYear?: number | string;
+  description?: string;
+}
+
+export interface ExperienceItem {
+  id?: string;
+  company: string;
+  position: string;
+  location?: string;
+  startDate?: string;
+  endDate?: string;
+  isCurrent?: boolean;
+  description?: string;
+}
+
+function resolveAvatar(avatar: string | undefined): string {
+  if (!avatar) return "/images/avatar-ahmad.jpg";
+  if (avatar.startsWith("data:") || avatar.startsWith("/images/")) return avatar;
+  if (avatar.startsWith("http://") || avatar.startsWith("https://")) return avatar;
+  return getAssetUrl(avatar);
+}
 
 interface ProfileFormData {
   name: string;
@@ -24,6 +53,7 @@ interface ProfileFormData {
   graduationYear: number;
   graduationClass: string;
   alumniIdentifier: string;
+  isVerified?: boolean;
   gender: "male" | "female";
   birthDate: string;
   bio: string;
@@ -40,6 +70,8 @@ interface ProfileFormData {
     twitter: string;
     website: string;
   };
+  educations: EducationItem[];
+  experiences: ExperienceItem[];
 }
 
 const DEFAULT_PROFILE: ProfileFormData = {
@@ -64,6 +96,9 @@ const DEFAULT_PROFILE: ProfileFormData = {
     twitter: "https://x.com/budisantoso",
     website: "https://budisantoso.dev",
   },
+  isVerified: false,
+  educations: [],
+  experiences: [],
 };
 
 export default function ProfileUpdatePage() {
@@ -98,6 +133,73 @@ export default function ProfileUpdatePage() {
   const handleSelectPresetAvatar = (avatarUrl: string) => {
     setFormData((prev) => ({ ...prev, avatar: avatarUrl }));
     setIsPresetModalOpen(false);
+  };
+
+  // Education Handlers
+  const handleAddEducation = () => {
+    setFormData((prev) => ({
+      ...prev,
+      educations: [
+        ...prev.educations,
+        {
+          institution: "",
+          degree: "S1",
+          fieldOfStudy: "",
+          startYear: new Date().getFullYear() - 4,
+          endYear: new Date().getFullYear(),
+          description: "",
+        },
+      ],
+    }));
+  };
+
+  const handleUpdateEducation = (index: number, field: keyof EducationItem, value: any) => {
+    setFormData((prev) => {
+      const updated = [...prev.educations];
+      updated[index] = { ...updated[index], [field]: value };
+      return { ...prev, educations: updated };
+    });
+  };
+
+  const handleRemoveEducation = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      educations: prev.educations.filter((_, i) => i !== index),
+    }));
+  };
+
+  // Experience Handlers
+  const handleAddExperience = () => {
+    setFormData((prev) => ({
+      ...prev,
+      experiences: [
+        ...prev.experiences,
+        {
+          company: "",
+          position: "",
+          location: prev.currentCity || "Indonesia",
+          startDate: `${new Date().getFullYear() - 2}-01`,
+          endDate: "",
+          isCurrent: true,
+          description: "",
+        },
+      ],
+    }));
+  };
+
+  const handleUpdateExperience = (index: number, field: keyof ExperienceItem, value: any) => {
+    setFormData((prev) => {
+      const updated = [...prev.experiences];
+      updated[index] = { ...updated[index], [field]: value };
+      return { ...prev, experiences: updated };
+    });
+  };
+
+  const handleRemoveExperience = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      experiences: prev.experiences.filter((_, i) => i !== index),
+    }));
   };
 
   // Check auth and load profile from localStorage/backend on mount
@@ -156,6 +258,32 @@ export default function ProfileUpdatePage() {
                 if (l.platform && l.url) socialMap[l.platform] = l.url;
               });
             }
+
+            const educations = Array.isArray(p.educations)
+              ? p.educations.map((edu: any) => ({
+                  id: edu.id,
+                  institution: edu.institution,
+                  degree: edu.degree || "",
+                  fieldOfStudy: edu.field_of_study || "",
+                  startYear: edu.start_year || "",
+                  endYear: edu.end_year || "",
+                  description: edu.description || "",
+                }))
+              : [];
+
+            const experiences = Array.isArray(p.experiences)
+              ? p.experiences.map((exp: any) => ({
+                  id: exp.id,
+                  company: exp.company,
+                  position: exp.position,
+                  location: exp.location || "",
+                  startDate: exp.start_date ? String(exp.start_date).substring(0, 7) : "",
+                  endDate: exp.end_date ? String(exp.end_date).substring(0, 7) : "",
+                  isCurrent: Boolean(exp.is_current),
+                  description: exp.description || "",
+                }))
+              : [];
+
             setFormData((prev) => ({
               ...prev,
               name: u?.name || prev.name,
@@ -163,6 +291,7 @@ export default function ProfileUpdatePage() {
               graduationYear: p.graduation_year || prev.graduationYear,
               graduationClass: p.graduation_class || prev.graduationClass,
               alumniIdentifier: p.alumni_identifier || prev.alumniIdentifier,
+              isVerified: Boolean(p.verified_at),
               gender: p.gender || prev.gender,
               birthDate: p.birth_date ? p.birth_date.split("T")[0] : prev.birthDate,
               bio: p.bio || prev.bio,
@@ -176,6 +305,8 @@ export default function ProfileUpdatePage() {
                 ...prev.socialLinks,
                 ...socialMap,
               },
+              educations: educations.length > 0 ? educations : prev.educations,
+              experiences: experiences.length > 0 ? experiences : prev.experiences,
             }));
           }
         })
@@ -258,6 +389,27 @@ export default function ProfileUpdatePage() {
               { platform: "twitter", url: formData.socialLinks.twitter },
               { platform: "website", url: formData.socialLinks.website },
             ].filter((l) => Boolean(l.url)),
+            educations: formData.educations
+              .map((edu) => ({
+                institution: edu.institution,
+                degree: edu.degree || "",
+                field_of_study: edu.fieldOfStudy || "",
+                start_year: edu.startYear ? parseInt(String(edu.startYear)) : undefined,
+                end_year: edu.endYear ? parseInt(String(edu.endYear)) : undefined,
+                description: edu.description || "",
+              }))
+              .filter((e) => Boolean(e.institution)),
+            experiences: formData.experiences
+              .map((exp) => ({
+                company: exp.company,
+                position: exp.position,
+                location: exp.location || "",
+                start_date: exp.startDate || "",
+                end_date: exp.endDate || "",
+                is_current: Boolean(exp.isCurrent),
+                description: exp.description || "",
+              }))
+              .filter((e) => Boolean(e.company && e.position)),
           }),
         });
 
@@ -374,20 +526,23 @@ export default function ProfileUpdatePage() {
             <div className="relative">
               <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden border-4 border-emerald-100 shadow-sm bg-slate-100 relative">
                 <Image
-                  src={formData.avatar || "/images/avatar-ahmad.jpg"}
+                  src={resolveAvatar(formData.avatar)}
                   alt={formData.name}
                   fill
+                  unoptimized
                   className="object-cover"
                 />
               </div>
-              <span
-                className="absolute bottom-1 right-1 w-6 h-6 rounded-full bg-[#10B981] border-2 border-white flex items-center justify-center text-white shadow-xs"
-                title="Alumni Terverifikasi"
-              >
-                <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                </svg>
-              </span>
+              {formData.isVerified && (
+                <span
+                  className="absolute bottom-1 right-1 w-6 h-6 rounded-full bg-[#10B981] border-2 border-white flex items-center justify-center text-white shadow-xs"
+                  title="Alumni Terverifikasi Sah"
+                >
+                  <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                </span>
+              )}
             </div>
 
             {/* Hidden file input */}
@@ -654,6 +809,159 @@ export default function ProfileUpdatePage() {
                   />
                 </div>
               </div>
+
+              {/* Riwayat Pendidikan Tinggi / Lanjutan */}
+              <div className="pt-6 border-t border-[#F1F5F9] space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-2">
+                      <GraduationCap className="w-5 h-5 text-sky-600" />
+                      <h4 className="text-sm font-bold text-[#0F172A]">
+                        Riwayat Pendidikan Tinggi & Lanjutan
+                      </h4>
+                    </div>
+                    <p className="text-xs text-[#64748B]">
+                      Tambahkan riwayat studi perguruan tinggi (Diploma, Sarjana, Magister, Doktoral, atau Profesi).
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAddEducation}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-sky-700 bg-sky-50 hover:bg-sky-100 border border-sky-200 rounded-full transition-colors self-start sm:self-auto"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Tambah Pendidikan</span>
+                  </button>
+                </div>
+
+                {formData.educations.length === 0 ? (
+                  <div className="p-6 rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 text-center space-y-2">
+                    <p className="text-xs text-[#64748B]">
+                      Belum ada riwayat pendidikan tinggi yang ditambahkan.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handleAddEducation}
+                      className="text-xs font-semibold text-sky-600 hover:text-sky-700 underline"
+                    >
+                      + Tambah riwayat universitas/institut pertama Anda
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {formData.educations.map((edu, idx) => (
+                      <div
+                        key={idx}
+                        className="p-4 sm:p-5 rounded-2xl border border-slate-200 bg-slate-50/30 space-y-4 relative"
+                      >
+                        <div className="flex items-center justify-between pb-2 border-b border-slate-200">
+                          <span className="text-xs font-bold text-slate-700">
+                            Pendidikan #{idx + 1}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveEducation(idx)}
+                            className="text-xs font-semibold text-rose-600 hover:text-rose-700 flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-rose-50 transition-colors"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span>Hapus</span>
+                          </button>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                          <div>
+                            <label className="block text-[11px] font-bold text-[#0F172A] uppercase tracking-wider mb-1">
+                              Jenjang Studi
+                            </label>
+                            <Select
+                              value={edu.degree || "S1"}
+                              onValueChange={(val) => handleUpdateEducation(idx, "degree", val)}
+                            >
+                              <SelectTrigger className="w-full bg-white">
+                                <SelectValue placeholder="Pilih jenjang" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="D3">Diploma 3 (D3)</SelectItem>
+                                <SelectItem value="D4">Diploma 4 (D4)</SelectItem>
+                                <SelectItem value="S1">Sarjana (S1)</SelectItem>
+                                <SelectItem value="S2">Magister (S2)</SelectItem>
+                                <SelectItem value="S3">Doktor (S3)</SelectItem>
+                                <SelectItem value="Profesi">Pendidikan Profesi</SelectItem>
+                                <SelectItem value="Lainnya">Lainnya</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div className="sm:col-span-2">
+                            <label className="block text-[11px] font-bold text-[#0F172A] uppercase tracking-wider mb-1">
+                              Nama Perguruan Tinggi / Universitas <span className="text-rose-500">*</span>
+                            </label>
+                            <Input
+                              type="text"
+                              value={edu.institution}
+                              onChange={(e) => handleUpdateEducation(idx, "institution", e.target.value)}
+                              placeholder="Contoh: Universitas Gadjah Mada (UGM)"
+                              className="bg-white"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-[11px] font-bold text-[#0F172A] uppercase tracking-wider mb-1">
+                              Jurusan / Program Studi
+                            </label>
+                            <Input
+                              type="text"
+                              value={edu.fieldOfStudy || ""}
+                              onChange={(e) => handleUpdateEducation(idx, "fieldOfStudy", e.target.value)}
+                              placeholder="Contoh: Teknik Informatika"
+                              className="bg-white"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-[11px] font-bold text-[#0F172A] uppercase tracking-wider mb-1">
+                              Tahun Masuk
+                            </label>
+                            <Input
+                              type="number"
+                              value={edu.startYear || ""}
+                              onChange={(e) => handleUpdateEducation(idx, "startYear", e.target.value)}
+                              placeholder="2018"
+                              className="bg-white"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-[11px] font-bold text-[#0F172A] uppercase tracking-wider mb-1">
+                              Tahun Kelulusan
+                            </label>
+                            <Input
+                              type="number"
+                              value={edu.endYear || ""}
+                              onChange={(e) => handleUpdateEducation(idx, "endYear", e.target.value)}
+                              placeholder="2022"
+                              className="bg-white"
+                            />
+                          </div>
+
+                          <div className="sm:col-span-3">
+                            <label className="block text-[11px] font-bold text-[#0F172A] uppercase tracking-wider mb-1">
+                              Catatan Tambahan (Opsional)
+                            </label>
+                            <Input
+                              type="text"
+                              value={edu.description || ""}
+                              onChange={(e) => handleUpdateEducation(idx, "description", e.target.value)}
+                              placeholder="Contoh: Predikat Cum Laude, Fokus Konsentrasi Sistem Cerdas"
+                              className="bg-white"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
@@ -772,6 +1080,162 @@ export default function ProfileUpdatePage() {
                     Tambah
                   </button>
                 </div>
+              </div>
+
+              {/* Riwayat Karir & Pengalaman Profesional */}
+              <div className="pt-6 border-t border-[#F1F5F9] space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-2">
+                      <Briefcase className="w-5 h-5 text-emerald-600" />
+                      <h4 className="text-sm font-bold text-[#0F172A]">
+                        Riwayat Karir & Pengalaman Profesional
+                      </h4>
+                    </div>
+                    <p className="text-xs text-[#64748B]">
+                      Tuliskan perjalanan karir, organisasi, magang, atau wirausaha yang pernah/sedang Anda jalani.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAddExperience}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-[#0D9488] bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-full transition-colors self-start sm:self-auto"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Tambah Pengalaman Karir</span>
+                  </button>
+                </div>
+
+                {formData.experiences.length === 0 ? (
+                  <div className="p-6 rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 text-center space-y-2">
+                    <p className="text-xs text-[#64748B]">
+                      Belum ada riwayat pengalaman karir yang ditambahkan.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handleAddExperience}
+                      className="text-xs font-semibold text-[#0D9488] hover:text-[#0f766e] underline"
+                    >
+                      + Tambah riwayat karir pertama Anda
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {formData.experiences.map((exp, idx) => (
+                      <div
+                        key={idx}
+                        className="p-4 sm:p-5 rounded-2xl border border-slate-200 bg-slate-50/30 space-y-4 relative"
+                      >
+                        <div className="flex items-center justify-between pb-2 border-b border-slate-200">
+                          <span className="text-xs font-bold text-slate-700">
+                            Pengalaman #{idx + 1}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveExperience(idx)}
+                            className="text-xs font-semibold text-rose-600 hover:text-rose-700 flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-rose-50 transition-colors"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span>Hapus</span>
+                          </button>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-[11px] font-bold text-[#0F172A] uppercase tracking-wider mb-1">
+                              Posisi / Jabatan <span className="text-rose-500">*</span>
+                            </label>
+                            <Input
+                              type="text"
+                              value={exp.position}
+                              onChange={(e) => handleUpdateExperience(idx, "position", e.target.value)}
+                              placeholder="Contoh: Senior Backend Engineer"
+                              className="bg-white"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-[11px] font-bold text-[#0F172A] uppercase tracking-wider mb-1">
+                              Perusahaan / Instansi / Startup <span className="text-rose-500">*</span>
+                            </label>
+                            <Input
+                              type="text"
+                              value={exp.company}
+                              onChange={(e) => handleUpdateExperience(idx, "company", e.target.value)}
+                              placeholder="Contoh: PT Telkom Indonesia"
+                              className="bg-white"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-[11px] font-bold text-[#0F172A] uppercase tracking-wider mb-1">
+                              Lokasi
+                            </label>
+                            <Input
+                              type="text"
+                              value={exp.location || ""}
+                              onChange={(e) => handleUpdateExperience(idx, "location", e.target.value)}
+                              placeholder="Contoh: Yogyakarta / Remote"
+                              className="bg-white"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-[11px] font-bold text-[#0F172A] uppercase tracking-wider mb-1">
+                              Periode Mulai
+                            </label>
+                            <Input
+                              type="text"
+                              value={exp.startDate || ""}
+                              onChange={(e) => handleUpdateExperience(idx, "startDate", e.target.value)}
+                              placeholder="Contoh: 2022 atau 2022-01"
+                              className="bg-white"
+                            />
+                          </div>
+
+                          <div className="sm:col-span-2">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-1">
+                              <label className="block text-[11px] font-bold text-[#0F172A] uppercase tracking-wider">
+                                Periode Selesai
+                              </label>
+                              <label className="inline-flex items-center gap-1.5 cursor-pointer text-xs font-semibold text-slate-700">
+                                <input
+                                  type="checkbox"
+                                  checked={Boolean(exp.isCurrent)}
+                                  onChange={(e) => handleUpdateExperience(idx, "isCurrent", e.target.checked)}
+                                  className="h-3.5 w-3.5 rounded border-slate-300 text-[#0D9488] focus:ring-[#0D9488]"
+                                />
+                                <span>Saat ini masih bekerja di posisi ini</span>
+                              </label>
+                            </div>
+                            {!exp.isCurrent && (
+                              <Input
+                                type="text"
+                                value={exp.endDate || ""}
+                                onChange={(e) => handleUpdateExperience(idx, "endDate", e.target.value)}
+                                placeholder="Contoh: 2024 atau 2024-06"
+                                className="bg-white"
+                              />
+                            )}
+                          </div>
+
+                          <div className="sm:col-span-2">
+                            <label className="block text-[11px] font-bold text-[#0F172A] uppercase tracking-wider mb-1">
+                              Deskripsi Tanggung Jawab & Pencapaian
+                            </label>
+                            <textarea
+                              rows={2}
+                              value={exp.description || ""}
+                              onChange={(e) => handleUpdateExperience(idx, "description", e.target.value)}
+                              placeholder="Ceritakan ringkas tugas utama, teknologi yang digunakan, atau pencapaian..."
+                              className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-[#CBD5E1] bg-white focus:outline-none focus:ring-2 focus:ring-[#0D9488] text-[#0F172A]"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           )}

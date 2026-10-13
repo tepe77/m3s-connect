@@ -60,14 +60,8 @@ export default function LoginPage() {
         window.dispatchEvent(new Event("storage"));
         window.dispatchEvent(new CustomEvent("m3s_auth_change", { detail: data.data.user }));
 
-        const user = data.data.user;
-        const isOnboarded = localStorage.getItem(`m3s_onboarded_${user?.id}`);
-
-        if (!isOnboarded) {
-          router.push("/onboarding");
-        } else {
-          router.push("/dashboard");
-        }
+        // Existing user logging in routes directly to dashboard
+        router.push("/dashboard");
       }
     } catch {
       setErrorMessage("Tidak dapat terhubung ke server backend. Pastikan server aktif.");

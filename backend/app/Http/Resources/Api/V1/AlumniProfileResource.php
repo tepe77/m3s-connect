@@ -30,6 +30,8 @@ class AlumniProfileResource extends JsonResource
             'verified_at' => $this->verified_at?->toISOString(),
             'skills' => $this->whenLoaded('skills', fn () => $this->skills->pluck('name')),
             'social_links' => $this->whenLoaded('socialLinks'),
+            'educations' => $this->whenLoaded('educations'),
+            'experiences' => $this->whenLoaded('experiences'),
             'contacts_locked' => $this->contacts_locked ?? false,
         ];
     }

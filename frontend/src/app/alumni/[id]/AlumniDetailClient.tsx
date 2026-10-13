@@ -236,15 +236,17 @@ export function AlumniDetailClient({ initialAlumni, identifier }: AlumniDetailCl
                     className="object-cover w-full h-full"
                   />
                 </div>
-                {/* Active Verified Badge */}
-                <span
-                  className="absolute bottom-1 right-1 w-6 h-6 rounded-full bg-[#10B981] border-2 border-white flex items-center justify-center text-white shadow-xs"
-                  title="Alumni Terverifikasi"
-                >
-                  <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                </span>
+                {/* Active Verified Badge (Hanya tampil jika sudah diverifikasi admin) */}
+                {alumni.isVerified && (
+                  <span
+                    className="absolute bottom-1 right-1 w-6 h-6 rounded-full bg-[#10B981] border-2 border-white flex items-center justify-center text-white shadow-xs"
+                    title="Alumni Terverifikasi"
+                  >
+                    <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </span>
+                )}
               </div>
 
               {/* Action Buttons on right */}
@@ -505,7 +507,13 @@ export function AlumniDetailClient({ initialAlumni, identifier }: AlumniDetailCl
                 </li>
                 <li className="flex items-center justify-between">
                   <span>Status Verifikasi</span>
-                  <span className="text-[#10B981] font-bold">Terverifikasi Sah</span>
+                  {alumni.isVerified ? (
+                    <span className="text-[#10B981] font-bold">Terverifikasi Sah</span>
+                  ) : (
+                    <span className="text-amber-700 font-semibold text-xs px-2.5 py-0.5 rounded-full bg-amber-50 border border-amber-200">
+                      Menunggu Verifikasi Admin
+                    </span>
+                  )}
                 </li>
                 <li className="flex items-center justify-between">
                   <span>Almamater</span>

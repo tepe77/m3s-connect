@@ -28,110 +28,29 @@ export interface DirectMessageThread {
   messages: DirectMessageItem[];
 }
 
-export const INITIAL_DIRECT_THREADS: DirectMessageThread[] = [
-  {
-    id: "dm-thread-1",
-    participant1: {
-      id: "user-budi",
-      name: "Budi Santoso, S.Kom.",
-      avatar: "/images/avatar-ahmad.jpg",
-      graduationYear: 2018,
-      occupation: "Senior Backend Engineer",
-    },
-    participant2: {
-      id: "alumni-1",
-      name: "Siti Nurhaliza, S.T.",
-      avatar: "/images/avatar-siti.jpg",
-      graduationYear: 2012,
-      occupation: "Software Engineer di Tokopedia",
-    },
-    subject: "Tanya Peluang Karir Frontend di Tokopedia",
-    lastMessage: "Wa'alaikumsalam Mas Budi. Kuota Q4 sedang buka untuk junior web engineer. Silakan kirimkan CV rekannya, nanti saya bantu proses referral alumni.",
-    lastActivityAt: "2026-10-06T14:20:00Z",
-    unreadCount: 1,
-    messages: [
-      {
-        id: "msg-101",
-        senderId: "user-budi",
-        senderName: "Budi Santoso, S.Kom.",
-        senderAvatar: "/images/avatar-ahmad.jpg",
-        body: "Assalamu'alaikum Mbak Siti, salam kenal sesama alumni Mayoga. Kebetulan ada rekan seangkatan kami yang berminat melamar di tim web Tokopedia. Apakah saat ini sedang ada posisi open role yang relevan?",
-        createdAt: "2026-10-06T11:15:00Z",
-      },
-      {
-        id: "msg-102",
-        senderId: "alumni-1",
-        senderName: "Siti Nurhaliza, S.T.",
-        senderAvatar: "/images/avatar-siti.jpg",
-        body: "Wa'alaikumsalam Mas Budi. Kuota Q4 sedang buka untuk junior web engineer. Silakan kirimkan CV rekannya, nanti saya bantu proses referral alumni.",
-        createdAt: "2026-10-06T14:20:00Z",
-      },
-    ],
-  },
-  {
-    id: "dm-thread-2",
-    participant1: {
-      id: "user-budi",
-      name: "Budi Santoso, S.Kom.",
-      avatar: "/images/avatar-ahmad.jpg",
-      graduationYear: 2018,
-      occupation: "Senior Backend Engineer",
-    },
-    participant2: {
-      id: "alumni-2",
-      name: "Ahmad Fauzi, M.Pd.",
-      avatar: "/images/avatar-ahmad.jpg",
-      graduationYear: 2010,
-      occupation: "Dosen & Peneliti UIN",
-    },
-    subject: "Koordinasi Sesi Bedah Beasiswa LPDP Reuni 2026",
-    lastMessage: "Siap Mas Budi, nanti materi presentasi dan panduan esai beasiswa akan saya persiapkan bersama alumni awardee lainnya.",
-    lastActivityAt: "2026-10-05T16:45:00Z",
-    unreadCount: 0,
-    messages: [
-      {
-        id: "msg-201",
-        senderId: "alumni-2",
-        senderName: "Ahmad Fauzi, M.Pd.",
-        senderAvatar: "/images/avatar-ahmad.jpg",
-        body: "Assalamu'alaikum Mas Budi. Terkait agenda Reuni Akbar 2026, apakah panitia berkenan menyediakan sesi workshop bedah esai beasiswa pascasarjana untuk adik-adik alumni baru?",
-        createdAt: "2026-10-05T09:30:00Z",
-      },
-      {
-        id: "msg-202",
-        senderId: "user-budi",
-        senderName: "Budi Santoso, S.Kom.",
-        senderAvatar: "/images/avatar-ahmad.jpg",
-        body: "Wa'alaikumsalam Pak Dosen Ahmad. Usulan yang sangat strategis! Kami sudah alokasikan sesi sarasehan pendidikan di aula utama. Mohon kesediaan Bapak untuk menjadi pemateri utama.",
-        createdAt: "2026-10-05T13:00:00Z",
-      },
-      {
-        id: "msg-203",
-        senderId: "alumni-2",
-        senderName: "Ahmad Fauzi, M.Pd.",
-        senderAvatar: "/images/avatar-ahmad.jpg",
-        body: "Siap Mas Budi, nanti materi presentasi dan panduan esai beasiswa akan saya persiapkan bersama alumni awardee lainnya.",
-        createdAt: "2026-10-05T16:45:00Z",
-      },
-    ],
-  },
-];
+export const INITIAL_DIRECT_THREADS: DirectMessageThread[] = [];
 
 const STORAGE_KEY = "m3s_direct_messages";
 
 export function getStoredThreads(): DirectMessageThread[] {
   if (typeof window === "undefined") {
-    return INITIAL_DIRECT_THREADS;
+    return [];
   }
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_DIRECT_THREADS));
-      return INITIAL_DIRECT_THREADS;
+      return [];
     }
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) {
+      // Discard legacy static dummy threads
+      return parsed.filter(
+        (t: any) => t.id !== "dm-thread-1" && t.id !== "dm-thread-2"
+      );
+    }
+    return [];
   } catch {
-    return INITIAL_DIRECT_THREADS;
+    return [];
   }
 }
 

@@ -33,35 +33,7 @@ export interface NotificationItem {
   avatar?: string;
 }
 
-const INITIAL_NOTIFICATIONS: NotificationItem[] = [
-  {
-    id: "fn-1",
-    title: "Balasan di Topik Reuni Akbar 2026",
-    description: "Ahmad Fauzi menanggapi usulan agenda sarasehan di forum.",
-    time: "10 mnt lalu",
-    unread: true,
-    href: "/forum/rencana-reuni-akbar-lintas-angkatan-2026#reply-r-101",
-    type: "forum",
-  },
-  {
-    id: "fn-2",
-    title: "Info Karir: Backend Engineer",
-    description: "Hendro Prasetyo membagikan lowongan baru di Tech Nusantara.",
-    time: "1 jam lalu",
-    unread: true,
-    href: "/forum/lowongan-backend-engineer-product-specialist-tech-nusantara#reply-r-201",
-    type: "forum",
-  },
-  {
-    id: "fn-3",
-    title: "Tips Beasiswa LPDP Alumni",
-    description: "dr. Sarah Amalia memperbarui panduan kurasi esai studi lanjut.",
-    time: "3 jam lalu",
-    unread: false,
-    href: "/forum/panduan-tips-lolos-beasiswa-lpdp-aas-alumni-mayoga",
-    type: "forum",
-  },
-];
+const INITIAL_NOTIFICATIONS: NotificationItem[] = [];
 
 const navItems = [
   { label: "Beranda", href: "/" },
@@ -215,14 +187,7 @@ export function Navbar() {
         if (rawMap) readMap = JSON.parse(rawMap);
       } catch {}
 
-      const forumNotifs = INITIAL_NOTIFICATIONS.map((fn) => ({
-        ...fn,
-        unread: readMap[fn.id] !== undefined ? !readMap[fn.id] : fn.unread,
-      }));
-
-      // Merge: direct messages first, then forum notifications
-      const combined = [...dmNotifs, ...forumNotifs];
-      setNotifications(combined);
+      setNotifications(dmNotifs);
 
       // Also try fetching server notifications if logged in with token
       const token = localStorage.getItem("m3s_token");

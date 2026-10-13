@@ -80,7 +80,12 @@ class User extends Authenticatable implements FilamentUser
             return url(ltrim($this->avatar, '/'));
         }
 
-        return asset('storage/' . ltrim($this->avatar, '/'));
+        $cleanPath = ltrim($this->avatar, '/');
+        if (str_starts_with($cleanPath, 'storage/')) {
+            return asset($cleanPath);
+        }
+
+        return asset('storage/' . $cleanPath);
     }
 
     public function canAccessPanel(Panel $panel): bool

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { Container } from "@/components/ui/Container";
+import { API_BASE_URL } from "@/lib/api";
 
 interface UserSession {
   id: string;
@@ -88,6 +89,29 @@ export default function OnboardingPage() {
       privacyVisibility,
     };
     localStorage.setItem("m3s_user_preferences", JSON.stringify(preferences));
+
+    // Persist to backend if token available
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("m3s_token");
+      if (token) {
+        fetch(`${API_BASE_URL}/profile`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            graduation_year: parseInt(graduationYear) || undefined,
+            graduation_class: graduationClass,
+            occupation: occupation || undefined,
+            current_city: currentCity,
+            visibility: privacyVisibility,
+          }),
+        }).catch(() => {});
+      }
+    }
+
     router.push(destination);
   };
 
