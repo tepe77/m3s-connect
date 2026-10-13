@@ -100,17 +100,25 @@ class EventResource extends Resource
                 Tables\Columns\TextColumn::make('location')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('start_at')
-                    ->dateTime()
-                    ->sortable(),
+                    ->label('Waktu Pelaksanaan')
+                    ->dateTime('d M Y, H:i')
+                    ->sortable()
+                    ->description(fn (Event $record): ?string => $record->end_at ? 's/d ' . $record->end_at->format('d M Y, H:i') : null),
                 Tables\Columns\TextColumn::make('end_at')
-                    ->dateTime()
-                    ->sortable(),
+                    ->label('Selesai')
+                    ->dateTime('d M Y, H:i')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('registration_start_at')
-                    ->dateTime()
-                    ->sortable(),
+                    ->label('Mulai Registrasi')
+                    ->dateTime('d M Y')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('registration_end_at')
-                    ->dateTime()
-                    ->sortable(),
+                    ->label('Batas Registrasi')
+                    ->dateTime('d M Y')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('max_participants')
                     ->numeric()
                     ->sortable(),
@@ -130,15 +138,31 @@ class EventResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                Tables\Filters\TrashedFilter::make()
+                    ->label('Status Penghapusan (Sampah)'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\DeleteAction::make(),
+                    Tables\Actions\RestoreAction::make(),
+                    Tables\Actions\ForceDeleteAction::make(),
+                ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\RestoreBulkAction::make(),
+                    Tables\Actions\ForceDeleteBulkAction::make(),
                 ]),
+            ]);
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withoutGlobalScopes([
+                SoftDeletingScope::class,
             ]);
     }
 

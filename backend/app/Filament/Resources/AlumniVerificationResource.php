@@ -14,6 +14,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class AlumniVerificationResource extends Resource
 {
@@ -35,7 +36,10 @@ class AlumniVerificationResource extends Resource
     {
         return parent::getEloquentQuery()
             ->where('role', UserRole::ALUMNI)
-            ->with('profile');
+            ->with('profile')
+            ->withoutGlobalScopes([
+                SoftDeletingScope::class,
+            ]);
     }
 
     public static function getNavigationBadge(): ?string
@@ -106,24 +110,29 @@ class AlumniVerificationResource extends Resource
                     ->checkFileExistence(false)
                     ->getStateUsing(fn (User $record): ?string => $record->avatar_url),
                 Tables\Columns\TextColumn::make('name')
-                    ->label('Nama Lengkap')
+                    ->label('Nama & Email')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->weight('bold')
+                    ->description(fn (User $record): string => $record->email),
                 Tables\Columns\TextColumn::make('email')
                     ->label('Email')
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('profile.graduation_year')
                     ->label('Angkatan')
                     ->badge()
                     ->color('success')
-                    ->sortable(),
+                    ->sortable()
+                    ->description(fn (User $record): ?string => $record->profile?->graduation_class ? 'Kelas ' . $record->profile->graduation_class : null),
                 Tables\Columns\TextColumn::make('profile.graduation_class')
                     ->label('Kelas')
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('profile.alumni_identifier')
-                    ->label('Nomor Anggota (NPA)')
+                    ->label('NPA')
                     ->fontFamily('mono')
-                    ->placeholder('Belum Diterbitkan')
+                    ->placeholder('—')
                     ->copyable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('status')
@@ -136,7 +145,7 @@ class AlumniVerificationResource extends Resource
                         default => 'gray',
                     }),
                 Tables\Columns\IconColumn::make('profile.is_featured')
-                    ->label('Pilihan Beranda')
+                    ->label('Beranda')
                     ->boolean()
                     ->trueIcon('heroicon-s-star')
                     ->falseIcon('heroicon-o-star')
@@ -144,7 +153,7 @@ class AlumniVerificationResource extends Resource
                     ->falseColor('gray')
                     ->alignCenter(),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Tgl Mendaftar')
+                    ->label('Mendaftar')
                     ->dateTime('d M Y')
                     ->sortable(),
             ])
@@ -166,32 +175,16 @@ class AlumniVerificationResource extends Resource
                         true: fn (Builder $query) => $query->whereHas('profile', fn ($q) => $q->where('is_featured', true)),
                         false: fn (Builder $query) => $query->whereHas('profile', fn ($q) => $q->where('is_featured', false)),
                     ),
+                Tables\Filters\TrashedFilter::make()
+                    ->label('Status Penghapusan (Sampah)'),
             ])
             ->actions([
-                Tables\Actions\Action::make('toggleFeatured')
-                    ->label(fn (User $record): string => $record->profile?->is_featured ? 'Batal Pilihan' : 'Pilihan Beranda')
-                    ->icon(fn (User $record): string => $record->profile?->is_featured ? 'heroicon-s-star' : 'heroicon-o-star')
-                    ->color(fn (User $record): string => $record->profile?->is_featured ? 'warning' : 'gray')
-                    ->tooltip('Tampilkan alumni ini di carousel Alumni Pilihan pada halaman beranda utama')
-                    ->visible(fn (User $record): bool => ($record->status === UserStatus::ACTIVE || $record->status === 'active') && $record->profile !== null)
-                    ->action(function (User $record): void {
-                        if ($record->profile) {
-                            $newVal = !$record->profile->is_featured;
-                            $record->profile->update(['is_featured' => $newVal]);
-
-                            Notification::make()
-                                ->title($newVal ? 'Disematkan sebagai Alumni Pilihan' : 'Dihapus dari Alumni Pilihan')
-                                ->body("Profil {$record->name} " . ($newVal ? "kini akan ditampilkan di carousel Alumni Pilihan di beranda." : "tidak lagi ditampilkan di beranda."))
-                                ->success()
-                                ->send();
-                        }
-                    }),
                 Tables\Actions\Action::make('approve')
-                    ->label('Setujui & Terbitkan NPA')
-                    ->icon('heroicon-o-check-badge')
+                    ->label('Setujui')
+                    ->icon('heroicon-m-check-badge')
                     ->color('success')
                     ->requiresConfirmation()
-                    ->visible(fn (User $record): bool => $record->status === UserStatus::PENDING || $record->status === 'pending')
+                    ->visible(fn (User $record): bool => ($record->status === UserStatus::PENDING || $record->status === 'pending') && !$record->trashed())
                     ->action(function (User $record): void {
                         $record->update(['status' => UserStatus::ACTIVE]);
 
@@ -218,7 +211,7 @@ class AlumniVerificationResource extends Resource
 
                 Tables\Actions\Action::make('reject')
                     ->label('Tolak')
-                    ->icon('heroicon-o-x-circle')
+                    ->icon('heroicon-m-x-circle')
                     ->color('danger')
                     ->requiresConfirmation()
                     ->form([
@@ -227,7 +220,7 @@ class AlumniVerificationResource extends Resource
                             ->placeholder('Misal: Data ijazah tidak sesuai dengan catatan madrasah...')
                             ->required(),
                     ])
-                    ->visible(fn (User $record): bool => $record->status === UserStatus::PENDING || $record->status === 'pending')
+                    ->visible(fn (User $record): bool => ($record->status === UserStatus::PENDING || $record->status === 'pending') && !$record->trashed())
                     ->action(function (User $record, array $data): void {
                         $record->update(['status' => UserStatus::SUSPENDED]);
 
@@ -242,15 +235,40 @@ class AlumniVerificationResource extends Resource
                     ->label('Lihat Profil')
                     ->icon('heroicon-m-arrow-top-right-on-square')
                     ->color('gray')
-                    ->visible(fn (User $record): bool => ($record->status === UserStatus::ACTIVE || $record->status === 'active') && $record->profile !== null)
+                    ->visible(fn (User $record): bool => ($record->status === UserStatus::ACTIVE || $record->status === 'active') && $record->profile !== null && !$record->trashed())
                     ->url(fn (User $record): string => rtrim(config('app.frontend_url', env('FRONTEND_URL', 'https://alumni.mayoga.sch.id')), '/') . '/alumni/' . ($record->profile->slug ?: $record->profile->id))
                     ->openUrlInNewTab(),
 
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\Action::make('toggleFeatured')
+                        ->label(fn (User $record): string => $record->profile?->is_featured ? 'Batal Alumni Pilihan' : 'Jadikan Alumni Pilihan')
+                        ->icon(fn (User $record): string => $record->profile?->is_featured ? 'heroicon-s-star' : 'heroicon-o-star')
+                        ->color(fn (User $record): string => $record->profile?->is_featured ? 'warning' : 'gray')
+                        ->visible(fn (User $record): bool => ($record->status === UserStatus::ACTIVE || $record->status === 'active') && $record->profile !== null && !$record->trashed())
+                        ->action(function (User $record): void {
+                            if ($record->profile) {
+                                $newVal = !$record->profile->is_featured;
+                                $record->profile->update(['is_featured' => $newVal]);
+
+                                Notification::make()
+                                    ->title($newVal ? 'Disematkan sebagai Alumni Pilihan' : 'Dihapus dari Alumni Pilihan')
+                                    ->body("Profil {$record->name} " . ($newVal ? "kini akan ditampilkan di carousel Alumni Pilihan di beranda." : "tidak lagi ditampilkan di beranda."))
+                                    ->success()
+                                    ->send();
+                            }
+                        }),
+
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make(),
+                    Tables\Actions\RestoreAction::make(),
+                    Tables\Actions\ForceDeleteAction::make(),
+                ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\RestoreBulkAction::make(),
+                    Tables\Actions\ForceDeleteBulkAction::make(),
                 ]),
             ]);
     }

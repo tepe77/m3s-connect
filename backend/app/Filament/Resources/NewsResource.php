@@ -249,6 +249,9 @@ class NewsResource extends Resource
                         'published' => 'Diterbitkan',
                         'archived' => 'Diarsipkan',
                     ]),
+
+                Tables\Filters\TrashedFilter::make()
+                    ->label('Status Penghapusan (Sampah)'),
             ])
             ->actions([
                 Tables\Actions\Action::make('preview_portal')
@@ -256,15 +259,30 @@ class NewsResource extends Resource
                     ->icon('heroicon-m-arrow-top-right-on-square')
                     ->color('gray')
                     ->url(fn (News $record): string => rtrim(config('app.frontend_url', env('FRONTEND_URL', 'https://alumni.mayoga.sch.id')), '/') . ($record->slug ? "/news/{$record->slug}" : '/news'))
-                    ->openUrlInNewTab(),
+                    ->openUrlInNewTab()
+                    ->hidden(fn (News $record): bool => $record->trashed()),
 
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\DeleteAction::make(),
+                    Tables\Actions\RestoreAction::make(),
+                    Tables\Actions\ForceDeleteAction::make(),
+                ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\RestoreBulkAction::make(),
+                    Tables\Actions\ForceDeleteBulkAction::make(),
                 ]),
+            ]);
+    }
+
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        return parent::getEloquentQuery()
+            ->withoutGlobalScopes([
+                \Illuminate\Database\Eloquent\SoftDeletingScope::class,
             ]);
     }
 

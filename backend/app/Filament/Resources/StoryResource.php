@@ -301,7 +301,7 @@ class StoryResource extends Resource
                     ->label('Terbitkan')
                     ->icon('heroicon-m-check-circle')
                     ->color('success')
-                    ->visible(fn (Story $record): bool => $record->status !== StoryStatus::PUBLISHED)
+                    ->visible(fn (Story $record): bool => $record->status !== StoryStatus::PUBLISHED && ! $record->trashed())
                     ->action(function (Story $record): void {
                         $record->update([
                             'status' => StoryStatus::PUBLISHED,
@@ -319,7 +319,7 @@ class StoryResource extends Resource
                     ->label('Tolak')
                     ->icon('heroicon-m-x-circle')
                     ->color('danger')
-                    ->visible(fn (Story $record): bool => $record->status === StoryStatus::PENDING_REVIEW)
+                    ->visible(fn (Story $record): bool => $record->status === StoryStatus::PENDING_REVIEW && ! $record->trashed())
                     ->requiresConfirmation()
                     ->action(function (Story $record): void {
                         $record->update([
@@ -334,7 +334,11 @@ class StoryResource extends Resource
                     }),
 
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\DeleteAction::make(),
+                    Tables\Actions\RestoreAction::make(),
+                    Tables\Actions\ForceDeleteAction::make(),
+                ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

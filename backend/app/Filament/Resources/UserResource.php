@@ -89,13 +89,15 @@ class UserResource extends Resource
                     ->checkFileExistence(false)
                     ->getStateUsing(fn (User $record): ?string => $record->avatar_url),
                 Tables\Columns\TextColumn::make('name')
-                    ->label('Nama Lengkap')
+                    ->label('Nama & Email')
                     ->searchable()
                     ->sortable()
-                    ->weight('bold'),
+                    ->weight('bold')
+                    ->description(fn (User $record): string => $record->email),
                 Tables\Columns\TextColumn::make('email')
                     ->label('Email')
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('role')
                     ->label('Peran')
                     ->badge()
@@ -120,6 +122,23 @@ class UserResource extends Resource
                     ->label('Terdaftar')
                     ->dateTime('d M Y')
                     ->sortable(),
+                Tables\Columns\TextColumn::make('profile.graduation_year')
+                    ->label('Angkatan')
+                    ->badge()
+                    ->color('info')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('profile.alumni_identifier')
+                    ->label('NPA')
+                    ->fontFamily('mono')
+                    ->searchable()
+                    ->copyable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('deleted_at')
+                    ->label('Dihapus')
+                    ->dateTime('d M Y, H:i')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('role')
@@ -138,14 +157,31 @@ class UserResource extends Resource
                         'suspended' => 'Ditangguhkan',
                         'inactive' => 'Tidak Aktif',
                     ]),
+                Tables\Filters\TrashedFilter::make()
+                    ->label('Status Penghapusan (Sampah)'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\DeleteAction::make(),
+                    Tables\Actions\RestoreAction::make(),
+                    Tables\Actions\ForceDeleteAction::make(),
+                ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\RestoreBulkAction::make(),
+                    Tables\Actions\ForceDeleteBulkAction::make(),
                 ]),
+            ]);
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withoutGlobalScopes([
+                SoftDeletingScope::class,
             ]);
     }
 

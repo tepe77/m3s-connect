@@ -59,4 +59,23 @@
         background-color: #0f766e !important;
         box-shadow: 0 4px 12px rgba(13, 148, 136, 0.25) !important;
     }
+
+    /* Sleek modern scrollbar for Filament tables */
+    .fi-ta-content {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(148, 163, 184, 0.35) transparent;
+    }
+    .fi-ta-content::-webkit-scrollbar {
+        height: 6px;
+    }
+    .fi-ta-content::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .fi-ta-content::-webkit-scrollbar-thumb {
+        background: rgba(148, 163, 184, 0.35);
+        border-radius: 9999px;
+    }
+    .fi-ta-content::-webkit-scrollbar-thumb:hover {
+        background: rgba(148, 163, 184, 0.6);
+    }
 </style>

@@ -171,13 +171,16 @@ class NewsCommentResource extends Resource
                     ->label('Filter Berita')
                     ->searchable()
                     ->preload(),
+
+                Tables\Filters\TrashedFilter::make()
+                    ->label('Status Penghapusan (Sampah)'),
             ])
             ->actions([
                 Tables\Actions\Action::make('approve')
                     ->label('Setujui')
                     ->icon('heroicon-m-check-circle')
                     ->color('success')
-                    ->visible(fn (NewsComment $record): bool => ! $record->is_approved)
+                    ->visible(fn (NewsComment $record): bool => ! $record->is_approved && ! $record->trashed())
                     ->action(function (NewsComment $record): void {
                         $record->update(['is_approved' => true]);
                         Notification::make()
@@ -191,7 +194,7 @@ class NewsCommentResource extends Resource
                     ->label('Tahan')
                     ->icon('heroicon-m-x-circle')
                     ->color('warning')
-                    ->visible(fn (NewsComment $record): bool => (bool) $record->is_approved)
+                    ->visible(fn (NewsComment $record): bool => (bool) $record->is_approved && ! $record->trashed())
                     ->action(function (NewsComment $record): void {
                         $record->update(['is_approved' => false]);
                         Notification::make()
@@ -203,6 +206,8 @@ class NewsCommentResource extends Resource
 
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
+                Tables\Actions\RestoreAction::make(),
+                Tables\Actions\ForceDeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -233,7 +238,17 @@ class NewsCommentResource extends Resource
                         }),
 
                     Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\RestoreBulkAction::make(),
+                    Tables\Actions\ForceDeleteBulkAction::make(),
                 ]),
+            ]);
+    }
+
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        return parent::getEloquentQuery()
+            ->withoutGlobalScopes([
+                \Illuminate\Database\Eloquent\SoftDeletingScope::class,
             ]);
     }
 

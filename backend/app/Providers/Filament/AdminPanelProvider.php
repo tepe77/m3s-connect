@@ -19,6 +19,7 @@ use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 use App\Filament\Pages\Auth\Login;
+use Filament\Support\Enums\MaxWidth;
 use Filament\View\PanelsRenderHook;
 
 class AdminPanelProvider extends PanelProvider
@@ -34,6 +35,8 @@ class AdminPanelProvider extends PanelProvider
             ->brandName('M3S Connect Admin Panel')
             ->brandLogo(fn () => view('filament.admin.logo'))
             ->brandLogoHeight('2.5rem')
+            ->maxContentWidth(MaxWidth::Full)
+            ->sidebarCollapsibleOnDesktop()
             ->renderHook(
                 PanelsRenderHook::HEAD_END,
                 fn () => view('filament.admin.custom-styles'),

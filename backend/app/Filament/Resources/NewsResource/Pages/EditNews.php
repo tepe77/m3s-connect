@@ -20,6 +20,8 @@ class EditNews extends EditRecord
                 ->url(fn (): string => rtrim(config('app.frontend_url', env('FRONTEND_URL', 'https://alumni.mayoga.sch.id')), '/') . ($this->record->slug ? "/news/{$this->record->slug}" : '/news'))
                 ->openUrlInNewTab(),
             Actions\DeleteAction::make(),
+            Actions\ForceDeleteAction::make(),
+            Actions\RestoreAction::make(),
         ];
     }
 
