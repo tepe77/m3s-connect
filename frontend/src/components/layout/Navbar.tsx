@@ -20,7 +20,14 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStoredThreads, markThreadAsRead } from "@/data/messageData";
-import { API_BASE_URL } from "@/lib/api";
+import { API_BASE_URL, getAssetUrl } from "@/lib/api";
+
+function resolveNavbarAvatar(avatar: string | undefined | null): string {
+  if (!avatar) return "/images/avatar-ahmad.jpg";
+  if (avatar.startsWith("data:") || avatar.startsWith("/images/")) return avatar;
+  if (avatar.startsWith("http://") || avatar.startsWith("https://")) return avatar;
+  return getAssetUrl(avatar);
+}
 
 export interface NotificationItem {
   id: string;
@@ -118,21 +125,20 @@ export function Navbar() {
       const userStr = localStorage.getItem("m3s_user");
       if (token && userStr) {
         const parsed = JSON.parse(userStr);
+        let avatarCandidate = parsed.avatar_url || parsed.avatar;
         // If avatar is missing, check user profile storage
-        if (!parsed.avatar) {
+        if (!avatarCandidate) {
           const profileStr = localStorage.getItem("m3s_user_profile");
           if (profileStr) {
             try {
               const profile = JSON.parse(profileStr);
               if (profile.avatar) {
-                parsed.avatar = profile.avatar;
+                avatarCandidate = profile.avatar;
               }
             } catch {}
           }
         }
-        if (!parsed.avatar) {
-          parsed.avatar = "/images/avatar-ahmad.jpg";
-        }
+        parsed.avatar = resolveNavbarAvatar(avatarCandidate);
         setCurrentUser(parsed);
 
       } else {
@@ -241,6 +247,35 @@ export function Navbar() {
   useEffect(() => {
     syncUser();
     syncNotifications();
+
+    // Refresh authenticated user profile from backend on mount
+    const token = typeof window !== "undefined" ? localStorage.getItem("m3s_token") : null;
+    if (token) {
+      fetch(`${API_BASE_URL}/auth/me`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((json) => {
+          if (json?.data?.user) {
+            const u = json.data.user;
+            const liveAvatar = resolveNavbarAvatar(u.avatar_url || u.avatar);
+            setCurrentUser((prev) => (prev ? { ...prev, ...u, avatar: liveAvatar } : prev));
+            try {
+              const curStr = localStorage.getItem("m3s_user");
+              if (curStr) {
+                const parsed = JSON.parse(curStr);
+                parsed.avatar = liveAvatar;
+                parsed.name = u.name;
+                localStorage.setItem("m3s_user", JSON.stringify(parsed));
+              }
+            } catch {}
+          }
+        })
+        .catch(() => {});
+    }
 
     // Listen to storage event (cross-tab) and custom events (same-tab)
     window.addEventListener("storage", syncUser);
@@ -558,8 +593,11 @@ export function Navbar() {
                 <div className="relative">
                   {currentUser.avatar ? (
                     <img
-                      src={currentUser.avatar}
+                      src={resolveNavbarAvatar(currentUser.avatar)}
                       alt={currentUser.name || "Alumni"}
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).src = "/images/avatar-ahmad.jpg";
+                      }}
                       className="size-8.5 rounded-full object-cover ring-2 ring-emerald-500/25"
                     />
                   ) : (
@@ -595,8 +633,11 @@ export function Navbar() {
                   <div className="p-3.5 bg-slate-50/70 flex items-center gap-3">
                     {currentUser.avatar ? (
                       <img
-                        src={currentUser.avatar}
+                        src={resolveNavbarAvatar(currentUser.avatar)}
                         alt={currentUser.name || "Alumni"}
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).src = "/images/avatar-ahmad.jpg";
+                        }}
                         className="size-10 rounded-full object-cover ring-2 ring-emerald-500/20 shrink-0"
                       />
                     ) : (
@@ -669,8 +710,11 @@ export function Navbar() {
                             {isDm && notif.avatar ? (
                               <div className="relative size-7 rounded-full overflow-hidden shrink-0 mt-0.5 ring-1 ring-emerald-400">
                                 <img
-                                  src={notif.avatar}
+                                  src={resolveNavbarAvatar(notif.avatar)}
                                   alt={notif.title}
+                                  onError={(e) => {
+                                    (e.currentTarget as HTMLImageElement).src = "/images/avatar-ahmad.jpg";
+                                  }}
                                   className="size-full object-cover"
                                 />
                               </div>
@@ -855,8 +899,11 @@ export function Navbar() {
                 <div className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 border border-slate-200/70">
                   {currentUser.avatar ? (
                     <img
-                      src={currentUser.avatar}
+                      src={resolveNavbarAvatar(currentUser.avatar)}
                       alt={currentUser.name || "Alumni"}
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).src = "/images/avatar-ahmad.jpg";
+                      }}
                       className="size-10 rounded-full object-cover ring-2 ring-emerald-500/20 shrink-0"
                     />
                   ) : (

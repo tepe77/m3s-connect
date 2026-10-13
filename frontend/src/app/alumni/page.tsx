@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Container } from "@/components/ui/Container";
-import { AlumniItem, getAlumniProfileUrl } from "@/data/alumniData";
+import { AlumniItem, getAlumniProfileUrl, mapAlumniProfile, resolveAlumniAvatar } from "@/data/alumniData";
 import { API_BASE_URL } from "@/lib/api";
 
 export default function AlumniDirectoryPage() {
@@ -20,38 +20,7 @@ export default function AlumniDirectoryPage() {
       .then((res) => res.json())
       .then((json) => {
         if (json?.data?.data && Array.isArray(json.data.data)) {
-          const mapped: AlumniItem[] = json.data.data.map((p: any) => {
-            const rawName = p.user?.name || "Alumni";
-            const generatedSlug = rawName
-              .toLowerCase()
-              .replace(/[^a-z0-9]+/g, "-")
-              .replace(/(^-|-$)/g, "");
-
-            return {
-              id: p.id,
-              slug: p.slug || generatedSlug || p.id,
-              name: rawName,
-              email: p.user?.email || "",
-              avatar: p.user?.avatar || p.avatar_url || "/images/avatar-ahmad.jpg",
-              graduationYear: p.graduation_year || 0,
-              graduationClass: p.graduation_class || "",
-              alumniIdentifier: p.alumni_identifier || "",
-              isVerified: Boolean(p.verified_at),
-              occupation: p.occupation || "",
-              company: p.company || "",
-              city: p.current_city || "",
-              country: p.current_country || "Indonesia",
-              bio: p.bio || "",
-              skills: Array.isArray(p.skills)
-                ? p.skills.map((s: any) => (typeof s === "string" ? s : s.name))
-                : [],
-              socialLinks: Array.isArray(p.social_links)
-                ? p.social_links.map((s: any) => ({ platform: s.platform, url: s.url }))
-                : [],
-              educations: Array.isArray(p.educations) ? p.educations : [],
-              experiences: Array.isArray(p.experiences) ? p.experiences : [],
-            };
-          });
+          const mapped: AlumniItem[] = json.data.data.map(mapAlumniProfile);
           setAlumniList(mapped);
         } else {
           setAlumniList([]);
@@ -219,24 +188,30 @@ export default function AlumniDirectoryPage() {
                 {/* 1. Header Card: Avatar & Badges */}
                 <div className="flex items-start gap-4">
                   <Link href={getAlumniProfileUrl(alumni)} className="relative shrink-0 group">
-                    <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow-xs bg-slate-100 group-hover:ring-2 group-hover:ring-[#0D9488] transition-all">
+                    <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow-xs bg-slate-100 group-hover:ring-2 group-hover:ring-[#0D9488] transition-all relative">
                       <Image
-                        src={alumni.avatar}
+                        src={resolveAlumniAvatar(alumni.avatar)}
                         alt={alumni.name}
                         width={64}
                         height={64}
+                        unoptimized
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).src = "/images/avatar-ahmad.jpg";
+                        }}
                         className="object-cover w-full h-full"
                       />
                     </div>
-                    {/* Active Verified Indicator */}
-                    <span
-                      className="absolute bottom-0 right-0 w-4 h-4 rounded-full bg-[#10B981] border-2 border-white flex items-center justify-center text-white"
-                      title="Alumni Terverifikasi Aktif"
-                    >
-                      <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                    </span>
+                    {/* Active Verified Indicator (hanya tampil jika sudah terverifikasi) */}
+                    {alumni.isVerified && (
+                      <span
+                        className="absolute bottom-0 right-0 w-4 h-4 rounded-full bg-[#10B981] border-2 border-white flex items-center justify-center text-white shadow-2xs"
+                        title="Alumni Terverifikasi Sah"
+                      >
+                        <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      </span>
+                    )}
                   </Link>
 
                   <div className="min-w-0 flex-1 space-y-1">

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Container } from "@/components/ui/Container";
-import { AlumniItem } from "@/data/alumniData";
+import { AlumniItem, resolveAlumniAvatar } from "@/data/alumniData";
 import { sendNewDirectMessage } from "@/data/messageData";
 import {
   Dialog,
@@ -227,12 +227,16 @@ export function AlumniDetailClient({ initialAlumni, identifier }: AlumniDetailCl
           <div className="px-6 sm:px-10 pb-8 pt-0 relative">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 -mt-16 sm:-mt-20 mb-6">
               <div className="relative">
-                <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full overflow-hidden border-4 border-white shadow-md bg-slate-100">
+                <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full overflow-hidden border-4 border-white shadow-md bg-slate-100 relative">
                   <Image
-                    src={alumni.avatar}
+                    src={resolveAlumniAvatar(alumni.avatar)}
                     alt={alumni.name}
                     width={128}
                     height={128}
+                    unoptimized
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).src = "/images/avatar-ahmad.jpg";
+                    }}
                     className="object-cover w-full h-full"
                   />
                 </div>
@@ -540,9 +544,13 @@ export function AlumniDetailClient({ initialAlumni, identifier }: AlumniDetailCl
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full overflow-hidden border border-emerald-300 relative shrink-0">
                   <Image
-                    src={alumni.avatar}
+                    src={resolveAlumniAvatar(alumni.avatar)}
                     alt={alumni.name}
                     fill
+                    unoptimized
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).src = "/images/avatar-ahmad.jpg";
+                    }}
                     className="object-cover"
                   />
                 </div>

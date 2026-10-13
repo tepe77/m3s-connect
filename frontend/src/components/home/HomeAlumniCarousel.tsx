@@ -287,10 +287,14 @@ export function HomeAlumniCarousel({ alumniList }: HomeAlumniCarouselProps) {
                 <div className="relative mt-1">
                   <div className="relative w-18 h-18 rounded-full overflow-hidden border-2 border-white shadow-xs ring-2 ring-emerald-500/20 bg-slate-100">
                     <Image
-                      src={alumni.avatar || "/images/avatar-ahmad.jpg"}
+                      src={resolveAvatar(alumni.avatar, alumni.name)}
                       alt={alumni.name}
                       fill
+                      unoptimized
                       sizes="72px"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).src = "/images/avatar-ahmad.jpg";
+                      }}
                       className="object-cover"
                     />
                   </div>

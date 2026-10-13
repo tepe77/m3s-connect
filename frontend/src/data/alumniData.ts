@@ -2,7 +2,7 @@ import { getAssetUrl } from "@/lib/api";
 
 export function resolveAlumniAvatar(avatar: string | null | undefined): string {
   if (!avatar) return "/images/avatar-ahmad.jpg";
-  if (avatar.startsWith("/images/")) return avatar;
+  if (avatar.startsWith("data:") || avatar.startsWith("/images/")) return avatar;
   if (avatar.startsWith("http://") || avatar.startsWith("https://")) return avatar;
   return getAssetUrl(avatar);
 }
@@ -92,7 +92,7 @@ export function mapAlumniProfile(p: any): AlumniItem {
     slug: p.slug || generatedSlug || p.id,
     name: rawName,
     email: p.user?.email || "",
-    avatar: resolveAlumniAvatar(p.user?.avatar || p.avatar_url || p.avatar),
+    avatar: resolveAlumniAvatar(p.avatar_url || p.user?.avatar_url || p.user?.avatar || p.avatar),
     graduationYear: p.graduation_year || 0,
     graduationClass: p.graduation_class || "",
     alumniIdentifier: p.alumni_identifier || "",
