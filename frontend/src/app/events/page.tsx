@@ -9,7 +9,8 @@ export const metadata: Metadata = {
     "Jadwal lengkap kegiatan silaturahmi temu kangen akbar, webinar pengembangan karir, bakti sosial, dan agenda resmi Ikatan Alumni MAN 3 Sleman (Mayoga).",
 };
 
-export const revalidate = 60; // ISR cache 60 seconds
+export const dynamic = "force-dynamic";
+export const revalidate = 0; // Real-time synchronization without stale cache
 
 export default async function EventsPage() {
   const [initialEvents, categories] = await Promise.all([

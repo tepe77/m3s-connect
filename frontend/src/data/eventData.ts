@@ -316,10 +316,30 @@ export async function fetchEventDetail(slug: string, token?: string | null): Pro
   }
 
   try {
-    const res = await fetch(`${API_BASE_URL}/events/${slug}`, {
+    let res = await fetch(`${API_BASE_URL}/events/${slug}`, {
       headers,
       cache: "no-store",
     });
+
+    // If server returned error (e.g. 500 when remote backend PostgreSQL receives a slug in UUID column query),
+    // resolve the event ID from event list and request by UUID
+    if (!res.ok) {
+      try {
+        const eventsList = await fetchEvents({ tab: "all" }, token);
+        const matched = eventsList.find((e) => e.slug === slug || e.id === slug);
+        if (matched && matched.id && matched.id !== slug) {
+          const retryRes = await fetch(`${API_BASE_URL}/events/${matched.id}`, {
+            headers,
+            cache: "no-store",
+          });
+          if (retryRes.ok) {
+            res = retryRes;
+          }
+        }
+      } catch {
+        // Fall through to standard response handling
+      }
+    }
 
     if (res.ok) {
       const json = await res.json();
@@ -341,11 +361,12 @@ export async function fetchEventDetail(slug: string, token?: string | null): Pro
 }
 
 export async function submitEventRsvp(
-  slug: string,
+  slugOrId: string,
   token: string
 ): Promise<{ success: boolean; message: string; data?: any }> {
   try {
-    const res = await fetch(`${API_BASE_URL}/events/${slug}/rsvp`, {
+    let target = slugOrId;
+    let res = await fetch(`${API_BASE_URL}/events/${target}/rsvp`, {
       method: "POST",
       headers: {
         Accept: "application/json",
@@ -353,6 +374,27 @@ export async function submitEventRsvp(
         Authorization: `Bearer ${token}`,
       },
     });
+
+    // If server returned 500 due to slug routing, retry by UUID
+    if (!res.ok && res.status >= 500) {
+      try {
+        const eventsList = await fetchEvents({ tab: "all" }, token);
+        const matched = eventsList.find((e) => e.slug === slugOrId || e.id === slugOrId);
+        if (matched && matched.id && matched.id !== slugOrId) {
+          const retry = await fetch(`${API_BASE_URL}/events/${matched.id}/rsvp`, {
+            method: "POST",
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          if (retry.ok || retry.status < 500) {
+            res = retry;
+          }
+        }
+      } catch {}
+    }
 
     const json = await res.json();
     if (res.ok) {
@@ -376,17 +418,38 @@ export async function submitEventRsvp(
 }
 
 export async function cancelEventRsvp(
-  slug: string,
+  slugOrId: string,
   token: string
 ): Promise<{ success: boolean; message: string; data?: any }> {
   try {
-    const res = await fetch(`${API_BASE_URL}/events/${slug}/rsvp`, {
+    let target = slugOrId;
+    let res = await fetch(`${API_BASE_URL}/events/${target}/rsvp`, {
       method: "DELETE",
       headers: {
         Accept: "application/json",
         Authorization: `Bearer ${token}`,
       },
     });
+
+    // If server returned 500 due to slug routing, retry by UUID
+    if (!res.ok && res.status >= 500) {
+      try {
+        const eventsList = await fetchEvents({ tab: "all" }, token);
+        const matched = eventsList.find((e) => e.slug === slugOrId || e.id === slugOrId);
+        if (matched && matched.id && matched.id !== slugOrId) {
+          const retry = await fetch(`${API_BASE_URL}/events/${matched.id}/rsvp`, {
+            method: "DELETE",
+            headers: {
+              Accept: "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          if (retry.ok || retry.status < 500) {
+            res = retry;
+          }
+        }
+      } catch {}
+    }
 
     const json = await res.json();
     if (res.ok) {

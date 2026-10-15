@@ -118,9 +118,14 @@ export function EventRsvpWidget({ event }: EventRsvpWidgetProps) {
     }
   };
 
-  const maxQuota = event.max_participants;
-  const isFull = maxQuota ? rsvpsCount >= maxQuota : false;
-  const percentage = maxQuota ? Math.min(100, Math.round((rsvpsCount / maxQuota) * 100)) : null;
+  const hasQuotaLimit = typeof event.max_participants === "number";
+  const maxQuota = hasQuotaLimit ? event.max_participants : null;
+  const isFull = hasQuotaLimit ? rsvpsCount >= (maxQuota ?? 0) : false;
+  const percentage = hasQuotaLimit
+    ? (maxQuota ?? 0) > 0
+      ? Math.min(100, Math.round((rsvpsCount / (maxQuota ?? 1)) * 100))
+      : 100
+    : null;
 
   return (
     <div className="space-y-6">
@@ -149,7 +154,7 @@ export function EventRsvpWidget({ event }: EventRsvpWidgetProps) {
                   : isRegistered
                   ? "bg-emerald-100 text-emerald-900 font-bold"
                   : isFull
-                  ? "bg-amber-100 text-amber-900"
+                  ? "bg-amber-100 text-amber-900 font-bold"
                   : "bg-emerald-50 text-emerald-800"
               }`}
             >
@@ -170,15 +175,15 @@ export function EventRsvpWidget({ event }: EventRsvpWidgetProps) {
                 <Users className="size-3.5 text-emerald-700" /> Kuota Peserta Terisi
               </span>
               <span className="font-bold text-slate-900">
-                {rsvpsCount} {maxQuota ? `/ ${maxQuota} Kursi` : "Alumni Hadir"}
+                {rsvpsCount} {hasQuotaLimit ? `/ ${maxQuota} Kursi` : "Alumni Hadir"}
               </span>
             </div>
 
-            {maxQuota && (
+            {hasQuotaLimit && (
               <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all duration-500 ${
-                    percentage && percentage >= 90
+                    percentage !== null && percentage >= 90
                       ? "bg-amber-500"
                       : "bg-emerald-700"
                   }`}

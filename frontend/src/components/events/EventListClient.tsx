@@ -345,7 +345,7 @@ export function EventListClient({ initialEvents, categories }: EventListClientPr
                   <Users className="size-4 text-emerald-600" />
                   <span className="font-bold text-slate-900">{featuredEvent.rsvps_count} Alumni</span>
                   <span>telah konfirmasi kehadiran</span>
-                  {featuredEvent.max_participants && (
+                  {typeof featuredEvent.max_participants === "number" && (
                     <span className="text-slate-400">• Kuota {featuredEvent.max_participants}</span>
                   )}
                 </div>
@@ -495,7 +495,7 @@ export function EventListClient({ initialEvents, categories }: EventListClientPr
                           <span className="font-semibold text-slate-800">
                             {event.rsvps_count} Peserta RSVP
                           </span>
-                          {event.max_participants && (
+                          {typeof event.max_participants === "number" && (
                             <span className="text-slate-400">• Kuota {event.max_participants}</span>
                           )}
                         </div>

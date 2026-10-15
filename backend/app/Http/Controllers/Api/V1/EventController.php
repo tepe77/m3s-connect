@@ -11,6 +11,7 @@ use App\Models\EventRsvp;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class EventController extends Controller
 {
@@ -55,8 +56,10 @@ class EventController extends Controller
         if ($request->filled('category')) {
             $categorySlug = $request->input('category');
             $query->whereHas('category', function ($q) use ($categorySlug) {
-                $q->where('slug', $categorySlug)
-                    ->orWhere('id', $categorySlug);
+                $q->where('slug', $categorySlug);
+                if (Str::isUuid($categorySlug)) {
+                    $q->orWhere('id', $categorySlug);
+                }
             });
         }
 
@@ -140,8 +143,10 @@ class EventController extends Controller
                 $q->where('status', RsvpStatus::REGISTERED);
             }])
             ->where(function ($q) use ($slug) {
-                $q->where('slug', $slug)
-                    ->orWhere('id', $slug);
+                $q->where('slug', $slug);
+                if (Str::isUuid($slug)) {
+                    $q->orWhere('id', $slug);
+                }
             })
             ->first();
 
@@ -165,7 +170,7 @@ class EventController extends Controller
         $regStart = $event->registration_start_at ?? $event->created_at;
         $regEnd = $event->registration_end_at ?? $event->start_at;
         $isRegistrationOpen = ! $isPast && $now->between($regStart, $regEnd);
-        $isQuotaFull = $event->max_participants && $event->rsvps_count >= $event->max_participants;
+        $isQuotaFull = ! is_null($event->max_participants) && $event->rsvps_count >= $event->max_participants;
 
         $userRsvpStatus = $userRsvp ? ($userRsvp->status instanceof RsvpStatus ? $userRsvp->status->value : $userRsvp->status) : null;
 
@@ -212,8 +217,10 @@ class EventController extends Controller
                 $q->where('status', RsvpStatus::REGISTERED);
             }])
             ->where(function ($q) use ($slug) {
-                $q->where('slug', $slug)
-                    ->orWhere('id', $slug);
+                $q->where('slug', $slug);
+                if (Str::isUuid($slug)) {
+                    $q->orWhere('id', $slug);
+                }
             })
             ->first();
 
@@ -271,7 +278,7 @@ class EventController extends Controller
         }
 
         // Check Quota
-        if ($event->max_participants && $event->rsvps_count >= $event->max_participants) {
+        if (! is_null($event->max_participants) && $event->rsvps_count >= $event->max_participants) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Maaf, kuota peserta untuk agenda ini sudah penuh.',
@@ -321,8 +328,10 @@ class EventController extends Controller
         }
 
         $event = Event::where(function ($q) use ($slug) {
-            $q->where('slug', $slug)
-                ->orWhere('id', $slug);
+            $q->where('slug', $slug);
+            if (Str::isUuid($slug)) {
+                $q->orWhere('id', $slug);
+            }
         })->first();
 
         if (! $event) {

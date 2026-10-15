@@ -22,6 +22,9 @@ import {
   CheckCircle2,
 } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 interface EventDetailPageProps {
   params: Promise<{
     slug: string;
@@ -179,7 +182,11 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                     <p className="font-semibold text-slate-400 uppercase tracking-wider text-[10px]">Partisipasi Alumni</p>
                     <p className="font-bold text-slate-900 text-sm">{event.rsvps_count} Alumni Telah RSVP</p>
                     <p className="text-slate-500 mt-0.5">
-                      {event.max_participants ? `Kapasitas maksimal ${event.max_participants} orang` : "Kuota terbuka tanpa batas"}
+                      {typeof event.max_participants === "number"
+                        ? event.max_participants === 0
+                          ? "Batas Kuota: 0 (Pendaftaran Penuh)"
+                          : `Kapasitas maksimal ${event.max_participants} orang`
+                        : "Kuota terbuka tanpa batas"}
                     </p>
                   </div>
                 </div>
