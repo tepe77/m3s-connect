@@ -82,4 +82,26 @@ class Event extends Model
     {
         return $this->hasMany(Album::class);
     }
+
+    protected static function booted(): void
+    {
+        static::deleting(function (Event $event) {
+            if (! $event->isForceDeleting()) {
+                // Suffix slug with timestamp upon soft deletion so the original slug is immediately released for reuse
+                $event->slug = $event->slug . '-deleted-' . time();
+                $event->saveQuietly();
+            }
+        });
+
+        static::restoring(function (Event $event) {
+            $baseSlug = preg_replace('/-deleted-\d+$/', '', $event->slug);
+            $slug = $baseSlug;
+            $counter = 1;
+            while (static::where('slug', $slug)->where('id', '!=', $event->id)->exists()) {
+                $slug = "{$baseSlug}-{$counter}";
+                $counter++;
+            }
+            $event->slug = $slug;
+        });
+    }
 }

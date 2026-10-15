@@ -59,7 +59,12 @@ class EventResource extends Resource
                                         ->placeholder('judul-agenda-otomatis')
                                         ->required()
                                         ->maxLength(255)
-                                        ->unique(Event::class, 'slug', ignoreRecord: true)
+                                        ->unique(
+                                            Event::class,
+                                            'slug',
+                                            ignoreRecord: true,
+                                            modifyRuleUsing: fn (\Illuminate\Validation\Rules\Unique $rule) => $rule->whereNull('deleted_at')
+                                        )
                                         ->helperText('Otomatis dihasilkan dari judul kegiatan.')
                                         ->suffixAction(
                                             Action::make('generateSlug')

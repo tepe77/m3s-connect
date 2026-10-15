@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useEffect, useTransition } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -10,6 +10,7 @@ import {
   formatEventTimeRange,
   isOnlineEvent,
   fetchEvents,
+  fetchEventCategories,
 } from "@/data/eventData";
 import {
   Calendar,
@@ -47,10 +48,70 @@ function parseDateCallout(dateString: string) {
 
 export function EventListClient({ initialEvents, categories }: EventListClientProps) {
   const [events, setEvents] = useState<EventModel[]>(initialEvents);
+  const [categoryList, setCategoryList] = useState<EventCategory[]>(categories);
   const [activeTab, setActiveTab] = useState<"upcoming" | "past" | "all">("upcoming");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isPending, startTransition] = useTransition();
+  const [isSyncing, setIsSyncing] = useState<boolean>(initialEvents.length === 0);
+
+  const [tabCounts, setTabCounts] = useState<{ upcoming: number; past: number; all: number }>({
+    upcoming: initialEvents.filter((e) => !e.is_past).length,
+    past: initialEvents.filter((e) => e.is_past).length,
+    all: initialEvents.length,
+  });
+
+  // Client-side synchronization on mount and whenever tab/filters change
+  useEffect(() => {
+    let isMounted = true;
+
+    async function syncEvents() {
+      try {
+        const token = typeof window !== "undefined" ? localStorage.getItem("m3s_token") : null;
+
+        const [freshEvents, allEvents, freshCategories] = await Promise.all([
+          fetchEvents(
+            {
+              tab: activeTab,
+              category: selectedCategory !== "all" ? selectedCategory : undefined,
+              search: searchQuery.trim() ? searchQuery.trim() : undefined,
+            },
+            token
+          ),
+          fetchEvents({ tab: "all" }, token),
+          categoryList.length === 0 ? fetchEventCategories() : Promise.resolve([]),
+        ]);
+
+        if (isMounted) {
+          setEvents(freshEvents);
+          setIsSyncing(false);
+
+          if (freshCategories && freshCategories.length > 0) {
+            setCategoryList(freshCategories);
+          }
+
+          if (allEvents) {
+            setTabCounts({
+              upcoming: allEvents.filter((e) => !e.is_past).length,
+              past: allEvents.filter((e) => e.is_past).length,
+              all: allEvents.length,
+            });
+          }
+        }
+      } catch (err) {
+        console.warn("Client event sync error:", err);
+        if (isMounted) {
+          setIsSyncing(false);
+        }
+      }
+    }
+
+    syncEvents();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [activeTab, selectedCategory, searchQuery]);
 
   const handleFilterChange = (
     tab: "upcoming" | "past" | "all",
@@ -82,9 +143,9 @@ export function EventListClient({ initialEvents, categories }: EventListClientPr
 
   const standardEvents = featuredEvent ? events.slice(1) : events;
 
-  const upcomingCount = initialEvents.filter((e) => !e.is_past).length;
-  const pastCount = initialEvents.filter((e) => e.is_past).length;
-  const allCount = initialEvents.length;
+  const upcomingCount = tabCounts.upcoming;
+  const pastCount = tabCounts.past;
+  const allCount = tabCounts.all;
 
   return (
     <div className="space-y-8">
@@ -178,7 +239,7 @@ export function EventListClient({ initialEvents, categories }: EventListClientPr
             Semua Topik
           </button>
 
-          {categories
+          {categoryList
             .filter((c) => c.slug !== "all")
             .map((cat) => {
               const isSelected = selectedCategory === cat.slug;
@@ -229,7 +290,7 @@ export function EventListClient({ initialEvents, categories }: EventListClientPr
             <span>Filter aktif:</span>
             {selectedCategory !== "all" && (
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white border border-emerald-200 font-semibold text-emerald-900">
-                Topik: {categories.find((c) => c.slug === selectedCategory)?.name || selectedCategory}
+                Topik: {categoryList.find((c) => c.slug === selectedCategory)?.name || selectedCategory}
               </span>
             )}
             {searchQuery.trim() && (
@@ -371,7 +432,7 @@ export function EventListClient({ initialEvents, categories }: EventListClientPr
           </h2>
         )}
 
-        {isPending ? (
+        {(isPending || isSyncing) ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3].map((n) => (
               <div key={n} className="bg-white rounded-2xl border border-slate-200/80 p-5 space-y-4 animate-pulse">

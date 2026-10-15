@@ -103,6 +103,11 @@ export function isOnlineEvent(location: string = ""): boolean {
   return l.includes("zoom") || l.includes("online") || l.includes("gmeet") || l.includes("webinar") || l.includes("daring");
 }
 
+const DEFAULT_FETCH_HEADERS: Record<string, string> = {
+  Accept: "application/json",
+  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 IKAMAYOGA/1.0",
+};
+
 export async function fetchEvents(
   params: { tab?: string; category?: string; search?: string; limit?: number } = {},
   token?: string | null
@@ -113,8 +118,8 @@ export async function fetchEvents(
   if (params.search) query.set("search", params.search);
   if (params.limit) query.set("limit", params.limit.toString());
 
-  const headers: HeadersInit = {
-    Accept: "application/json",
+  const headers: Record<string, string> = {
+    ...DEFAULT_FETCH_HEADERS,
   };
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
@@ -147,6 +152,7 @@ export async function fetchEvents(
 export async function fetchEventCategories(): Promise<EventCategory[]> {
   try {
     const res = await fetch(`${API_BASE_URL}/events/categories`, {
+      headers: DEFAULT_FETCH_HEADERS,
       cache: "no-store",
     });
     if (res.ok) {
@@ -163,8 +169,8 @@ export async function fetchEventCategories(): Promise<EventCategory[]> {
 }
 
 export async function fetchEventDetail(slug: string, token?: string | null): Promise<EventModel | null> {
-  const headers: HeadersInit = {
-    Accept: "application/json",
+  const headers: Record<string, string> = {
+    ...DEFAULT_FETCH_HEADERS,
   };
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
