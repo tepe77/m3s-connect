@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { EventDetailClient } from "./EventDetailClient";
-import { fetchEventDetail } from "@/data/eventData";
+import { fetchEventDetail, stripHtml } from "@/data/eventData";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -27,12 +27,14 @@ export async function generateMetadata({ params }: EventDetailPageProps): Promis
     };
   }
 
+  const cleanDescription = stripHtml(event.description).slice(0, 160);
+
   return {
     title: `${event.title} | Agenda & Reuni Alumni MAN 3 Sleman`,
-    description: event.description.slice(0, 160),
+    description: cleanDescription,
     openGraph: {
       title: event.title,
-      description: event.description.slice(0, 160),
+      description: cleanDescription,
       images: [event.cover_image_url || "/images/doc-baksos.jpg"],
     },
   };

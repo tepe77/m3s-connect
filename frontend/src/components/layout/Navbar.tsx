@@ -45,11 +45,11 @@ const INITIAL_NOTIFICATIONS: NotificationItem[] = [];
 const navItems = [
   { label: "Beranda", href: "/" },
   { label: "Berita", href: "/news" },
+  { label: "Agenda", href: "/events" },
   { label: "Forum", href: "/forum" },
   { label: "Alumni", href: "/alumni" },
   { label: "Dokumentasi", href: "/archive" },
   { label: "Tentang", href: "/tentang" },
-  { label: "Kontak", href: "/kontak" },
 ];
 
 export function Navbar() {
@@ -867,7 +867,7 @@ export function Navbar() {
 
           {/* Mobile Links */}
           <div className="space-y-1">
-            {navItems.map((item) => {
+            {[...navItems, { label: "Kontak", href: "/kontak" }].map((item) => {
               const isActive =
                 item.href === "/"
                   ? pathname === "/"

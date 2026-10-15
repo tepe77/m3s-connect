@@ -9,6 +9,7 @@ import {
   formatEventDate,
   formatEventTimeRange,
   isOnlineEvent,
+  stripHtml,
   fetchEvents,
   fetchEventCategories,
 } from "@/data/eventData";
@@ -375,7 +376,7 @@ export function EventListClient({ initialEvents, categories }: EventListClientPr
                 </h3>
 
                 <p className="text-sm text-slate-600 line-clamp-3 leading-relaxed">
-                  {featuredEvent.description}
+                  {stripHtml(featuredEvent.description)}
                 </p>
 
                 {/* Event Key Facts */}
@@ -568,7 +569,7 @@ export function EventListClient({ initialEvents, categories }: EventListClientPr
                       </div>
 
                       <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed pt-1">
-                        {event.description}
+                        {stripHtml(event.description)}
                       </p>
                     </div>
                   </div>

@@ -103,6 +103,22 @@ export function isOnlineEvent(location: string = ""): boolean {
   return l.includes("zoom") || l.includes("online") || l.includes("gmeet") || l.includes("webinar") || l.includes("daring");
 }
 
+export function stripHtml(input: string = ""): string {
+  if (!input) return "";
+  return input
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 const DEFAULT_FETCH_HEADERS: Record<string, string> = {
   Accept: "application/json",
   "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 IKAMAYOGA/1.0",

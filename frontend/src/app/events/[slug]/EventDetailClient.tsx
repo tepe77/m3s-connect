@@ -307,11 +307,18 @@ export function EventDetailClient({ initialEvent, slug }: EventDetailClientProps
               {/* Event Description Section */}
               <div className="space-y-4 pt-2">
                 <h2 className="text-lg font-bold text-slate-900">Tentang Agenda Ini</h2>
-                <div className="prose prose-slate max-w-none text-slate-700 text-sm md:text-base leading-relaxed space-y-4">
-                  {event.description.split("\n\n").map((para, i) => (
-                    <p key={i}>{para}</p>
-                  ))}
-                </div>
+                {/<[a-z][\s\S]*>/i.test(event.description) ? (
+                  <div
+                    className="prose prose-slate max-w-none text-slate-700 text-sm md:text-base leading-relaxed prose-p:my-3 prose-ul:list-disc prose-ul:ml-5 prose-ol:list-decimal prose-ol:ml-5 prose-strong:text-slate-900"
+                    dangerouslySetInnerHTML={{ __html: event.description }}
+                  />
+                ) : (
+                  <div className="prose prose-slate max-w-none text-slate-700 text-sm md:text-base leading-relaxed space-y-4">
+                    {event.description.split("\n\n").map((para, i) => (
+                      <p key={i}>{para}</p>
+                    ))}
+                  </div>
+                )}
               </div>
             </article>
 
