@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { BACKEND_URL } from "@/lib/api";
+import { EventModel, fetchEvents, formatEventDate, formatEventTimeRange } from "@/data/eventData";
 
 interface UserData {
   id: string;
@@ -17,6 +18,7 @@ interface UserData {
 export default function MemberDashboardPage() {
   const router = useRouter();
   const [user, setUser] = useState<UserData | null>(null);
+  const [upcomingEvent, setUpcomingEvent] = useState<EventModel | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -33,6 +35,13 @@ export default function MemberDashboardPage() {
     } finally {
       setLoading(false);
     }
+
+    const token = localStorage.getItem("m3s_token");
+    fetchEvents({ tab: "upcoming", limit: 1 }, token).then((res) => {
+      if (res && res.length > 0) {
+        setUpcomingEvent(res[0]);
+      }
+    });
   }, [router]);
 
   const handleLogout = () => {
@@ -207,20 +216,46 @@ export default function MemberDashboardPage() {
 
             {/* Upcoming Events */}
             <div className="bg-white p-6 rounded-lg border border-[#E2E8F0] space-y-4">
-              <h2 className="text-base font-bold text-[#0F172A]">Kegiatan Mendatang</h2>
-              <div className="p-3.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-md space-y-2">
-                <span className="text-xs font-bold text-[#2BA8A2]">Webinar Karir Alumni</span>
-                <p className="text-xs font-medium text-[#0F172A]">
-                  Membangun Portofolio Global di Era Digital
-                </p>
-                <p className="text-xs text-[#64748B]">Minggu, 20 Oktober 2026 (19.00 WIB)</p>
-                <Link
-                  href="/events"
-                  className="inline-block text-xs font-semibold text-[#2BA8A2] hover:underline pt-1"
-                >
-                  Detail & Konfirmasi RSVP
+              <div className="flex items-center justify-between">
+                <h2 className="text-base font-bold text-[#0F172A]">Kegiatan Mendatang</h2>
+                <Link href="/events" className="text-xs font-semibold text-[#2BA8A2] hover:underline">
+                  Lihat Semua
                 </Link>
               </div>
+
+              {upcomingEvent ? (
+                <div className="p-3.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-md space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-[#2BA8A2]">
+                      {upcomingEvent.category?.name || "Agenda Alumni"}
+                    </span>
+                    {upcomingEvent.is_registered && (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                        Terdaftar Hadir ✓
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs font-bold text-[#0F172A] line-clamp-2">
+                    {upcomingEvent.title}
+                  </p>
+                  <p className="text-xs text-[#64748B]">
+                    {formatEventDate(upcomingEvent.start_at)}
+                    {upcomingEvent.start_at && ` (${formatEventTimeRange(upcomingEvent.start_at, upcomingEvent.end_at)})`}
+                  </p>
+                  <div className="pt-1">
+                    <Link
+                      href={`/events/${upcomingEvent.slug}`}
+                      className="inline-block text-xs font-semibold text-[#2BA8A2] hover:underline"
+                    >
+                      {upcomingEvent.is_registered ? "Lihat Status Kehadiran →" : "Detail & Konfirmasi RSVP →"}
+                    </Link>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-4 bg-[#F8FAFC] border border-[#E2E8F0] rounded-md text-center text-xs text-[#64748B]">
+                  Belum ada agenda terdekat saat ini.
+                </div>
+              )}
             </div>
 
             {/* Rekomendasi Alumni */}

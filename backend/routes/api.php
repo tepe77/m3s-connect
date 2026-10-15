@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\V1\AlumniController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\ContactController;
 use App\Http\Controllers\Api\V1\DirectMessageController;
+use App\Http\Controllers\Api\V1\EventController;
 use App\Http\Controllers\Api\V1\ForumController;
 use App\Http\Controllers\Api\V1\NewsController;
 use App\Http\Controllers\Api\V1\NotificationController;
@@ -82,18 +83,15 @@ Route::prefix('v1')->middleware('throttle:api')->group(function () {
         });
     });
 
-    // Public Events & Agenda Routes
+    // Public & Member Events & Agenda Routes
     Route::prefix('events')->group(function () {
-        Route::get('/', function () {
-            $events = \App\Models\Event::with('category')
-                ->where('status', \App\Enums\EventStatus::PUBLISHED)
-                ->orderBy('start_at', 'asc')
-                ->get();
+        Route::get('/', [EventController::class, 'index']);
+        Route::get('/categories', [EventController::class, 'categories']);
+        Route::get('/{slug}', [EventController::class, 'show']);
 
-            return response()->json([
-                'status' => 'success',
-                'data' => $events,
-            ]);
+        Route::middleware('auth:sanctum')->group(function () {
+            Route::post('/{slug}/rsvp', [EventController::class, 'rsvp']);
+            Route::delete('/{slug}/rsvp', [EventController::class, 'cancelRsvp']);
         });
     });
 
