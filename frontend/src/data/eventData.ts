@@ -46,125 +46,7 @@ export interface EventModel {
   registered_attendees?: EventAttendee[];
 }
 
-export const FALLBACK_EVENTS: EventModel[] = [
-  {
-    id: "event-1",
-    slug: "webinar-karir-alumni-membangun-portofolio-global",
-    title: "Webinar Karir Alumni: Membangun Portofolio Global di Era Digital",
-    description:
-      "Sesi sharing bersama para alumni praktisi industri teknologi dan bisnis internasional tentang strategi membangun portofolio yang relevan dengan standar global, kiat menghadapi interview internasional, dan peluang kerja jarak jauh (remote work).",
-    location: "Online (Zoom Meeting)",
-    start_at: "2026-10-20T19:00:00+07:00",
-    end_at: "2026-10-20T21:00:00+07:00",
-    registration_start_at: "2026-10-01T00:00:00+07:00",
-    registration_end_at: "2026-10-19T23:59:00+07:00",
-    max_participants: 200,
-    status: "published",
-    category: {
-      id: "cat-1",
-      name: "Webinar & Workshop",
-      slug: "webinar-workshop",
-    },
-    creator: {
-      id: "admin-1",
-      name: "Pengurus Komunitas Alumni",
-    },
-    cover_image_url: "/images/news-internasional.jpg",
-    rsvps_count: 64,
-    is_past: false,
-    is_registration_open: true,
-    is_quota_full: false,
-    is_registered: false,
-    registered_attendees: [
-      {
-        id: "att-1",
-        user_id: "user-1",
-        name: "Ahmad Fauzi",
-        graduation_year: 2018,
-        graduation_class: "IPA 1",
-        avatar_url: "/images/avatar-ahmad.jpg",
-      },
-      {
-        id: "att-2",
-        user_id: "user-2",
-        name: "Rina Wardani",
-        graduation_year: 2019,
-        graduation_class: "IPS 2",
-        avatar_url: "/images/avatar-rina.jpg",
-      },
-      {
-        id: "att-3",
-        user_id: "user-3",
-        name: "Siti Nurhaliza",
-        graduation_year: 2020,
-        graduation_class: "Keagamaan",
-        avatar_url: "/images/avatar-siti.jpg",
-      },
-      {
-        id: "att-4",
-        user_id: "user-4",
-        name: "Fajar Pratama",
-        graduation_year: 2017,
-        graduation_class: "IPA 3",
-      },
-    ],
-  },
-  {
-    id: "event-2",
-    slug: "temu-kangen-silaturahmi-akbar-lintas-angkatan",
-    title: "Temu Kangen & Silaturahmi Akbar Lintas Angkatan 2026",
-    description:
-      "Pertemuan akbar keluarga besar Mayoga lintas angkatan untuk mempererat tali persaudaraan dari angkatan pertama hingga yang termuda. Diisi dengan seremoni pembukaan, ramah tamah, pameran karya alumni, dan sesi santap malam bersama.",
-    location: "Kampus MAN 3 Sleman, Jl. Magelang Km. 4",
-    start_at: "2026-12-15T08:00:00+07:00",
-    end_at: "2026-12-15T15:00:00+07:00",
-    registration_start_at: "2026-10-15T00:00:00+07:00",
-    registration_end_at: "2026-12-10T23:59:00+07:00",
-    max_participants: 1000,
-    status: "published",
-    category: {
-      id: "cat-2",
-      name: "Temu Alumni",
-      slug: "temu-alumni",
-    },
-    creator: {
-      id: "admin-2",
-      name: "Panitia Reuni Akbar",
-    },
-    cover_image_url: "/images/news-reuni.jpg",
-    rsvps_count: 248,
-    is_past: false,
-    is_registration_open: true,
-    is_quota_full: false,
-    is_registered: false,
-    registered_attendees: [
-      {
-        id: "att-21",
-        user_id: "user-1",
-        name: "Ahmad Fauzi",
-        graduation_year: 2018,
-        graduation_class: "IPA 1",
-        avatar_url: "/images/avatar-ahmad.jpg",
-      },
-      {
-        id: "att-22",
-        user_id: "user-2",
-        name: "Rina Wardani",
-        graduation_year: 2019,
-        graduation_class: "IPS 2",
-        avatar_url: "/images/avatar-rina.jpg",
-      },
-      {
-        id: "att-23",
-        user_id: "user-3",
-        name: "Siti Nurhaliza",
-        graduation_year: 2020,
-        graduation_class: "Keagamaan",
-        avatar_url: "/images/avatar-siti.jpg",
-      },
-    ],
-  },
-];
+export const FALLBACK_EVENTS: EventModel[] = [];
 
 export function resolveEventCover(url: string | null | undefined, fallbackUrl: string = "/images/doc-baksos.jpg"): string {
   if (!url) return fallbackUrl;
@@ -248,41 +130,18 @@ export async function fetchEvents(
       const json = await res.json();
       const list = json?.data?.data || json?.data;
       if (Array.isArray(list)) {
-        if (list.length > 0) {
-          return list.map((ev: any) => ({
-            ...ev,
-            cover_image_url: resolveEventCover(ev.cover_image_url || ev.cover_image),
-            rsvps_count: ev.rsvps_count ?? 0,
-          }));
-        }
-        // If API returned 200 with an empty array for an active search or category filter
-        if (params.search || (params.category && params.category !== "all") || params.tab === "past") {
-          return [];
-        }
+        return list.map((ev: any) => ({
+          ...ev,
+          cover_image_url: resolveEventCover(ev.cover_image_url || ev.cover_image),
+          rsvps_count: ev.rsvps_count ?? 0,
+        }));
       }
     }
   } catch (err) {
-    console.warn("fetchEvents failed, using fallback:", err);
+    console.warn("fetchEvents failed:", err);
   }
 
-  // Fallback filtering if backend is unreachable
-  let fallbackList = [...FALLBACK_EVENTS];
-  if (params.tab === "past") {
-    fallbackList = fallbackList.filter((e) => e.is_past);
-  } else if (params.tab === "upcoming") {
-    fallbackList = fallbackList.filter((e) => !e.is_past);
-  }
-  if (params.category && params.category !== "all") {
-    fallbackList = fallbackList.filter((e) => e.category?.slug === params.category);
-  }
-  if (params.search) {
-    const s = params.search.toLowerCase();
-    fallbackList = fallbackList.filter(
-      (e) => e.title.toLowerCase().includes(s) || e.description.toLowerCase().includes(s)
-    );
-  }
-
-  return fallbackList;
+  return [];
 }
 
 export async function fetchEventCategories(): Promise<EventCategory[]> {
@@ -300,11 +159,7 @@ export async function fetchEventCategories(): Promise<EventCategory[]> {
     console.warn("fetchEventCategories failed:", err);
   }
 
-  return [
-    { id: "cat-1", name: "Semua Kategori", slug: "all" },
-    { id: "cat-2", name: "Temu Alumni", slug: "temu-alumni" },
-    { id: "cat-3", name: "Webinar & Workshop", slug: "webinar-workshop" },
-  ];
+  return [];
 }
 
 export async function fetchEventDetail(slug: string, token?: string | null): Promise<EventModel | null> {
@@ -321,9 +176,9 @@ export async function fetchEventDetail(slug: string, token?: string | null): Pro
       cache: "no-store",
     });
 
-    // If server returned error (e.g. 500 when remote backend PostgreSQL receives a slug in UUID column query),
-    // resolve the event ID from event list and request by UUID
-    if (!res.ok) {
+    // If server returned 500 error (e.g. unhandled UUID cast on un-deployed remote backend),
+    // attempt resolution by looking up event by slug from event list, then requesting by UUID
+    if (res.status >= 500) {
       try {
         const eventsList = await fetchEvents({ tab: "all" }, token);
         const matched = eventsList.find((e) => e.slug === slug || e.id === slug);
@@ -353,11 +208,10 @@ export async function fetchEventDetail(slug: string, token?: string | null): Pro
       }
     }
   } catch (err) {
-    console.warn(`fetchEventDetail(${slug}) failed, checking fallback:`, err);
+    console.warn(`fetchEventDetail(${slug}) failed:`, err);
   }
 
-  const fallback = FALLBACK_EVENTS.find((e) => e.slug === slug || e.id === slug);
-  return fallback || null;
+  return null;
 }
 
 export async function submitEventRsvp(

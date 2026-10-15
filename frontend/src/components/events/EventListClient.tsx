@@ -365,7 +365,7 @@ export function EventListClient({ initialEvents, categories }: EventListClientPr
 
       {/* Main Events Grid */}
       <section aria-labelledby="all-events-heading" className="space-y-4">
-        {featuredEvent && (
+        {featuredEvent && standardEvents.length > 0 && (
           <h2 id="all-events-heading" className="text-xs font-bold uppercase tracking-wider text-slate-500">
             Daftar Agenda Lainnya
           </h2>
@@ -382,23 +382,28 @@ export function EventListClient({ initialEvents, categories }: EventListClientPr
               </div>
             ))}
           </div>
-        ) : standardEvents.length === 0 ? (
+        ) : events.length === 0 ? (
           <div className="bg-white rounded-3xl border border-slate-200/80 p-12 text-center space-y-4 max-w-md mx-auto">
             <div className="size-14 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center mx-auto border border-emerald-100">
               <CalendarCheck className="size-7" />
             </div>
-            <h3 className="text-base font-bold text-slate-900">Tidak Ada Agenda Ditemukan</h3>
+            <h3 className="text-base font-bold text-slate-900">Belum Ada Agenda Kegiatan</h3>
             <p className="text-xs text-slate-500 leading-relaxed">
-              Tidak ada agenda kegiatan pada kategori atau filter ini. Silakan pilih tab lain atau atur ulang pencarian Anda.
+              {searchQuery.trim() || selectedCategory !== "all"
+                ? "Tidak ada agenda kegiatan yang cocok dengan filter pencarian. Silakan pilih tab lain atau atur ulang pencarian Anda."
+                : "Saat ini belum ada agenda kegiatan atau silaturahmi yang dijadwalkan. Silakan pantau berkala untuk pembaruan agenda mendatang."}
             </p>
-            <button
-              onClick={() => handleFilterChange("all", "all", "")}
-              className="inline-block text-xs font-semibold text-emerald-700 hover:underline pt-1"
-            >
-              Tampilkan Semua Agenda
-            </button>
+            {(selectedCategory !== "all" || searchQuery.trim() || activeTab !== "upcoming") && (
+              <button
+                type="button"
+                onClick={() => handleFilterChange("all", "all", "")}
+                className="inline-block text-xs font-semibold text-emerald-700 hover:underline pt-1 cursor-pointer"
+              >
+                Tampilkan Semua Agenda
+              </button>
+            )}
           </div>
-        ) : (
+        ) : standardEvents.length === 0 ? null : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {standardEvents.map((event) => {
               const isOnline = isOnlineEvent(event.location);
