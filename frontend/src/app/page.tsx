@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { HeroAurora } from "@/components/velora/hero-aurora";
 import { FeaturesIconGrid } from "@/components/velora/features-icon-grid";
 import { HomeForumThreads } from "@/components/home/HomeForumThreads";
@@ -9,6 +8,7 @@ import { NewsItem } from "@/data/newsData";
 import { AlumniItem } from "@/data/alumniData";
 import { HomeAlumniCarousel } from "@/components/home/HomeAlumniCarousel";
 import { HomeNewsSection } from "@/components/home/HomeNewsSection";
+import { HomeCtaBanner } from "@/components/home/HomeCtaBanner";
 import { API_BASE_URL, getAssetUrl } from "@/lib/api";
 
 function resolveNewsImage(url: string | undefined | null, fallbackUrl: string): string {
@@ -189,49 +189,7 @@ export default async function HomePage() {
       <HomeTestimonialsMarquee />
 
       {/* 6. Call To Action Banner */}
-      <section className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="relative rounded-2xl overflow-hidden bg-gradient-to-r from-[#D7F1EC] via-[#E6F7F3] to-[#F1F9F6] border border-[#BCE4DB] p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xs">
-          {/* Subtle Organic Background Wave (Left) */}
-          <div className="absolute left-0 top-0 bottom-0 w-48 opacity-40 pointer-events-none">
-            <svg viewBox="0 0 200 200" fill="none" className="w-full h-full">
-              <path
-                d="M0 0C50 30 70 80 40 130C20 160 0 200 0 200V0Z"
-                fill="#A7E1D4"
-              />
-            </svg>
-          </div>
-
-          {/* Building Silhouette on the right */}
-          <div className="absolute right-0 top-0 bottom-0 w-64 opacity-20 pointer-events-none hidden md:block">
-            <svg viewBox="0 0 250 120" fill="none" className="w-full h-full">
-              <path d="M0 120 L30 60 L80 60 L100 20 L150 20 L170 60 L220 60 L250 120 Z" fill="#0D9488" />
-            </svg>
-          </div>
-
-          {/* Text Content */}
-          <div className="relative z-10 space-y-1.5 text-center md:text-left">
-            <h2 className="text-lg sm:text-xl font-extrabold text-[#064E3B] tracking-tight">
-              Jadi Bagian dari Keluarga Besar Alumni MAN 3 Sleman
-            </h2>
-            <p className="text-xs sm:text-sm text-[#065F46] font-medium">
-              Daftar sekarang dan nikmati semua fitur eksklusif untuk alumni.
-            </p>
-          </div>
-
-          {/* CTA Button */}
-          <div className="relative z-10 shrink-0">
-            <Link
-              href="/register"
-              className="inline-flex items-center justify-center min-h-[44px] px-6 py-2.5 text-xs sm:text-sm font-bold text-white bg-[#0D9488] hover:bg-[#0f766e] rounded-lg shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0D9488]"
-            >
-              <span>Daftar Sekarang</span>
-              <svg className="w-4 h-4 ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-              </svg>
-            </Link>
-          </div>
-        </div>
-      </section>
+      <HomeCtaBanner />
       </div>
     </div>
   );
